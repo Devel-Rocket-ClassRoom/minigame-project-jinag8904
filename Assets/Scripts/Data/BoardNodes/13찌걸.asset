@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97c738bdb442e974eb86f80931ffe72f, type: 3}
+  m_Name: "13\uCC0C\uAC78"
+  m_EditorClassIdentifier: Assembly-CSharp::BoardNodeData
+  nodeId: 13
+  nodeName: "\uCC0C\uAC78"
+  nodeType: 0
+  defaultPrevious: {fileID: 11400000, guid: c84a45d853b98bf4c9ca2f1e93274470, type: 2}
+  defaultNext: {fileID: 11400000, guid: 2485da566ad98fa42adfa12fdb07bbfb, type: 2}
+  shortcutNext: {fileID: 0}
