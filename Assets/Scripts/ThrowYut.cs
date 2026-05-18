@@ -13,17 +13,9 @@ public class ThrowYut : MonoBehaviour
         }
     }
 
-    private static Yut[] yuts = new Yut[4];
+    private static Yut[] yuts = new Yut[4] { new(), new(), new(), new() };
 
     private static int tailCount = 0;
-
-    private void Awake()
-    {
-        yuts[0] = new Yut();
-        yuts[1] = new Yut();
-        yuts[2] = new Yut();
-        yuts[3] = new Yut();
-    }
 
     public static YutResult Throw(bool isBlackYut = false)
     {

@@ -9,7 +9,7 @@ public class MouseInput : MonoBehaviour
 
     private Piece selectedPiece;
     private BoardNode selectedBoardNode;
-    private bool needSelection;         // 입력을 받아야 할 상태일 때만
+    private bool needSelection;
 
     private void Awake()
     {

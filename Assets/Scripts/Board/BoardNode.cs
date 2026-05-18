@@ -20,36 +20,36 @@ public class BoardNode : MonoBehaviour
             highlight.SetActive(active);
     }
 
-    private void OnDrawGizmos()
-    {
-        if (data == null) return;
+    //private void OnDrawGizmos()
+    //{
+    //    if (data == null) return;
 
-        if (data.defaultNext != null)
-        {
-            var nextNode = FindNodeInScene(data.defaultNext);
-            if (nextNode != null)
-            {
-                Gizmos.color = Color.white;
-                Gizmos.DrawLine(transform.position, nextNode.transform.position);
-            }
-        }
+    //    if (data.defaultNext != null)
+    //    {
+    //        var nextNode = FindNodeInScene(data.defaultNext);
+    //        if (nextNode != null)
+    //        {
+    //            Gizmos.color = Color.white;
+    //            Gizmos.DrawLine(transform.position, nextNode.transform.position);
+    //        }
+    //    }
 
-        if (data.shortcutNext != null)
-        {
-            var shortcutNode = FindNodeInScene(data.shortcutNext);
-            if (shortcutNode != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(transform.position, shortcutNode.transform.position);
-            }
-        }
-    }
+    //    if (data.shortcutNext != null)
+    //    {
+    //        var shortcutNode = FindNodeInScene(data.shortcutNext);
+    //        if (shortcutNode != null)
+    //        {
+    //            Gizmos.color = Color.red;
+    //            Gizmos.DrawLine(transform.position, shortcutNode.transform.position);
+    //        }
+    //    }
+    //}
 
-    private BoardNode FindNodeInScene(BoardNodeData targetData)
-    {
-        var allNodes = FindObjectsByType<BoardNode>(FindObjectsSortMode.None);
-        foreach (var n in allNodes)
-            if (n.data == targetData) return n;
-        return null;
-    }
+    //private BoardNode FindNodeInScene(BoardNodeData targetData)
+    //{
+    //    var allNodes = FindObjectsByType<BoardNode>(FindObjectsSortMode.None);
+    //    foreach (var n in allNodes)
+    //        if (n.data == targetData) return n;
+    //    return null;
+    //}
 }
