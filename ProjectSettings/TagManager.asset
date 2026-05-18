@@ -13,8 +13,8 @@ TagManager:
   - UI
   - Piece
   - BoardNode
-  - 
-  - 
+  - BoardSurface
+  - OutZone
   - 
   - 
   - 
