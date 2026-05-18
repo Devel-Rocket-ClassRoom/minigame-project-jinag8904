@@ -14,11 +14,13 @@ public enum YutResult
 public class Player
 {
     public int playerId;
+    public string name;
 
     // 말
     public Piece[] pieces = new Piece[4];
     private int finishedPiecesCount = 0;  // 완주
     public bool AllFinished => finishedPiecesCount >= 4;
+    public int FinishedCount => finishedPiecesCount;
 
     // 이동 가능한 수 리스트(도/개/걸/윷/모)
     public List<YutResult> yutResults = new();
@@ -45,8 +47,17 @@ public class Player
             pieces[i].currentNode = null;
             pieces[i].previousNode = null;
             pieces[i].hasFinished = false;
+            pieces[i].stackedPieces.Clear();
+            pieces[i].stackLeader = null;
         }
         yutResults.Clear();
+        finishedPiecesCount = 0;
+    }
+
+    public void FinishPiece(Piece piece)
+    {
+        piece.hasFinished = true;
+        finishedPiecesCount++;
     }
 
     public void OnThrowBlackYut()
@@ -78,10 +89,13 @@ public class Player
     {
         var nodeName = piece.currentNode.data.nodeName;
         var isExtraWonhan = nodeName == "날윷" || nodeName == "안찌" || nodeName == "참먹이";
+        AddWonhan(!isExtraWonhan ? 3 : 5);
+    }
 
-        wonhan += (!isExtraWonhan) ? 3 : 5;
-
-        if (wonhan >= 5)
+    public void AddWonhan(int amount)
+    {
+        wonhan += amount;
+        while (wonhan >= 5)
         {
             wonhan -= 5;
             blackYutCount++;

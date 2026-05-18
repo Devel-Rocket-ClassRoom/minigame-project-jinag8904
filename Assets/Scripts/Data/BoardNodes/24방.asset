@@ -15,6 +15,6 @@ MonoBehaviour:
   nodeId: 24
   nodeName: "\uBC29"
   nodeType: 2
-  defaultPrevious: {fileID: 0}
-  defaultNext: {fileID: 0}
-  shortcutNext: {fileID: 0}
+  defaultNext: {fileID: 11400000, guid: b89bde72c6bf6564ba3ee8fb733b59d0, type: 2}
+  shortcutNext: {fileID: 11400000, guid: 24e36c6a20b6973488b877c7bc124de7, type: 2}
+  defaultNextEntry: {fileID: 11400000, guid: 7abbcada7beae86459415a73717bdcf3, type: 2}

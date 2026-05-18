@@ -4,6 +4,7 @@ using UnityEngine;
 public class PieceObject : MonoBehaviour
 {
     public Piece piece;
+    [HideInInspector] public Vector3 initPosition;
     [SerializeField] private GameObject hightlight;
 
     public void Bind(Piece p)

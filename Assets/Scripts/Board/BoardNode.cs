@@ -6,13 +6,22 @@ public class BoardNode : MonoBehaviour
     [Header("데이터 참조")]
     public BoardNodeData data;
 
-    [Header("말 배치 위치")]
-    public Transform[] piecePositions;
-
     [HideInInspector]
     public List<Piece> piecesOnNode = new List<Piece>();
 
     public GameObject highlight;
+
+    public Vector3 GetPiecePosition(int index, int total = 0)
+    {
+        int count = total > 0 ? total : piecesOnNode.Count;
+        return count switch
+        {
+            1 => transform.position,
+            2 => transform.position + new Vector3((index == 0 ? -1 : 1) * 0.15f, 0f, 0f),
+            3 => transform.position + new Vector3((index - 1) * 0.15f, 0f, index == 2 ? 0.13f : -0.08f),
+            _ => transform.position + new Vector3((index % 2 == 0 ? -1 : 1) * 0.13f, 0f, (index < 2 ? 1 : -1) * 0.13f),
+        };
+    }
 
     public void SetHighlight(bool active)
     {
