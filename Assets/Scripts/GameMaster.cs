@@ -14,10 +14,13 @@ public class GameMaster : MonoBehaviour
     // UI
     [SerializeField] private Button blackYutButton;
 
+    // 마우스 선택
+    private MouseInput mouseInput;
+
     private void Awake()
     {
         for (int i = 0; i < players.Length; i++)
-            players[i] = new Player() { playerId = i };
+            players[i] = new Player() { playerId = i, name = $"플레이어{i+1}" };
 
         blackYutButton.gameObject.SetActive(false);
         blackYutButton.onClick.AddListener(() =>
@@ -25,6 +28,8 @@ public class GameMaster : MonoBehaviour
             currPlayer.Throw(isBlackYut: true);
             if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
         });
+
+        mouseInput = GetComponent<MouseInput>();
     }
 
     private void Init()
@@ -56,7 +61,7 @@ public class GameMaster : MonoBehaviour
 
         yield return new WaitForSeconds(3);
 
-        Debug.Log($"<color=yellow>{currPlayer}부터 시작</color>");
+        Debug.Log($"<color=yellow>{currPlayer.name}부터 시작</color>");
     }
 
     private IEnumerator CoPlayGame()
@@ -72,10 +77,12 @@ public class GameMaster : MonoBehaviour
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
         yield return new WaitForSeconds(1);
+        
+        Debug.Log($"{player.name}의 차례");
+        yield return new WaitForSeconds(1);
 
         Debug.Log("<color=green>윷 던지는 중...</color>");
         player.Throw();
-
         yield return new WaitForSeconds(3);
 
         StringBuilder sb = new();
@@ -90,11 +97,13 @@ public class GameMaster : MonoBehaviour
 
         if (player.HasBlackYut) blackYutButton.gameObject.SetActive(true);
 
-        // TODO: MouseInput 연동 후 break 제거하고 실제 입력 대기로 교체
+        // 말 옮기기 단계
         while (player.yutResults.Count > 0)
         {
-            yield return null;
-            break;
+            mouseInput.BeginSelection();
+            yield return new WaitUntil(() => mouseInput.MoveConfirmed);
+            
+            // 결과 처리 (사용한 결과 제거, 이동, 잡기/업기 등)
         }
     }
 

@@ -2149,6 +2149,7 @@ GameObject:
   m_Component:
   - component: {fileID: 909197070}
   - component: {fileID: 909197071}
+  - component: {fileID: 909197072}
   m_Layer: 0
   m_Name: GameMaster
   m_TagString: Untagged
@@ -2184,6 +2185,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   blackYutButton: {fileID: 387876037}
+  mouseInput: {fileID: 0}
+--- !u!114 &909197072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 909197069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a3feeaf2b7890419a65b41c37100ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MouseInput
+  pieceLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  boardNodeLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &945823702
 GameObject:
   m_ObjectHideFlags: 0

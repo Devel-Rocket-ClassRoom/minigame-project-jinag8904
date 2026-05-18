@@ -14,6 +14,7 @@ public enum YutResult
 public class Player
 {
     public int playerId;
+    public string name;
 
     // 말
     public Piece[] pieces = new Piece[4];
