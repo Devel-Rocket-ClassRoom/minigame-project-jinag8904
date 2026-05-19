@@ -12,27 +12,35 @@ public class GameMaster : MonoBehaviour
     private Player currPlayer;
     public Player CurrPlayer => currPlayer;
 
-    // 말 오브젝트 & 초기 위치 (인스펙터에서 플레이어 순서대로 4개씩 할당)
+    // 말 오브젝트 + 초기 위치 + 완주 위치
     [SerializeField] private PieceObject[] p1PieceObjects = new PieceObject[4];
     [SerializeField] private PieceObject[] p2PieceObjects = new PieceObject[4];
-    [SerializeField] private Transform[] p1InitPositions = new Transform[4];
-    [SerializeField] private Transform[] p2InitPositions = new Transform[4];
+
+    [SerializeField] private Transform[] p1StartPositions = new Transform[4];
+    [SerializeField] private Transform[] p2StartPositions = new Transform[4];
+
     [SerializeField] private Transform[] p1EndPositions = new Transform[4];
     [SerializeField] private Transform[] p2EndPositions = new Transform[4];
+
     private const float StackYOffset = 0.1f;
 
-    // UI
+    // 검은 윷 + 턴 종료 UI
     [SerializeField] private Button blackYutButton;
     [SerializeField] private Button endTurnButton;
+    private bool endTurnRequested;
+
+    // 쌓기(업기) UI
     [SerializeField] private GameObject stackDecisionPanel;
     [SerializeField] private Button stackYesButton;
     [SerializeField] private Button stackNoButton;
+    [SerializeField] private Button declineStackButton;
     private bool? stackDecision;
-    private bool endTurnRequested;
+
+    // 완주 - 사용할 윷 결과 선택
     [SerializeField] private GameObject outResultPanel;
-    [SerializeField] private Button[] outResultButtons = new Button[5]; // 인스펙터에서 Do/Gae/Geol/Yut/Mo 순서로 할당
+    [SerializeField] private Button[] outResultButtons = new Button[5];
     private static readonly YutResult[] OutResultOrder = { YutResult.Do, YutResult.Gae, YutResult.Geol, YutResult.Yut, YutResult.Mo };
-    private Dictionary<YutResult, Button> outResultButtonMap;
+    private Dictionary<YutResult, Button> outResultToButton;
     private YutResult? outResultDecision;
 
     // 마우스 선택
@@ -40,9 +48,11 @@ public class GameMaster : MonoBehaviour
 
     private void Awake()
     {
+        // 1. 플레이어 초기화
         for (int i = 0; i < players.Length; i++)
             players[i] = new Player() { playerId = i, name = $"플레이어{i+1}" };
 
+        // 2. 말 초기화
         for (int i = 0; i < 4; i++)
         {
             p1PieceObjects[i].Bind(players[0].pieces[i]);
@@ -51,6 +61,7 @@ public class GameMaster : MonoBehaviour
             players[1].pieces[i].pieceObject = p2PieceObjects[i];
         }
 
+        // 3. UI 비활성화, 연결, 리스너 추가
         blackYutButton.gameObject.SetActive(false);
         blackYutButton.onClick.AddListener(() =>
         {
@@ -66,12 +77,15 @@ public class GameMaster : MonoBehaviour
         stackYesButton.onClick.AddListener(() => stackDecision = true);
         stackNoButton.onClick.AddListener(() => stackDecision = false);
 
+        declineStackButton.gameObject.SetActive(false);
+        declineStackButton.onClick.AddListener(() => dragAndDrop.DeclineStackTargetPick());
+
         outResultPanel.SetActive(false);
-        outResultButtonMap = new Dictionary<YutResult, Button>();
+        outResultToButton = new Dictionary<YutResult, Button>();
         for (int i = 0; i < outResultButtons.Length; i++)
         {
             var yr = OutResultOrder[i];
-            outResultButtonMap[yr] = outResultButtons[i];
+            outResultToButton[yr] = outResultButtons[i];
             var captured = yr;
             outResultButtons[i].onClick.AddListener(() => outResultDecision = captured);
             outResultButtons[i].gameObject.SetActive(false);
@@ -87,10 +101,10 @@ public class GameMaster : MonoBehaviour
 
         for (int i = 0; i < 4; i++)
         {
-            p1PieceObjects[i].transform.position = p1InitPositions[i].position;
-            p1PieceObjects[i].initPosition = p1InitPositions[i].position;
-            p2PieceObjects[i].transform.position = p2InitPositions[i].position;
-            p2PieceObjects[i].initPosition = p2InitPositions[i].position;
+            p1PieceObjects[i].transform.position = p1StartPositions[i].position;
+            p1PieceObjects[i].initPosition = p1StartPositions[i].position;
+            p2PieceObjects[i].transform.position = p2StartPositions[i].position;
+            p2PieceObjects[i].initPosition = p2StartPositions[i].position;
         }
     }
 
@@ -148,11 +162,11 @@ public class GameMaster : MonoBehaviour
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
         while (true)
         {
-            // ↓결과 다 쓰면 검은 윷 추가 사용 여부 확인
+            // 결과 다 쓰면 검은 윷 추가 사용 여부 확인
             while (player.yutResults.Count > 0)
             {
-                // ↓뒷도로 옮길 수 있는 말이 없으면 건너뛰기 (판 위에 있는 말이면 가능 — startNode는 previousNode 없어도 goalNode로 이동 가능)
-                player.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !player.pieces.Any(p => !p.hasFinished && p.currentNode != null && (p.previousNode != null || p.currentNode.data.isStart)));
+                // 뒷도로 옮길 수 있는 말이 없으면 건너뛰기 ('완주한 말' 또는 '보드 위에 안 올라간 말'밖에 없는 경우)
+                player.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !player.pieces.Any(p => !p.hasFinished && p.currentNode != null));
                 if (player.yutResults.Count == 0) break;
 
                 // 선택 시작
@@ -161,7 +175,7 @@ public class GameMaster : MonoBehaviour
 
                 // 결정 사항 받아오기
                 var piece = dragAndDrop.SelectedPiece;
-                var targetNode = dragAndDrop.selectedBoardNode;
+                var targetNode = dragAndDrop.SelectedBoardNode;
                 var stackAll = piece.stackedPieces.ToList();
 
                 // 완주 처리
@@ -169,23 +183,29 @@ public class GameMaster : MonoBehaviour
                 {
                     var outResults = dragAndDrop.ValidOutResults;
                     YutResult chosenOutResult;
+
                     if (outResults.Count == 1)
-                    {
                         chosenOutResult = outResults[0];
-                    }
-                    else
+                    
+                    else // 나갈 수 있는 윷 결과가 2개 이상
                     {
                         outResultDecision = null;
                         ShowOutResultPanel(outResults);
+
                         yield return new WaitUntil(() => outResultDecision.HasValue);
+
                         HideOutResultPanel();
                         chosenOutResult = outResultDecision.Value;
                     }
 
                     var nodeBeforeOut = piece.currentNode;
+
                     piece.currentNode?.piecesOnNode.Remove(piece);
-                    foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
-                    if (nodeBeforeOut != null) RepositionNode(nodeBeforeOut);
+                    foreach (var s in stackAll) 
+                        s.currentNode?.piecesOnNode.Remove(s);
+
+                    if (nodeBeforeOut != null) 
+                        RepositionNode(nodeBeforeOut);
 
                     HandleFinish(piece, stackAll, player);
                     player.yutResults.Remove(chosenOutResult);
@@ -195,26 +215,33 @@ public class GameMaster : MonoBehaviour
 
                 // 데이터 업데이트 (말 + 업힌 말들 함께 이동)
                 piece.currentNode?.piecesOnNode.Remove(piece);
-                foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
+                foreach (var s in stackAll) 
+                    s.currentNode?.piecesOnNode.Remove(s);
 
-                var newPreviousNode = dragAndDrop.PreviousNodeForSelected;
-                piece.previousNode = newPreviousNode;
+                var prev = dragAndDrop.PrevOfSelectedPiece;
+
+                piece.previousNode = prev;
                 piece.currentNode = targetNode;
                 targetNode.piecesOnNode.Add(piece);
 
                 foreach (var s in stackAll)
                 {
-                    s.previousNode = newPreviousNode;
+                    s.previousNode = prev;
                     s.currentNode = targetNode;
                     targetNode.piecesOnNode.Add(s);
                 }
 
                 // 시각적 이동
-                if (piece.previousNode != null) RepositionNode(piece.previousNode);
+                if (piece.previousNode != null) 
+                    RepositionNode(piece.previousNode);
+
                 RepositionNode(targetNode);
 
                 // 잡기 처리
-                var capturedPieces = targetNode.piecesOnNode.Where(p => p.owner != player).ToList();
+                var capturedPieces = targetNode.piecesOnNode
+                    .Where(p => p.owner != player)
+                    .ToList();
+
                 if (capturedPieces.Count > 0)
                 {
                     // 리더(또는 독립 말)에만 OnCaught + 업힌 말 수만큼 보너스 원한
@@ -227,10 +254,11 @@ public class GameMaster : MonoBehaviour
                     foreach (var caught in capturedPieces)
                     {
                         targetNode.piecesOnNode.Remove(caught);
+
                         caught.currentNode = null;
                         caught.previousNode = null;
-                        caught.stackedPieces.Clear();
                         caught.stackLeader = null;
+                        caught.stackedPieces.Clear();
                         caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                     }
                     RepositionNode(targetNode);
@@ -245,26 +273,51 @@ public class GameMaster : MonoBehaviour
                     .Where(p => p.owner == player && p != piece && p.stackLeader == null)
                     .ToList();
 
-                if (friendlyLeaders.Count > 0)
+                if (friendlyLeaders.Count == 1)
                 {
                     stackDecision = null;
                     stackDecisionPanel.SetActive(true);
+
                     yield return new WaitUntil(() => stackDecision.HasValue);
+
                     stackDecisionPanel.SetActive(false);
 
                     if (stackDecision == true)
                     {
-                        foreach (var ally in friendlyLeaders)
+                        var ally = friendlyLeaders[0];
+                        foreach (var s in ally.stackedPieces)
                         {
-                            foreach (var s in ally.stackedPieces)
-                            {
-                                piece.stackedPieces.Add(s);
-                                s.stackLeader = piece;
-                            }
-                            ally.stackedPieces.Clear();
-                            piece.stackedPieces.Add(ally);
-                            ally.stackLeader = piece;
+                            piece.stackedPieces.Add(s);
+                            s.stackLeader = piece;
                         }
+                        ally.stackedPieces.Clear(); // 리더 교체
+                        piece.stackedPieces.Add(ally);
+                        ally.stackLeader = piece;
+
+                        RepositionNode(targetNode);
+                        Debug.Log($"<color=yellow>{player.name}이(가) 말을 업었습니다.</color>");
+                    }
+                }
+                else if (friendlyLeaders.Count >= 2)
+                {
+                    dragAndDrop.BeginStackTargetPick(friendlyLeaders);
+                    declineStackButton.gameObject.SetActive(true);
+
+                    yield return new WaitUntil(() => dragAndDrop.PickConfirmed || dragAndDrop.PickDeclined);
+
+                    declineStackButton.gameObject.SetActive(false);
+
+                    if (dragAndDrop.PickConfirmed)
+                    {
+                        var ally = dragAndDrop.PickedStackTarget;
+                        foreach (var s in ally.stackedPieces)
+                        {
+                            piece.stackedPieces.Add(s);
+                            s.stackLeader = piece;
+                        }
+                        ally.stackedPieces.Clear();
+                        piece.stackedPieces.Add(ally);
+                        ally.stackLeader = piece;
                         RepositionNode(targetNode);
                         Debug.Log($"<color=yellow>{player.name}이(가) 말을 업었습니다.</color>");
                     }
@@ -280,8 +333,9 @@ public class GameMaster : MonoBehaviour
 
             endTurnRequested = false;
             endTurnButton.gameObject.SetActive(true);
-            // blackYutButton은 이미 활성화 상태 — 클릭 시 결과 추가됨
+
             yield return new WaitUntil(() => endTurnRequested || player.yutResults.Count > 0);
+
             endTurnButton.gameObject.SetActive(false);
 
             if (endTurnRequested) break;
@@ -319,25 +373,27 @@ public class GameMaster : MonoBehaviour
 
     private void ShowOutResultPanel(List<YutResult> options)
     {
-        foreach (var kv in outResultButtonMap)
+        foreach (var kv in outResultToButton)
             kv.Value.gameObject.SetActive(options.Contains(kv.Key));
+
         outResultPanel.SetActive(true);
     }
 
     private void HideOutResultPanel()
     {
         outResultPanel.SetActive(false);
-        foreach (var kv in outResultButtonMap)
+
+        foreach (var kv in outResultToButton)
             kv.Value.gameObject.SetActive(false);
     }
 
-    private void HandleFinish(Piece piece, List<Piece> stackedWithIt, Player player)
+    private void HandleFinish(Piece piece, List<Piece> stackedAll, Player player)
     {
         var endPositions = player.playerId == 0 ? p1EndPositions : p2EndPositions;
-        var allFinishing = new List<Piece> { piece };
-        allFinishing.AddRange(stackedWithIt);
+        var finishingPieces = new List<Piece> { piece };
+        finishingPieces.AddRange(stackedAll);
 
-        foreach (var fp in allFinishing)
+        foreach (var fp in finishingPieces)
         {
             fp.pieceObject.transform.position = endPositions[player.FinishedCount].position;
             player.FinishPiece(fp);
@@ -346,22 +402,30 @@ public class GameMaster : MonoBehaviour
         }
 
         piece.stackedPieces.Clear();
-        foreach (var s in stackedWithIt) { s.stackLeader = null; s.stackedPieces.Clear(); }
+        foreach (var s in stackedAll) 
+        {
+            s.stackLeader = null; 
+            s.stackedPieces.Clear(); 
+        }
 
         Debug.Log($"<color=green>{player.name}의 말이 완주! ({player.FinishedCount}/4)</color>");
     }
 
-    // 노드 위 말들 재배치. 업기 그룹은 같은 위치에 y축으로 쌓기.
+    // 노드 위 말들 재배치
     private void RepositionNode(BoardNode node)
     {
         var units = node.piecesOnNode.Where(p => p.stackLeader == null).ToList();
-        
+
         for (int i = 0; i < units.Count; i++)
         {
             var pos = node.GetPiecePosition(i, units.Count);
             units[i].pieceObject.transform.position = pos;
+
+            var renderer = units[i].pieceObject.GetComponentInChildren<Renderer>();
+            float stackHeight = renderer != null ? renderer.bounds.size.y : StackYOffset;
+
             for (int j = 0; j < units[i].stackedPieces.Count; j++)
-                units[i].stackedPieces[j].pieceObject.transform.position = pos + Vector3.up * StackYOffset * (j + 1);
+                units[i].stackedPieces[j].pieceObject.transform.position = pos + Vector3.up * stackHeight * (j + 1);
         }
     }
 }
