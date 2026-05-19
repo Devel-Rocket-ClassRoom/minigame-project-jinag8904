@@ -160,6 +160,7 @@ public class GameMaster : MonoBehaviour
         if (player.HasBlackYut) blackYutButton.gameObject.SetActive(true);
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
+        bool wonThisTurn = false;
         while (true)
         {
             // 결과 다 쓰면 검은 윷 추가 사용 여부 확인
@@ -210,6 +211,13 @@ public class GameMaster : MonoBehaviour
                     HandleFinish(piece, stackAll, player);
                     player.yutResults.Remove(chosenOutResult);
                     LogYutResults(player);
+
+                    if (player.AllFinished)
+                    {
+                        wonThisTurn = true;
+                        player.yutResults.Clear();
+                        break;
+                    }
                     continue;
                 }
 
@@ -329,6 +337,7 @@ public class GameMaster : MonoBehaviour
             }
 
             // 결과를 다 썼을 때 남은 검은 윷이 있으면 던지거나 턴 종료 선택
+            if (wonThisTurn) break;
             if (!player.HasBlackYut) break;
 
             endTurnRequested = false;
