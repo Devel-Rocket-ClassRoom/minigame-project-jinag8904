@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public enum YutResult
 {
@@ -44,11 +43,11 @@ public class Player
     {
         for (int i = 0; i < pieces.Length; i++)
         {
+            pieces[i].hasFinished = false;
             pieces[i].currentNode = null;
             pieces[i].previousNode = null;
-            pieces[i].hasFinished = false;
-            pieces[i].stackedPieces.Clear();
             pieces[i].stackLeader = null;
+            pieces[i].stackedPieces.Clear();
         }
         yutResults.Clear();
         finishedPiecesCount = 0;

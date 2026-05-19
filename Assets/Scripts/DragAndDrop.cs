@@ -4,36 +4,52 @@ using System.Collections.Generic;
 
 public class DragAndDrop : MonoBehaviour
 {
+    // 선택 입력
     private Camera cam;
     private GameInput input;
+    private bool needSelection = false; // true일 때만 입력을 받음
+    private bool isDragging = false;
 
+    private Player currPlayer;
+
+    public Piece SelectedPiece { get; private set; }            // 선택 말
+    public BoardNode SelectedBoardNode { get; private set; }    // 선택 칸 (확정)
+    public bool MoveConfirmed { get; private set; }             // 말 이동 확정 플래그
+    public YutResult UsedYutResult { get; private set; }
+    public BoardNode PrevOfSelectedPiece { get; private set; }
+
+    // 유효한 목적지 판별(+하이라이트) 등에 사용
+    [SerializeField] private BoardData boardData;   // 전체 노드 데이터
+    private BoardNode[] allBoardNodes;              // 전체 보드 노드 (오브젝트)
+    private Dictionary<BoardNode, YutResult> validDestToYutResult = new();   // <유효 목적지, 사용할 윷 결과> : UsedYutResult 할당
+    private Dictionary<BoardNode, BoardNode> destToPrevNode = new();    // <목적지, 그 직전 노드> : PrevOfSelectedPiece 할당
+                                                                        // ComputeAndHighlightDestinations() 타이밍에 정보 저장됨
+
+    // 레이어 마스크
     [SerializeField] private LayerMask pieceLayer;
     [SerializeField] private LayerMask boardNodeLayer;
     [SerializeField] private LayerMask boardSurfaceLayer;
     [SerializeField] private LayerMask outZoneLayer;
-    [SerializeField] private BoardData boardData;
+
+    // 시각화
+    private float halfHeight = 0f;      // 드래그 중인 오브젝트의 키/2 (보드 표면 위를 따라가게 할 때 튀어나오게 할 높이)
+    private Vector3 originPosition;     // 이동 전 위치. 유효하지 않은 위치에서 릴리즈 시 복귀할 지점
+
+    // 완주 처리
+    private bool canOut;
+    public List<YutResult> ValidOutResults { get; private set; } = new();   // 윷 결과들 중, 말을 나가게 할 수 있는 값들
+    public bool IsOutConfirmed { get; private set; }
+
+    // 업기 대상 말 선택 모드
+    private bool pickingStackTarget = false;
+    private List<Piece> stackTargetCandidates = new();
+    public Piece PickedStackTarget { get; private set; }
+    public bool PickConfirmed { get; private set; }
+    public bool PickDeclined { get; private set; }
+
+    // 아웃 존
     [SerializeField] private Collider outZoneCollider;
     [SerializeField] private GameObject outZoneHighlight;
-
-    // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
-    public bool MoveConfirmed { get; private set; }
-    public YutResult UsedYutResult { get; private set; }
-    public BoardNode PreviousNodeForSelected { get; private set; }
-    private bool needSelection = false;
-    public Piece SelectedPiece { get; private set; }
-    public BoardNode selectedBoardNode { get; private set; }
-
-    private Player currPlayer;
-    private bool isDragging = false;
-    private float dragHalfHeight = 0f;
-    private Vector3 originPosition;
-    private BoardNode[] allBoardNodes;
-    private Dictionary<BoardNode, YutResult> validDestinations = new();
-    private Dictionary<BoardNode, BoardNode> destToPrevNode = new();
-    private bool canOut;
-    public List<YutResult> ValidOutResults { get; private set; } = new();
-    public bool IsOutConfirmed { get; private set; }
 
     // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -44,18 +60,19 @@ public class DragAndDrop : MonoBehaviour
         allBoardNodes = FindObjectsByType<BoardNode>(FindObjectsSortMode.None);
     }
 
-    private void Update()
+    private void Update()   // 드래그 - 오브젝트 이동
     {
         if (!isDragging || SelectedPiece == null) return;
 
-        Vector2 mousePos = input.GamePlay.Point.ReadValue<Vector2>();   // 드래그 하는 동안 말을 마우스 위치로 따라가게 함
+        Vector2 mousePos = input.GamePlay.Point.ReadValue<Vector2>();
         Ray ray = cam.ScreenPointToRay(mousePos);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, boardSurfaceLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, boardSurfaceLayer))  // 보드 표면 따라가게
         {
-            SelectedPiece.pieceObject.transform.position = hit.point + Vector3.up * dragHalfHeight;
-            for (int i = 0; i < SelectedPiece.stackedPieces.Count; i++)
-                SelectedPiece.stackedPieces[i].pieceObject.transform.position = hit.point + Vector3.up * (dragHalfHeight + 0.1f * (i + 1));
+            SelectedPiece.pieceObject.transform.position = hit.point + Vector3.up * halfHeight;
+
+            for (int i = 0; i < SelectedPiece.stackedPieces.Count; i++) // 쌓인 말들도 다같이
+                SelectedPiece.stackedPieces[i].pieceObject.transform.position = hit.point + Vector3.up * (halfHeight + 0.1f * (i + 1));            
         }
     }
 
@@ -73,22 +90,56 @@ public class DragAndDrop : MonoBehaviour
         input.GamePlay.Disable();
     }
 
+    public void BeginSelection(Player player)
+    {
+        currPlayer = player;
+
+        MoveConfirmed = false;
+        IsOutConfirmed = false;
+        needSelection = true;
+
+        // PrevOfSelectedPiece = null; (MoveConfirmed와 PrevOfSelectedPiece는 짝지어 써야 함, 현재 코드에서는 초기화 필요 없어서 주석 처리)
+
+        ValidOutResults.Clear();
+        
+        // 선택 가능한 말(Finished = false인 애들) 시각화 (나중에)
+    }
+
     private void OnClickStarted(InputAction.CallbackContext ctx)
     {
+        if (pickingStackTarget) // 쌓을 대상 선택
+        {
+            var mousePos = input.GamePlay.Point.ReadValue<Vector2>();
+            var ray = cam.ScreenPointToRay(mousePos);
+            var hits = Physics.RaycastAll(ray, 100f, pieceLayer);
+            foreach (var h in hits)
+            {
+                var pieceObj = h.collider.GetComponent<PieceObject>();
+                var leader = pieceObj.piece.stackLeader ?? pieceObj.piece;
+                if (stackTargetCandidates.Contains(leader))
+                {
+                    PickedStackTarget = leader;
+                    EndStackTargetPick();
+                    PickConfirmed = true;
+                    break;
+                }
+            }
+            return;
+        }
+
         if (!needSelection) return;
 
-        var mousePos = input.GamePlay.Point.ReadValue<Vector2>();
-        var ray = cam.ScreenPointToRay(mousePos);
-        var hits = Physics.RaycastAll(ray, 100f, pieceLayer);
-
-        foreach (var h in hits)
+        var mousePos2 = input.GamePlay.Point.ReadValue<Vector2>();
+        var ray2 = cam.ScreenPointToRay(mousePos2);
+        var hits2 = Physics.RaycastAll(ray2, 100f, pieceLayer);
+        foreach (var h in hits2)
         {
             var pieceObj = h.collider.GetComponent<PieceObject>();
-            var leader = pieceObj.piece.stackLeader ?? pieceObj.piece;  // 업힌 말이면 리더로
+            var leader = pieceObj.piece.stackLeader ?? pieceObj.piece;  // 겹친 말들의 대표 저장
             if (leader.owner == currPlayer && !leader.hasFinished)
             {
                 SelectedPiece = leader;
-                dragHalfHeight = h.collider.bounds.extents.y;
+                halfHeight = h.collider.bounds.extents.y;
                 originPosition = SelectedPiece.pieceObject.transform.position;
                 isDragging = true;
                 ComputeAndHighlightDestinations();
@@ -104,16 +155,18 @@ public class DragAndDrop : MonoBehaviour
         var mousePos = input.GamePlay.Point.ReadValue<Vector2>();
         var ray = cam.ScreenPointToRay(mousePos);
         var hits = Physics.RaycastAll(ray, 100f, boardNodeLayer);
-
         foreach (var h in hits)
         {
             var node = h.collider.GetComponent<BoardNode>();
-            if (node != null && validDestinations.TryGetValue(node, out YutResult usedResult))
+            if (node != null && validDestToYutResult.TryGetValue(node, out YutResult usedResult))  // 놓은 곳이 유효한 자리라면
             {
-                selectedBoardNode = node;
+                SelectedBoardNode = node;
                 UsedYutResult = usedResult;
+
+                // 도착지 직전 노드 저장 (이후 백도 처리 용도)
                 destToPrevNode.TryGetValue(node, out BoardNode prevNode);
-                PreviousNodeForSelected = prevNode;
+                PrevOfSelectedPiece = prevNode;
+
                 MoveConfirmed = true;
                 needSelection = false;
                 break;
@@ -127,8 +180,9 @@ public class DragAndDrop : MonoBehaviour
             {
                 if (h.collider == outZoneCollider)
                 {
-                    selectedBoardNode = null;
-                    PreviousNodeForSelected = null;
+                    SelectedBoardNode = null;
+                    PrevOfSelectedPiece = null;
+
                     IsOutConfirmed = true;
                     MoveConfirmed = true;
                     needSelection = false;
@@ -137,7 +191,7 @@ public class DragAndDrop : MonoBehaviour
             }
         }
 
-        if (!MoveConfirmed)
+        if (!MoveConfirmed) // 잘못된 위치에서 릴리즈 시 위치 복구
         {
             SelectedPiece.pieceObject.transform.position = originPosition;
             for (int i = 0; i < SelectedPiece.stackedPieces.Count; i++)
@@ -148,54 +202,69 @@ public class DragAndDrop : MonoBehaviour
         isDragging = false;
     }
 
-    public void BeginSelection(Player player)
-    {
-        currPlayer = player;
-
-        MoveConfirmed = false;
-        IsOutConfirmed = false;
-        ValidOutResults.Clear();
-        PreviousNodeForSelected = null;
-        needSelection = true;
-
-        // 선택 가능한 말(Finished = false인 애들) 시각화 (나중에)
-    }
-
     private void ComputeAndHighlightDestinations()
     {
-        var dataMap = Yutnori.GetAllPossibleDestinations(SelectedPiece, currPlayer.yutResults, boardData);
-        var penultimateMap = Yutnori.GetPenultimateNodes(SelectedPiece, currPlayer.yutResults, boardData);
-        validDestinations.Clear();
+        var moves = PieceMoveCalculator.ComputeMoves(SelectedPiece, currPlayer.yutResults, boardData);
+        validDestToYutResult.Clear();
         destToPrevNode.Clear();
 
         foreach (var node in allBoardNodes)
         {
-            if (dataMap.TryGetValue(node.data, out YutResult yr))
+            if (moves.Destinations.TryGetValue(node.data, out var info))
             {
-                validDestinations[node] = yr;
-                penultimateMap.TryGetValue(node.data, out BoardNodeData prevData);
-                destToPrevNode[node] = prevData != null ? FindBoardNode(prevData) : null;
+                validDestToYutResult[node] = info.yr;
+                destToPrevNode[node] = info.prevNode != null ? GetNodeByData(info.prevNode) : null;
                 node.SetHighlight(true);
             }
         }
 
-        ValidOutResults = Yutnori.GetAllOutResults(SelectedPiece, currPlayer.yutResults, boardData);
-        canOut = ValidOutResults.Count > 0;
+        ValidOutResults = moves.OutResults;
+        canOut = moves.OutResults.Count > 0;
         if (canOut && outZoneHighlight != null) outZoneHighlight.SetActive(true);
     }
 
-    private BoardNode FindBoardNode(BoardNodeData data)
+    private BoardNode GetNodeByData(BoardNodeData data)
     {
         foreach (var node in allBoardNodes)
             if (node.data == data) return node;
+
         return null;
+    }
+
+    public void BeginStackTargetPick(List<Piece> candidates)
+    {
+        stackTargetCandidates = candidates;
+
+        PickedStackTarget = null;
+        PickConfirmed = false;
+        PickDeclined = false;
+        pickingStackTarget = true;
+
+        foreach (var c in candidates)
+            c.pieceObject.SetHighLight(true);
+    }
+
+    public void DeclineStackTargetPick()
+    {
+        EndStackTargetPick();
+        PickDeclined = true;
+    }
+
+    public void EndStackTargetPick()
+    {
+        foreach (var c in stackTargetCandidates)
+            c.pieceObject.SetHighLight(false);
+
+        stackTargetCandidates.Clear();
+        pickingStackTarget = false;
     }
 
     private void ClearHighlights()
     {
-        foreach (var node in validDestinations.Keys)
+        foreach (var node in validDestToYutResult.Keys)
             node.SetHighlight(false);
-        validDestinations.Clear();
+
+        validDestToYutResult.Clear();
 
         if (canOut)
         {
