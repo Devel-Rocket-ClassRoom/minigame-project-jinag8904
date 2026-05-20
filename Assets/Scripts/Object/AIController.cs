@@ -1,0 +1,125 @@
+using System.Collections;
+using System.Linq;
+using UnityEngine;
+
+public class AIController : MonoBehaviour
+{
+    [SerializeField] private GameMaster gm;
+    [SerializeField] private BoardData boardData;
+
+    // Throw → 이동 루프 → 검은 윷 처리
+    public IEnumerator DecideTurn()
+    {
+        var ai = gm.CurrPlayer;
+
+        ai.Throw();
+        Debug.Log($"<color=cyan>[AI] 윷 결과: {string.Join(", ", ai.yutResults)}</color>");
+        yield return new WaitForSeconds(1);
+
+        while (true)
+        {
+            while (ai.yutResults.Count > 0)
+            {
+                ai.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !ai.pieces.Any(p =>
+                    !p.hasFinished && p.stackLeader == null && p.currentNode != null &&
+                    (p.currentNode.data == boardData.startNode || p.previousNode != null)));  // 못 움직이는 경우 걸러내기
+                if (ai.yutResults.Count == 0) break;
+
+                var (piece, dest, prevNodeData, usedYR, isOut) = FindBestMove(ai);
+
+                if (isOut)
+                    Debug.Log($"<color=cyan>[AI] 완주 선택 ({usedYR})</color>");
+                else
+                    Debug.Log($"<color=cyan>[AI] {usedYR} → {dest?.nodeName}</color>");
+
+                yield return StartCoroutine(gm.ApplyAIMove(piece, dest, prevNodeData, usedYR, isOut));
+
+                if (ai.AllFinished) yield break;
+
+                yield return new WaitForSeconds(1f);
+                if (ai.yutResults.Count > 0)
+                    Debug.Log($"<color=cyan>[AI] 남은 결과: {string.Join(", ", ai.yutResults)}</color>");
+            }
+
+            if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
+
+            ai.Throw(isBlackYut: true);
+            Debug.Log($"<color=cyan>[AI] 검은 윷 결과: {string.Join(", ", ai.yutResults)}</color>");
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    // 전체 말 순회, 완주/이동 후보 점수 매겨서 최고점 반환
+    private (Piece, BoardNodeData, BoardNodeData, YutResult, bool) FindBestMove(Player ai)
+    {
+        Piece bestPiece = null;
+        BoardNodeData bestTarget = null;
+        BoardNodeData bestPrevNode = null;
+        YutResult bestUse = default;
+        bool bestIsOut = false;
+
+        var personality = ai.characterData != null ? ai.characterData.aiPersonality : new AIPersonality();
+        var opponent = gm.GetOpponent(ai);
+
+        float bestScore = float.MinValue;
+        foreach (var piece in ai.pieces.Where(p => !p.hasFinished && p.stackLeader == null))
+        {
+            var moves = PieceMoveCalculator.ComputeMoves(piece, ai.yutResults, boardData);
+
+            // 완주 후보
+            foreach (var yr in moves.OutResults)
+            {
+                float score = ScoreMove(piece, null, yr, personality, ai, opponent, isOut: true);
+                if (score > bestScore)
+                {
+                    bestScore = score; bestPiece = piece; bestTarget = null; bestPrevNode = null; bestUse = yr; bestIsOut = true;
+                }
+            }
+
+            // 이동 후보
+            foreach (var kv in moves.Destinations)
+            {
+                float score = ScoreMove(piece, kv.Key, kv.Value.yr, personality, ai, opponent, isOut: false);
+                if (score > bestScore)
+                {
+                    bestScore = score; bestPiece = piece; bestTarget = kv.Key; bestPrevNode = kv.Value.prevNode; bestUse = kv.Value.yr; bestIsOut = false;
+                }
+            }
+        }
+
+        return (bestPiece, bestTarget, bestPrevNode, bestUse, bestIsOut);
+    }
+
+    // 잡기/전진/완주/업기 - 각각 가중치 적용 + random
+    private float ScoreMove(Piece piece, BoardNodeData dest, YutResult usedYR, AIPersonality p, Player ai, Player opponent, bool isOut)
+    {
+        float score = 0f;
+
+        // 1. 완주 가능: p.finishWeight * 10f
+        if (isOut) 
+            score += p.finishWeight * 10f;
+
+        // 2. 일반적인 상황
+        else
+        {
+            // 2-1. 잡기 가능: p.captureWeight * 5f
+            bool canCapture = opponent.pieces.Any(op => !op.hasFinished && op.currentNode != null && op.currentNode.data == dest);
+            if (canCapture) score += p.captureWeight * 5f;
+
+            // 2-2. 전진량: p.progressWeight * (int)used
+            score += p.progressWeight * (int)usedYR;
+
+            // 2-3. 업기 가능: p.stackWeight * 3f
+            bool canStack = ai.pieces.Any(pp => pp != piece && !pp.hasFinished && pp.stackLeader == null
+                && pp.currentNode != null && pp.currentNode.data == dest);
+            if (canStack) score += p.stackWeight * 3f;
+        }
+
+        // 3. 랜덤 노이즈 섞기
+        score += p.randomness * Random.value;
+        return score;
+    }
+
+    // 일단 true
+    private bool ShouldUseBlackYut() => true;
+}
