@@ -51,6 +51,12 @@ public class GameMaster : MonoBehaviour
     private Dictionary<YutResult, Button> outResultToButton;
     private YutResult? outResultDecision;
 
+    // 캐릭터 HUD
+    [SerializeField] private Image p1CharacterIcon;
+    [SerializeField] private TextMeshProUGUI p1CharacterNameText;
+    [SerializeField] private Image p2CharacterIcon;
+    [SerializeField] private TextMeshProUGUI p2CharacterNameText;
+
     // 캐릭터 선택
     [SerializeField] private CharacterData[] availableCharacters;
     [SerializeField] private GameObject characterSelectPanel;
@@ -61,6 +67,7 @@ public class GameMaster : MonoBehaviour
     private CharacterData characterDecision;
 
     // AI
+    [SerializeField] private BoardData boardData;
     private AIController aiController;
     private Dictionary<BoardNodeData, BoardNode> boardNodeMap;
 
@@ -167,6 +174,15 @@ public class GameMaster : MonoBehaviour
     {
         yield return StartCoroutine(CoSelectCharacterForPlayer(players[0]));
         yield return StartCoroutine(CoSelectCharacterForPlayer(players[1]));
+        UpdateCharacterHUD();
+    }
+
+    private void UpdateCharacterHUD()
+    {
+        //p1CharacterIcon.sprite = players[0].characterData?.icon;
+        p1CharacterNameText.text = players[0].characterData?.name;
+        //p2CharacterIcon.sprite = players[1].characterData?.icon;
+        p2CharacterNameText.text = players[1].characterData?.name;
     }
 
     private IEnumerator CoSelectCharacterForPlayer(Player player)
@@ -252,8 +268,10 @@ public class GameMaster : MonoBehaviour
             // 결과 다 쓰면 검은 윷 추가 사용 여부 확인
             while (player.yutResults.Count > 0)
             {
-                // 뒷도로 옮길 수 있는 말이 없으면 건너뛰기 ('완주한 말' 또는 '보드 위에 안 올라간 말'밖에 없는 경우)
-                player.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !player.pieces.Any(p => !p.hasFinished && p.currentNode != null));
+                // 실제로 뒷도를 쓸 수 있는 말이 없으면 제거
+                player.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !player.pieces.Any(p =>
+                    !p.hasFinished && p.currentNode != null &&
+                    (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode)));
                 if (player.yutResults.Count == 0) break;
 
                 // 선택 시작
@@ -309,18 +327,17 @@ public class GameMaster : MonoBehaviour
 
                 // 데이터 업데이트 (말 + 업힌 말들 함께 이동)
                 piece.currentNode?.piecesOnNode.Remove(piece);
-                foreach (var s in stackAll) 
+                foreach (var s in stackAll)
                     s.currentNode?.piecesOnNode.Remove(s);
 
-                var prev = dragAndDrop.PrevOfSelectedPiece;
+                var pushPath = dragAndDrop.PushPathOfSelectedMove;
+                ApplyNodeHistory(piece, stackAll, pushPath);
 
-                piece.previousNode = prev;
                 piece.currentNode = targetNode;
                 targetNode.piecesOnNode.Add(piece);
 
                 foreach (var s in stackAll)
                 {
-                    s.previousNode = prev;
                     s.currentNode = targetNode;
                     targetNode.piecesOnNode.Add(s);
                 }
@@ -332,36 +349,56 @@ public class GameMaster : MonoBehaviour
                 RepositionNode(targetNode);
 
                 // 잡기 처리
-                var capturedPieces = targetNode.piecesOnNode
-                    .Where(p => p.owner != player)
-                    .ToList();
+                var enemyLeader = targetNode.piecesOnNode
+                    .FirstOrDefault(p => p.owner != player && p.stackLeader == null);
 
-                if (capturedPieces.Count > 0)
+                if (enemyLeader != null)
                 {
-                    // 리더(또는 독립 말)에만 OnCaught + 업힌 말 수만큼 보너스 원한
-                    foreach (var leader in capturedPieces.Where(p => p.stackLeader == null))
+                    var outcome = enemyLeader.owner.Skill?.OnCaptureAttempt(enemyLeader, piece) ?? CaptureOutcome.Captured;
+
+                    if (outcome == CaptureOutcome.Captured)
                     {
-                        leader.owner.OnCaught(leader);
-                        leader.owner.AddWonhan(leader.stackedPieces.Count);
-                        leader.owner.Skill?.OnBeingCaptured(leader);
+                        var capturedPieces = new[] { enemyLeader }.Concat(enemyLeader.stackedPieces).ToList();
+
+                        enemyLeader.owner.OnCaught(enemyLeader);
+                        enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
+                        bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+
+                        foreach (var caught in capturedPieces)
+                        {
+                            targetNode.piecesOnNode.Remove(caught);
+                            caught.currentNode = null;
+                            caught.nodeHistory.Clear();
+                            caught.stackLeader = null;
+                            caught.stackedPieces.Clear();
+                            caught.pieceObject.transform.position = caught.pieceObject.initPosition;
+                        }
+
+                        Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
+                        if (!noBonus) player.Throw(isCaptureBonus: true);
+                        LogYutResults(player);
+                        player.Skill?.OnCapture(piece, capturedPieces);
+                    }
+                    else if (outcome == CaptureOutcome.Reversed)
+                    {
+                        var reversedPieces = new[] { piece }.Concat(stackAll).ToList();
+
+                        player.OnCaught(piece);
+
+                        foreach (var r in reversedPieces)
+                        {
+                            targetNode.piecesOnNode.Remove(r);
+                            r.currentNode = null;
+                            r.nodeHistory.Clear();
+                            r.stackLeader = null;
+                            r.stackedPieces.Clear();
+                            r.pieceObject.transform.position = r.pieceObject.initPosition;
+                        }
+
+                        Debug.Log($"<color=purple>[씨름] {enemyLeader.owner.name}의 도깨비가 씨름에서 이겼습니다!</color>");
                     }
 
-                    foreach (var caught in capturedPieces)
-                    {
-                        targetNode.piecesOnNode.Remove(caught);
-
-                        caught.currentNode = null;
-                        caught.previousNode = null;
-                        caught.stackLeader = null;
-                        caught.stackedPieces.Clear();
-                        caught.pieceObject.transform.position = caught.pieceObject.initPosition;
-                    }
                     RepositionNode(targetNode);
-
-                    Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
-                    player.Throw(isCaptureBonus: true);
-                    LogYutResults(player);
-                    player.Skill?.OnCapture(piece, capturedPieces);
                 }
 
                 // 업기 처리
@@ -494,7 +531,7 @@ public class GameMaster : MonoBehaviour
             fp.pieceObject.transform.position = endPositions[player.FinishedCount].position;
             player.FinishPiece(fp);
             fp.currentNode = null;
-            fp.previousNode = null;
+            fp.nodeHistory.Clear();
         }
 
         piece.stackedPieces.Clear();
@@ -515,6 +552,26 @@ public class GameMaster : MonoBehaviour
         return node;
     }
 
+    // pushPath == null: 뒷도(팝), non-null: 전진(목록 순서대로 푸시)
+    private void ApplyNodeHistory(Piece leader, List<Piece> stacked, List<BoardNode> pushPath)
+    {
+        if (pushPath == null)
+        {
+            if (leader.nodeHistory.Count > 0) leader.nodeHistory.Pop();
+            foreach (var s in stacked)
+                if (s.nodeHistory.Count > 0) s.nodeHistory.Pop();
+        }
+        else
+        {
+            foreach (var n in pushPath)
+            {
+                leader.nodeHistory.Push(n);
+                foreach (var s in stacked)
+                    s.nodeHistory.Push(n);
+            }
+        }
+    }
+
     // 노드 위 말들 재배치
     private void RepositionNode(BoardNode node)
     {
@@ -533,8 +590,8 @@ public class GameMaster : MonoBehaviour
         }
     }
 
-    // 플레이어 이동 처리와 동일, 자동화되어 있음.   
-    public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, BoardNodeData prevData, YutResult used, bool isOut)
+    // 플레이어 이동 처리와 동일, 자동화되어 있음.
+    public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, List<BoardNodeData> pushPath, YutResult used, bool isOut)
     {
         var player = currPlayer;
         var stackAll = piece.stackedPieces.ToList();
@@ -553,48 +610,77 @@ public class GameMaster : MonoBehaviour
 
         // 이동
         var targetNode = GetNode(targetData);
-        var prevNode = GetNode(prevData);
 
         piece.currentNode?.piecesOnNode.Remove(piece);
         foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
 
-        piece.previousNode = prevNode;
+        var pushPathNodes = pushPath != null
+            ? pushPath.ConvertAll(d => GetNode(d))
+            : null;
+        ApplyNodeHistory(piece, stackAll, pushPathNodes);
+
         piece.currentNode = targetNode;
         targetNode.piecesOnNode.Add(piece);
 
         foreach (var s in stackAll)
         {
-            s.previousNode = prevNode;
             s.currentNode = targetNode;
             targetNode.piecesOnNode.Add(s);
         }
 
-        if (prevNode != null) RepositionNode(prevNode);
+        if (piece.previousNode != null) RepositionNode(piece.previousNode);
         RepositionNode(targetNode);
 
         // 잡기 처리
-        var capturedPieces = targetNode.piecesOnNode.Where(p => p.owner != player).ToList();
-        if (capturedPieces.Count > 0)
+        var enemyLeader = targetNode.piecesOnNode
+            .FirstOrDefault(p => p.owner != player && p.stackLeader == null);
+
+        if (enemyLeader != null)
         {
-            foreach (var leader in capturedPieces.Where(p => p.stackLeader == null))
+            var outcome = enemyLeader.owner.Skill?.OnCaptureAttempt(enemyLeader, piece) ?? CaptureOutcome.Captured;
+
+            if (outcome == CaptureOutcome.Captured)
             {
-                leader.owner.OnCaught(leader);
-                leader.owner.AddWonhan(leader.stackedPieces.Count);
-                leader.owner.Skill?.OnBeingCaptured(leader);
+                var capturedPieces = new[] { enemyLeader }.Concat(enemyLeader.stackedPieces).ToList();
+
+                enemyLeader.owner.OnCaught(enemyLeader);
+                enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
+                bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+
+                foreach (var caught in capturedPieces)
+                {
+                    targetNode.piecesOnNode.Remove(caught);
+                    caught.currentNode = null;
+                    caught.nodeHistory.Clear();
+                    caught.stackLeader = null;
+                    caught.stackedPieces.Clear();
+                    caught.pieceObject.transform.position = caught.pieceObject.initPosition;
+                }
+
+                Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
+                if (!noBonus) player.Throw(isCaptureBonus: true);
+                player.Skill?.OnCapture(piece, capturedPieces);
             }
-            foreach (var caught in capturedPieces)
+            else if (outcome == CaptureOutcome.Reversed)
             {
-                targetNode.piecesOnNode.Remove(caught);
-                caught.currentNode = null;
-                caught.previousNode = null;
-                caught.stackLeader = null;
-                caught.stackedPieces.Clear();
-                caught.pieceObject.transform.position = caught.pieceObject.initPosition;
+                var reversedPieces = new[] { piece }.Concat(stackAll).ToList();
+
+                player.OnCaught(piece);
+
+                foreach (var r in reversedPieces)
+                {
+                    targetNode.piecesOnNode.Remove(r);
+                    r.currentNode = null;
+                    r.nodeHistory.Clear();
+                    r.stackLeader = null;
+                    r.stackedPieces.Clear();
+                    r.pieceObject.transform.position = r.pieceObject.initPosition;
+                }
+
+                Debug.Log($"<color=purple>[씨름] {enemyLeader.owner.name}의 도깨비가 씨름에서 이겼습니다!</color>");
             }
+
             RepositionNode(targetNode);
-            Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
-            player.Throw(isCaptureBonus: true);
-            player.Skill?.OnCapture(piece, capturedPieces);
         }
 
         // 업기 처리 (자동)

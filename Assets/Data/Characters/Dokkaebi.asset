@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 153f1a64e3e758741894b851ca6da2d9, type: 3}
   m_Name: Dokkaebi
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
-  name: 
+  name: "\uB3C4\uAE68\uBE44"
   icon: {fileID: 0}
   aiPersonality:
-    captureWeight: 1
+    captureWeight: 0.8
     progressWeight: 1
     finishWeight: 1
-    stackWeight: 1
-    randomness: 0.3
-  skill: {fileID: 0}
+    stackWeight: 0.8
+    randomness: 1.5
+  skill: {fileID: 11400000, guid: 9080ec30b18073e498e5af00cf8a775c, type: 2}

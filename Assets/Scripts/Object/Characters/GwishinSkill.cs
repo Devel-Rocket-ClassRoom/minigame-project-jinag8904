@@ -7,10 +7,7 @@ public class GwishinSkill : CharacterSkill
 {
     public override void OnCapture(Piece piece, List<Piece> captured)
     {
-        foreach (var leader in captured.Where(p => p.stackLeader == null))
-        {
-            leader.owner.AddWonhan(3);
-            Debug.Log($"<color=purple>[귀신 저주] {leader.owner.name} 추가 원한 +3</color>");
-        }
+        piece.owner.AddBlackYut(1);
+        Debug.Log($"<color=purple>[귀신 저주] {piece.owner.name} 검은 윷 +1</color>");
     }
 }

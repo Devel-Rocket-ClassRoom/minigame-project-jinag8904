@@ -15,9 +15,9 @@ MonoBehaviour:
   name: "\uADC0\uC2E0"
   icon: {fileID: 0}
   aiPersonality:
-    captureWeight: 1
+    captureWeight: 2
     progressWeight: 1
     finishWeight: 1
-    stackWeight: 1
-    randomness: 0.3
+    stackWeight: 0.5
+    randomness: 0.1
   skill: {fileID: 11400000, guid: 5170383807a3ada4daac4a9c3961393d, type: 2}
