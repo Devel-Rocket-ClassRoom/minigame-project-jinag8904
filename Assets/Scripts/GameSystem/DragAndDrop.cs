@@ -20,7 +20,7 @@ public class DragAndDrop : MonoBehaviour
 
     // 유효한 목적지 판별(+하이라이트) 등에 사용
     [SerializeField] private BoardData boardData;   // 전체 노드 데이터
-    private BoardNode[] allBoardNodes;              // 전체 보드 노드 (오브젝트)
+    public Dictionary<BoardNodeData, BoardNode> boardNodeMap;
     private Dictionary<BoardNode, YutResult> validDestToYutResult = new();   // <유효 목적지, 사용할 윷 결과> : UsedYutResult 할당
     private Dictionary<BoardNode, BoardNode> destToPrevNode = new();    // <목적지, 그 직전 노드> : PrevOfSelectedPiece 할당
                                                                         // ComputeAndHighlightDestinations() 타이밍에 정보 저장됨
@@ -57,7 +57,6 @@ public class DragAndDrop : MonoBehaviour
     {
         input = new GameInput();
         cam = Camera.main;
-        allBoardNodes = FindObjectsByType<BoardNode>(FindObjectsSortMode.None);
     }
 
     private void Update()   // 드래그 - 오브젝트 이동
@@ -208,14 +207,12 @@ public class DragAndDrop : MonoBehaviour
         validDestToYutResult.Clear();
         destToPrevNode.Clear();
 
-        foreach (var node in allBoardNodes)
+        foreach (var kv in moves.Destinations)
         {
-            if (moves.Destinations.TryGetValue(node.data, out var info))
-            {
-                validDestToYutResult[node] = info.yr;
-                destToPrevNode[node] = info.prevNode != null ? GetNodeByData(info.prevNode) : null;
-                node.SetHighlight(true);
-            }
+            var node = boardNodeMap[kv.Key];
+            validDestToYutResult[node] = kv.Value.yr;
+            destToPrevNode[node] = kv.Value.prevNode != null ? boardNodeMap[kv.Value.prevNode] : null;
+            node.SetHighlight(true);
         }
 
         ValidOutResults = moves.OutResults;
@@ -225,10 +222,8 @@ public class DragAndDrop : MonoBehaviour
 
     private BoardNode GetNodeByData(BoardNodeData data)
     {
-        foreach (var node in allBoardNodes)
-            if (node.data == data) return node;
-
-        return null;
+        boardNodeMap.TryGetValue(data, out var node);
+        return node;
     }
 
     public void BeginStackTargetPick(List<Piece> candidates)

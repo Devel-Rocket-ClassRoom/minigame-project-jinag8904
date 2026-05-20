@@ -15,6 +15,10 @@ public class Player
     public int playerId;
     public string name;
 
+    // AI, 캐릭터
+    public bool isAI;
+    public CharacterData characterData;
+
     // 말
     public Piece[] pieces = new Piece[4];
     private int finishedPiecesCount = 0;  // 완주

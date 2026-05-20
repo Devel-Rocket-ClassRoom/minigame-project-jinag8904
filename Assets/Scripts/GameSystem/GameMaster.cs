@@ -7,6 +7,13 @@ using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
+    // 모드 선택
+    [SerializeField] GameObject modeSelectPanel;
+    [SerializeField] Button localModeButton;
+    [SerializeField] Button vsAIModeButton;
+    private bool isVsAI;
+    private bool modeSelected;
+
     // 플레이어
     private Player[] players = new Player[2];
     private Player currPlayer;
@@ -42,6 +49,10 @@ public class GameMaster : MonoBehaviour
     private static readonly YutResult[] OutResultOrder = { YutResult.Do, YutResult.Gae, YutResult.Geol, YutResult.Yut, YutResult.Mo };
     private Dictionary<YutResult, Button> outResultToButton;
     private YutResult? outResultDecision;
+
+    // AI
+    private AIController aiController;
+    private Dictionary<BoardNodeData, BoardNode> boardNodeMap;
 
     // 마우스 선택
     private DragAndDrop dragAndDrop;
@@ -91,7 +102,15 @@ public class GameMaster : MonoBehaviour
             outResultButtons[i].gameObject.SetActive(false);
         }
 
+        modeSelectPanel.SetActive(false);
+        localModeButton.onClick.AddListener(() => { isVsAI = false; modeSelected = true; });
+        vsAIModeButton.onClick.AddListener(() => { isVsAI = true; players[1].isAI = true; modeSelected = true; });
+
         dragAndDrop = GetComponent<DragAndDrop>();
+
+        aiController = GetComponent<AIController>();
+        boardNodeMap = FindObjectsByType<BoardNode>(FindObjectsSortMode.None).ToDictionary(n => n.data);
+        dragAndDrop.boardNodeMap = boardNodeMap;
     }
 
     private void Init()
@@ -110,13 +129,27 @@ public class GameMaster : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("게임 시작");
         StartCoroutine(CoRunGame());
+    }
+
+    private IEnumerator CoSelectMode()
+    {
+        isVsAI = false;
+        players[1].isAI = false;
+        modeSelected = false;
+        modeSelectPanel.SetActive(true);
+
+        yield return new WaitUntil(() => modeSelected);
+
+        modeSelectPanel.SetActive(false);
     }
 
     private IEnumerator CoRunGame()
     {
+        Debug.Log("모드 선택");
+        yield return StartCoroutine(CoSelectMode());
         Init();
+        Debug.Log("게임 시작");
         yield return StartCoroutine(CoWhoGoesFirst());
         yield return StartCoroutine(CoPlayGame());
         yield return StartCoroutine(CoEndGame());
@@ -146,6 +179,12 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
+        if (player.isAI)
+        {
+            yield return StartCoroutine(aiController.DecideTurn());
+            yield break;
+        }
+
         yield return new WaitForSeconds(1);
 
         Debug.Log($"{player.name}의 차례");
@@ -375,11 +414,10 @@ public class GameMaster : MonoBehaviour
         Debug.Log(sb.ToString());
     }
 
-    private void SwitchTurn()
-    {
-        currPlayer = players[1 - currPlayer.playerId];
-    }
+    public Player GetOpponent(Player player) => players[1 - player.playerId];
 
+    private void SwitchTurn() => currPlayer = players[1 - currPlayer.playerId];
+    
     private void ShowOutResultPanel(List<YutResult> options)
     {
         foreach (var kv in outResultToButton)
@@ -420,6 +458,13 @@ public class GameMaster : MonoBehaviour
         Debug.Log($"<color=green>{player.name}의 말이 완주! ({player.FinishedCount}/4)</color>");
     }
 
+    private BoardNode GetNode(BoardNodeData data)
+    {
+        if (data == null) return null;
+        boardNodeMap.TryGetValue(data, out var node);
+        return node;
+    }
+
     // 노드 위 말들 재배치
     private void RepositionNode(BoardNode node)
     {
@@ -436,5 +481,90 @@ public class GameMaster : MonoBehaviour
             for (int j = 0; j < units[i].stackedPieces.Count; j++)
                 units[i].stackedPieces[j].pieceObject.transform.position = pos + Vector3.up * stackHeight * (j + 1);
         }
+    }
+
+    // 플레이어 이동 처리와 동일, 자동화되어 있음.   
+    public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, BoardNodeData prevData, YutResult used, bool isOut)
+    {
+        var player = currPlayer;
+        var stackAll = piece.stackedPieces.ToList();
+
+        // 완주 처리
+        if (isOut)
+        {
+            piece.currentNode?.piecesOnNode.Remove(piece);
+            foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
+            var nodeBeforeOut = piece.currentNode;
+            if (nodeBeforeOut != null) RepositionNode(nodeBeforeOut);
+            HandleFinish(piece, stackAll, player);
+            player.yutResults.Remove(used);
+            yield break;
+        }
+
+        // 이동
+        var targetNode = GetNode(targetData);
+        var prevNode = GetNode(prevData);
+
+        piece.currentNode?.piecesOnNode.Remove(piece);
+        foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
+
+        piece.previousNode = prevNode;
+        piece.currentNode = targetNode;
+        targetNode.piecesOnNode.Add(piece);
+
+        foreach (var s in stackAll)
+        {
+            s.previousNode = prevNode;
+            s.currentNode = targetNode;
+            targetNode.piecesOnNode.Add(s);
+        }
+
+        if (prevNode != null) RepositionNode(prevNode);
+        RepositionNode(targetNode);
+
+        // 잡기 처리
+        var capturedPieces = targetNode.piecesOnNode.Where(p => p.owner != player).ToList();
+        if (capturedPieces.Count > 0)
+        {
+            foreach (var leader in capturedPieces.Where(p => p.stackLeader == null))
+            {
+                leader.owner.OnCaught(leader);
+                leader.owner.AddWonhan(leader.stackedPieces.Count);
+            }
+            foreach (var caught in capturedPieces)
+            {
+                targetNode.piecesOnNode.Remove(caught);
+                caught.currentNode = null;
+                caught.previousNode = null;
+                caught.stackLeader = null;
+                caught.stackedPieces.Clear();
+                caught.pieceObject.transform.position = caught.pieceObject.initPosition;
+            }
+            RepositionNode(targetNode);
+            Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
+            player.Throw(isCaptureBonus: true);
+        }
+
+        // 업기 처리 (자동)
+        var friendlyLeaders = targetNode.piecesOnNode
+            .Where(p => p.owner == player && p != piece && p.stackLeader == null)
+            .ToList();
+
+        if (friendlyLeaders.Count > 0)
+        {
+            var ally = friendlyLeaders[0];
+            foreach (var s in ally.stackedPieces)
+            {
+                piece.stackedPieces.Add(s);
+                s.stackLeader = piece;
+            }
+            ally.stackedPieces.Clear();
+            piece.stackedPieces.Add(ally);
+            ally.stackLeader = piece;
+            RepositionNode(targetNode);
+            Debug.Log($"<color=cyan>[AI] 말을 업었습니다.</color>");
+        }
+
+        player.yutResults.Remove(used);
     }
 }
