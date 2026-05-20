@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,6 +50,15 @@ public class GameMaster : MonoBehaviour
     private static readonly YutResult[] OutResultOrder = { YutResult.Do, YutResult.Gae, YutResult.Geol, YutResult.Yut, YutResult.Mo };
     private Dictionary<YutResult, Button> outResultToButton;
     private YutResult? outResultDecision;
+
+    // 캐릭터 선택
+    [SerializeField] private CharacterData[] availableCharacters;
+    [SerializeField] private GameObject characterSelectPanel;
+    [SerializeField] private TextMeshProUGUI characterSelectTitleText;
+    [SerializeField] private Button[] characterSelectButtons;
+    [SerializeField] private Image[] characterSelectButtonIcons;
+    [SerializeField] private Button randomCharacterButton;
+    private CharacterData characterDecision;
 
     // AI
     private AIController aiController;
@@ -106,6 +116,15 @@ public class GameMaster : MonoBehaviour
         localModeButton.onClick.AddListener(() => { isVsAI = false; modeSelected = true; });
         vsAIModeButton.onClick.AddListener(() => { isVsAI = true; players[1].isAI = true; modeSelected = true; });
 
+        characterSelectPanel.SetActive(false);
+        for (int i = 0; i < characterSelectButtons.Length; i++)
+        {
+            var idx = i;
+            characterSelectButtons[i].onClick.AddListener(() => characterDecision = availableCharacters[idx]);
+            characterSelectButtons[i].gameObject.SetActive(false);
+        }
+        randomCharacterButton.onClick.AddListener(() => characterDecision = availableCharacters[Random.Range(0, availableCharacters.Length)]);
+
         dragAndDrop = GetComponent<DragAndDrop>();
 
         aiController = GetComponent<AIController>();
@@ -144,10 +163,40 @@ public class GameMaster : MonoBehaviour
         modeSelectPanel.SetActive(false);
     }
 
+    private IEnumerator CoSelectCharacter()
+    {
+        yield return StartCoroutine(CoSelectCharacterForPlayer(players[0]));
+        yield return StartCoroutine(CoSelectCharacterForPlayer(players[1]));
+    }
+
+    private IEnumerator CoSelectCharacterForPlayer(Player player)
+    {
+        characterSelectTitleText.text = player.name;
+        characterDecision = null;
+
+        for (int i = 0; i < characterSelectButtons.Length; i++)
+        {
+            bool active = i < availableCharacters.Length;
+            characterSelectButtons[i].gameObject.SetActive(active);
+            if (active)
+            {
+                characterSelectButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = availableCharacters[i].name;
+                //characterSelectButtonIcons[i].sprite = availableCharacters[i].icon;
+            }
+        }
+
+        characterSelectPanel.SetActive(true);
+        yield return new WaitUntil(() => characterDecision != null);
+        characterSelectPanel.SetActive(false);
+
+        player.characterData = characterDecision;
+    }
+
     private IEnumerator CoRunGame()
     {
         Debug.Log("모드 선택");
         yield return StartCoroutine(CoSelectMode());
+        yield return StartCoroutine(CoSelectCharacter());
         Init();
         Debug.Log("게임 시작");
         yield return StartCoroutine(CoWhoGoesFirst());
@@ -294,6 +343,7 @@ public class GameMaster : MonoBehaviour
                     {
                         leader.owner.OnCaught(leader);
                         leader.owner.AddWonhan(leader.stackedPieces.Count);
+                        leader.owner.Skill?.OnBeingCaptured(leader);
                     }
 
                     foreach (var caught in capturedPieces)
@@ -311,6 +361,7 @@ public class GameMaster : MonoBehaviour
                     Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
                     player.Throw(isCaptureBonus: true);
                     LogYutResults(player);
+                    player.Skill?.OnCapture(piece, capturedPieces);
                 }
 
                 // 업기 처리
@@ -454,6 +505,7 @@ public class GameMaster : MonoBehaviour
         }
 
         Debug.Log($"<color=green>{player.name}의 말이 완주! ({player.FinishedCount}/4)</color>");
+        player.Skill?.OnFinish(piece);
     }
 
     private BoardNode GetNode(BoardNodeData data)
@@ -528,6 +580,7 @@ public class GameMaster : MonoBehaviour
             {
                 leader.owner.OnCaught(leader);
                 leader.owner.AddWonhan(leader.stackedPieces.Count);
+                leader.owner.Skill?.OnBeingCaptured(leader);
             }
             foreach (var caught in capturedPieces)
             {
@@ -541,6 +594,7 @@ public class GameMaster : MonoBehaviour
             RepositionNode(targetNode);
             Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
             player.Throw(isCaptureBonus: true);
+            player.Skill?.OnCapture(piece, capturedPieces);
         }
 
         // 업기 처리 (자동)

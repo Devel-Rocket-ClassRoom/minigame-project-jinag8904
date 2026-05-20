@@ -18,6 +18,7 @@ public class Player
     // AI, 캐릭터
     public bool isAI;
     public CharacterData characterData;
+    public CharacterSkill Skill => characterData?.skill;
 
     // 말
     public Piece[] pieces = new Piece[4];
