@@ -18,6 +18,7 @@ public class Player
     // AI, 캐릭터
     public bool isAI;
     public CharacterData characterData;
+    public CharacterSkill Skill => characterData?.skill;
 
     // 말
     public Piece[] pieces = new Piece[4];
@@ -49,7 +50,7 @@ public class Player
         {
             pieces[i].hasFinished = false;
             pieces[i].currentNode = null;
-            pieces[i].previousNode = null;
+            pieces[i].nodeHistory.Clear();
             pieces[i].stackLeader = null;
             pieces[i].stackedPieces.Clear();
         }
@@ -94,6 +95,8 @@ public class Player
         var isExtraWonhan = nodeName == "날윷" || nodeName == "안찌" || nodeName == "참먹이";
         AddWonhan(!isExtraWonhan ? 3 : 5);
     }
+
+    public void AddBlackYut(int count) => blackYutCount += count;
 
     public void AddWonhan(int amount)
     {

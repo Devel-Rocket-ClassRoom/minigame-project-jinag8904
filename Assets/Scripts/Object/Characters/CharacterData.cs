@@ -17,5 +17,5 @@ public class CharacterData : ScriptableObject
     public Sprite icon;
 
     public AIPersonality aiPersonality;
-    // public CharacterAbility ability;
+    public CharacterSkill skill;
 }

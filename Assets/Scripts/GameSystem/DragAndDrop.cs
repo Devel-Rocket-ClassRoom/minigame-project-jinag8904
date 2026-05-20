@@ -16,14 +16,14 @@ public class DragAndDrop : MonoBehaviour
     public BoardNode SelectedBoardNode { get; private set; }    // 선택 칸 (확정)
     public bool MoveConfirmed { get; private set; }             // 말 이동 확정 플래그
     public YutResult UsedYutResult { get; private set; }
-    public BoardNode PrevOfSelectedPiece { get; private set; }
+    // null = 뒷도(팝), non-null = 전진(이 노드들을 히스토리에 순서대로 푸시)
+    public List<BoardNode> PushPathOfSelectedMove { get; private set; }
 
     // 유효한 목적지 판별(+하이라이트) 등에 사용
     [SerializeField] private BoardData boardData;   // 전체 노드 데이터
     public Dictionary<BoardNodeData, BoardNode> boardNodeMap;
-    private Dictionary<BoardNode, YutResult> validDestToYutResult = new();   // <유효 목적지, 사용할 윷 결과> : UsedYutResult 할당
-    private Dictionary<BoardNode, BoardNode> destToPrevNode = new();    // <목적지, 그 직전 노드> : PrevOfSelectedPiece 할당
-                                                                        // ComputeAndHighlightDestinations() 타이밍에 정보 저장됨
+    private Dictionary<BoardNode, YutResult> validDestToYutResult = new();
+    private Dictionary<BoardNode, List<BoardNode>> destToPushPath = new();  // <목적지, 히스토리 푸시 경로>
 
     // 레이어 마스크
     [SerializeField] private LayerMask pieceLayer;
@@ -162,9 +162,8 @@ public class DragAndDrop : MonoBehaviour
                 SelectedBoardNode = node;
                 UsedYutResult = usedResult;
 
-                // 도착지 직전 노드 저장 (이후 백도 처리 용도)
-                destToPrevNode.TryGetValue(node, out BoardNode prevNode);
-                PrevOfSelectedPiece = prevNode;
+                destToPushPath.TryGetValue(node, out List<BoardNode> pushPath);
+                PushPathOfSelectedMove = pushPath;
 
                 MoveConfirmed = true;
                 needSelection = false;
@@ -180,7 +179,7 @@ public class DragAndDrop : MonoBehaviour
                 if (h.collider == outZoneCollider)
                 {
                     SelectedBoardNode = null;
-                    PrevOfSelectedPiece = null;
+                    PushPathOfSelectedMove = null;
 
                     IsOutConfirmed = true;
                     MoveConfirmed = true;
@@ -205,13 +204,22 @@ public class DragAndDrop : MonoBehaviour
     {
         var moves = PieceMoveCalculator.ComputeMoves(SelectedPiece, currPlayer.yutResults, boardData);
         validDestToYutResult.Clear();
-        destToPrevNode.Clear();
+        destToPushPath.Clear();
 
         foreach (var kv in moves.Destinations)
         {
             var node = boardNodeMap[kv.Key];
             validDestToYutResult[node] = kv.Value.yr;
-            destToPrevNode[node] = kv.Value.prevNode != null ? boardNodeMap[kv.Value.prevNode] : null;
+
+            List<BoardNode> pushPath = null;
+            if (kv.Value.pushPath != null)
+            {
+                pushPath = new List<BoardNode>();
+                foreach (var d in kv.Value.pushPath)
+                    pushPath.Add(boardNodeMap[d]);
+            }
+            destToPushPath[node] = pushPath;
+
             node.SetHighlight(true);
         }
 
@@ -260,6 +268,7 @@ public class DragAndDrop : MonoBehaviour
             node.SetHighlight(false);
 
         validDestToYutResult.Clear();
+        destToPushPath.Clear();
 
         if (canOut)
         {

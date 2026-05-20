@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 public struct MoveResult
 {
-    public Dictionary<BoardNodeData, (YutResult yr, BoardNodeData prevNode)> Destinations;
+    // pushPath: null = 뒷도(스택 팝), non-null = 전진(목록 노드들을 히스토리에 순서대로 푸시)
+    public Dictionary<BoardNodeData, (YutResult yr, List<BoardNodeData> pushPath)> Destinations;
     public List<YutResult> OutResults;
 }
 
@@ -10,7 +11,7 @@ public static class PieceMoveCalculator
 {
     public static MoveResult ComputeMoves(Piece piece, List<YutResult> yutResults, BoardData board)
     {
-        var destinations = new Dictionary<BoardNodeData, (YutResult, BoardNodeData)>();
+        var destinations = new Dictionary<BoardNodeData, (YutResult, List<BoardNodeData>)>();
         var outResults = new List<YutResult>();
 
         foreach (var yr in yutResults)
@@ -20,25 +21,42 @@ public static class PieceMoveCalculator
                 if (piece.currentNode == null) continue;
 
                 BoardNodeData dest;
-                if (piece.currentNode.data == board.startNode)
+                List<BoardNodeData> pushPath;
+
+                if (piece.currentNode.data == board.startNode && piece.nodeHistory.Count == 0)
+                {
+                    // 시작 노드에서 뒷도: 참먹이로 이동.
+                    // startNode를 히스토리에 남겨 참먹이에서 다시 뒷도 시 시작 노드로 복귀 가능하게 함
                     dest = board.goalNode;
-                else if (piece.previousNode == null)
-                    continue;  // 이전 노드 없으면 백도 불가
+                    pushPath = new List<BoardNodeData> { board.startNode };
+                }
+                else if (piece.nodeHistory.Count > 0)
+                {
+                    dest = piece.nodeHistory.Peek().data;
+                    pushPath = null; // null = 팝 신호
+                }
                 else
-                    dest = piece.previousNode.data;
+                    continue;
 
                 if (!destinations.ContainsKey(dest))
-                    destinations[dest] = (yr, null);
+                    destinations[dest] = (yr, pushPath);
                 continue;
             }
 
-            var pathMap = new Dictionary<BoardNodeData, BoardNodeData>();
+            var pathMap = new Dictionary<BoardNodeData, List<BoardNodeData>>();
             bool canOut = false;
 
             if (piece.currentNode == null)
-                TraverseWithPrev(board.startNode, (int)yr - 1, false, null, pathMap, ref canOut);
+            {
+                TraverseWithPath(board.startNode, (int)yr - 1, false, null,
+                    new List<BoardNodeData>(), pathMap, ref canOut);
+            }
             else
-                TraverseWithPrev(piece.currentNode.data, (int)yr, true, null, pathMap, ref canOut);
+            {
+                var initialPath = new List<BoardNodeData> { piece.currentNode.data };
+                TraverseWithPath(piece.currentNode.data, (int)yr, true, null,
+                    initialPath, pathMap, ref canOut);
+            }
 
             foreach (var kv in pathMap)
                 if (!destinations.ContainsKey(kv.Key))
@@ -51,12 +69,16 @@ public static class PieceMoveCalculator
         return new MoveResult { Destinations = destinations, OutResults = outResults };
     }
 
-    // cameFrom이 진입 방향 필터 겸 직전 노드 역할. canOut은 완주 도달 여부.
-    private static void TraverseWithPrev(BoardNodeData node, int stepsLeft, bool isStart, BoardNodeData cameFrom, Dictionary<BoardNodeData, BoardNodeData> results, ref bool canOut)
+    // pathSoFar: 현재까지 지나온 노드들(목적지 도착 시 히스토리에 푸시할 경로)
+    // isStart=true일 때는 현재 위치 노드가 이미 pathSoFar에 포함되어 있음
+    private static void TraverseWithPath(
+        BoardNodeData node, int stepsLeft, bool isStart, BoardNodeData cameFrom,
+        List<BoardNodeData> pathSoFar,
+        Dictionary<BoardNodeData, List<BoardNodeData>> results, ref bool canOut)
     {
         if (stepsLeft == 0)
         {
-            results[node] = cameFrom;
+            results[node] = pathSoFar;
             return;
         }
         if (node.isEnd)
@@ -65,18 +87,24 @@ public static class PieceMoveCalculator
             return;
         }
 
+        // 중간 노드는 경로에 추가 (시작 노드는 initialPath에 이미 있으므로 제외)
+        var newPath = isStart ? pathSoFar : new List<BoardNodeData>(pathSoFar) { node };
+
         if (node.isCenter && !isStart)
         {
             var next = cameFrom == node.defaultNextEntry ? node.defaultNext : node.shortcutNext;
-            if (next != null) TraverseWithPrev(next, stepsLeft - 1, false, node, results, ref canOut);
+            if (next != null)
+                TraverseWithPath(next, stepsLeft - 1, false, node, newPath, results, ref canOut);
         }
         else
         {
             if (node.defaultNext != null)
-                TraverseWithPrev(node.defaultNext, stepsLeft - 1, false, node, results, ref canOut);
+                TraverseWithPath(node.defaultNext, stepsLeft - 1, false, node,
+                    new List<BoardNodeData>(newPath), results, ref canOut);
 
             if (isStart && (node.isJunction || node.isCenter) && node.shortcutNext != null)
-                TraverseWithPrev(node.shortcutNext, stepsLeft - 1, false, node, results, ref canOut);
+                TraverseWithPath(node.shortcutNext, stepsLeft - 1, false, node,
+                    new List<BoardNodeData>(newPath), results, ref canOut);
         }
     }
 }

@@ -10,7 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 153f1a64e3e758741894b851ca6da2d9, type: 3}
-  m_Name: Gwishin
+  m_Name: MulGwishin
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
-  name: "\uADC0\uC2E0"
+  name: "\uBB3C\uADC0\uC2E0"
   icon: {fileID: 0}
+  aiPersonality:
+    captureWeight: 0.5
+    progressWeight: 0.5
+    finishWeight: 1.5
+    stackWeight: 2
+    randomness: 0.2
+  skill: {fileID: 11400000, guid: 2e26969c25d54f74181f27d637c84962, type: 2}

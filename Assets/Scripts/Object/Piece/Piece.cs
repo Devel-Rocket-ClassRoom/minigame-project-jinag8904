@@ -6,7 +6,8 @@ public class Piece
     public Player owner;
 
     public BoardNode currentNode;
-    public BoardNode previousNode;  // 뒷도 처리 용도
+    public Stack<BoardNode> nodeHistory = new();
+    public BoardNode previousNode => nodeHistory.Count > 0 ? nodeHistory.Peek() : null;
 
     public bool hasFinished;
 

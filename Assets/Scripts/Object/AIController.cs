@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -22,17 +23,17 @@ public class AIController : MonoBehaviour
             {
                 ai.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !ai.pieces.Any(p =>
                     !p.hasFinished && p.stackLeader == null && p.currentNode != null &&
-                    (p.currentNode.data == boardData.startNode || p.previousNode != null)));  // 못 움직이는 경우 걸러내기
+                    (p.currentNode.data == boardData.startNode || p.nodeHistory.Count > 0)));  // 못 움직이는 경우 걸러내기
                 if (ai.yutResults.Count == 0) break;
 
-                var (piece, dest, prevNodeData, usedYR, isOut) = FindBestMove(ai);
+                var (piece, dest, pushPath, usedYR, isOut) = FindBestMove(ai);
 
                 if (isOut)
                     Debug.Log($"<color=cyan>[AI] 완주 선택 ({usedYR})</color>");
                 else
                     Debug.Log($"<color=cyan>[AI] {usedYR} → {dest?.nodeName}</color>");
 
-                yield return StartCoroutine(gm.ApplyAIMove(piece, dest, prevNodeData, usedYR, isOut));
+                yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut));
 
                 if (ai.AllFinished) yield break;
 
@@ -50,11 +51,11 @@ public class AIController : MonoBehaviour
     }
 
     // 전체 말 순회, 완주/이동 후보 점수 매겨서 최고점 반환
-    private (Piece, BoardNodeData, BoardNodeData, YutResult, bool) FindBestMove(Player ai)
+    private (Piece, BoardNodeData, List<BoardNodeData>, YutResult, bool) FindBestMove(Player ai)
     {
         Piece bestPiece = null;
         BoardNodeData bestTarget = null;
-        BoardNodeData bestPrevNode = null;
+        List<BoardNodeData> bestPushPath = null;
         YutResult bestUse = default;
         bool bestIsOut = false;
 
@@ -72,7 +73,7 @@ public class AIController : MonoBehaviour
                 float score = ScoreMove(piece, null, yr, personality, ai, opponent, isOut: true);
                 if (score > bestScore)
                 {
-                    bestScore = score; bestPiece = piece; bestTarget = null; bestPrevNode = null; bestUse = yr; bestIsOut = true;
+                    bestScore = score; bestPiece = piece; bestTarget = null; bestPushPath = null; bestUse = yr; bestIsOut = true;
                 }
             }
 
@@ -82,12 +83,12 @@ public class AIController : MonoBehaviour
                 float score = ScoreMove(piece, kv.Key, kv.Value.yr, personality, ai, opponent, isOut: false);
                 if (score > bestScore)
                 {
-                    bestScore = score; bestPiece = piece; bestTarget = kv.Key; bestPrevNode = kv.Value.prevNode; bestUse = kv.Value.yr; bestIsOut = false;
+                    bestScore = score; bestPiece = piece; bestTarget = kv.Key; bestPushPath = kv.Value.pushPath; bestUse = kv.Value.yr; bestIsOut = false;
                 }
             }
         }
 
-        return (bestPiece, bestTarget, bestPrevNode, bestUse, bestIsOut);
+        return (bestPiece, bestTarget, bestPushPath, bestUse, bestIsOut);
     }
 
     // 잡기/전진/완주/업기 - 각각 가중치 적용 + random
