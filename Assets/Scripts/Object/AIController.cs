@@ -20,7 +20,9 @@ public class AIController : MonoBehaviour
         {
             while (ai.yutResults.Count > 0)
             {
-                ai.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !ai.pieces.Any(p => !p.hasFinished && p.currentNode != null));  // 못 움직이는 경우 걸러내기
+                ai.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !ai.pieces.Any(p =>
+                    !p.hasFinished && p.stackLeader == null && p.currentNode != null &&
+                    (p.currentNode.data == boardData.startNode || p.previousNode != null)));  // 못 움직이는 경우 걸러내기
                 if (ai.yutResults.Count == 0) break;
 
                 var (piece, dest, prevNodeData, usedYR, isOut) = FindBestMove(ai);
@@ -42,6 +44,7 @@ public class AIController : MonoBehaviour
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
             ai.Throw(isBlackYut: true);
+            Debug.Log($"<color=cyan>[AI] 검은 윷 결과: {string.Join(", ", ai.yutResults)}</color>");
             yield return new WaitForSeconds(1f);
         }
     }
@@ -59,7 +62,7 @@ public class AIController : MonoBehaviour
         var opponent = gm.GetOpponent(ai);
 
         float bestScore = float.MinValue;
-        foreach (var piece in ai.pieces.Where(p => !p.hasFinished))
+        foreach (var piece in ai.pieces.Where(p => !p.hasFinished && p.stackLeader == null))
         {
             var moves = PieceMoveCalculator.ComputeMoves(piece, ai.yutResults, boardData);
 

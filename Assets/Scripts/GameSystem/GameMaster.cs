@@ -185,8 +185,6 @@ public class GameMaster : MonoBehaviour
             yield break;
         }
 
-        yield return new WaitForSeconds(1);
-
         Debug.Log($"{player.name}의 차례");
         yield return new WaitForSeconds(1);
 

@@ -19,9 +19,13 @@ public static class PieceMoveCalculator
             {
                 if (piece.currentNode == null) continue;
 
-                var dest = piece.currentNode.data == board.startNode
-                    ? board.goalNode
-                    : piece.previousNode.data;
+                BoardNodeData dest;
+                if (piece.currentNode.data == board.startNode)
+                    dest = board.goalNode;
+                else if (piece.previousNode == null)
+                    continue;  // 이전 노드 없으면 백도 불가
+                else
+                    dest = piece.previousNode.data;
 
                 if (!destinations.ContainsKey(dest))
                     destinations[dest] = (yr, null);
