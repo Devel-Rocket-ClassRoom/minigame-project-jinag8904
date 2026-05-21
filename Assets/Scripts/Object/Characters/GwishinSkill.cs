@@ -9,7 +9,7 @@ public class GwishinSkill : CharacterSkill
     public override void OnCapture(Piece piece, List<Piece> captured)
     {
         piece.owner.AddBlackYut(1);
-        Debug.Log($"<color=purple>[귀신 저주] {piece.owner.name} 검은 윷 +1</color>");
+        GameLogUI.Log($"<color=purple>[귀신 저주] {piece.owner.name} 검은 윷 +1</color>");
     }
 
     public override int MaxActiveUses => 1;
@@ -45,7 +45,7 @@ public class GwishinSkill : CharacterSkill
                     caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                 }
 
-                Debug.Log($"<color=purple>[{ActiveSkillName}] 경로에서 적 {capturedPieces.Count}개 잡음!</color>");
+                GameLogUI.Log($"<color=purple>[{ActiveSkillName}] 경로에서 적 {capturedPieces.Count}개 잡음!</color>");
                 player.Skill?.OnCapture(mover, capturedPieces);
             }
 
