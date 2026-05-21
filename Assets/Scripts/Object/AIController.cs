@@ -14,7 +14,7 @@ public class AIController : MonoBehaviour
         var ai = gm.CurrPlayer;
 
         ai.Throw();
-        Debug.Log($"<color=cyan>[AI] 윷 결과: {string.Join(", ", ai.yutResults)}</color>");
+        GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
         yield return new WaitForSeconds(1);
 
         while (true)
@@ -30,31 +30,30 @@ public class AIController : MonoBehaviour
                 if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinish(ai))
                 {
                     yield return StartCoroutine(ai.Skill.CoOnActiveActivated(ai, reposition: gm.RepositionNode));
-                    Debug.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 발동!</color>");
+                    GameLogUI.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 발동!</color>");
                 }
 
                 var (piece, dest, pushPath, usedYR, isOut, useActiveSkill) = FindBestMove(ai);
 
                 if (isOut)
-                    Debug.Log($"<color=cyan>[AI] 완주 선택 ({usedYR})</color>");
+                    GameLogUI.Log($"<color=cyan>[AI] 완주 선택 ({usedYR})</color>");
                 else if (useActiveSkill)
-                    Debug.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 사용! {usedYR} → {dest?.nodeName}</color>");
+                    GameLogUI.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 사용! {usedYR} → {dest?.nodeName}</color>");
                 else
-                    Debug.Log($"<color=cyan>[AI] {usedYR} → {dest?.nodeName}</color>");
+                    GameLogUI.Log($"<color=cyan>[AI] {usedYR} → {dest?.nodeName}</color>");
 
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
                 if (ai.AllFinished) yield break;
 
                 yield return new WaitForSeconds(1f);
-                if (ai.yutResults.Count > 0)
-                    Debug.Log($"<color=cyan>[AI] 남은 결과: {string.Join(", ", ai.yutResults)}</color>");
+                GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             }
 
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
             ai.Throw(isBlackYut: true);
-            Debug.Log($"<color=cyan>[AI] 검은 윷 결과: {string.Join(", ", ai.yutResults)}</color>");
+            GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             yield return new WaitForSeconds(1f);
         }
     }
