@@ -12,6 +12,9 @@ public class BoardData : ScriptableObject
     public BoardNodeData startNode;
     public BoardNodeData goalNode;
 
+    [Header("완주 근접 노드 (AI 스킬 판단용)")]
+    public List<BoardNodeData> nearFinishNodes;
+
     public BoardNodeData GetNodeById(int id)
     {
         return allNodes.FirstOrDefault(n => n.nodeId == id);

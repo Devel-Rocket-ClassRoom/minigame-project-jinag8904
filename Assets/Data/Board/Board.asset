@@ -44,3 +44,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c721b2dc3a98d2f498a67e40bced1ad2, type: 2}
   startNode: {fileID: 11400000, guid: 9db069748922c7943843a72304828866, type: 2}
   goalNode: {fileID: 11400000, guid: 54c5f8ce89c70254ba5c61f34e54b8b6, type: 2}
+  nearFinishNodes:
+  - {fileID: 11400000, guid: 13e09640a518ed042b5fd4a4bd3ecaf4, type: 2}
+  - {fileID: 11400000, guid: 20ff3a7898380ef4cbefdea4721f6b8e, type: 2}
+  - {fileID: 11400000, guid: c84a45d853b98bf4c9ca2f1e93274470, type: 2}
+  - {fileID: 11400000, guid: 04d697065bc3e5142bb00e2310fc96a9, type: 2}
+  - {fileID: 11400000, guid: 2485da566ad98fa42adfa12fdb07bbfb, type: 2}
+  - {fileID: 11400000, guid: c8734cc17bd657140a7667da37a04a5f, type: 2}
+  - {fileID: 11400000, guid: 7abbcada7beae86459415a73717bdcf3, type: 2}
+  - {fileID: 11400000, guid: faf82533707077442b8c226f6979843e, type: 2}

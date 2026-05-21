@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +6,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
 {
@@ -36,6 +38,11 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button blackYutButton;
     [SerializeField] private Button endTurnButton;
     private bool endTurnRequested;
+
+    // 액티브 스킬
+    [SerializeField] private Button p1ActiveSkillButton;
+    [SerializeField] private Button p2ActiveSkillButton;
+    private bool isActiveSkillOn;
 
     // 쌓기(업기) UI
     [SerializeField] private GameObject stackDecisionPanel;
@@ -119,6 +126,13 @@ public class GameMaster : MonoBehaviour
             outResultButtons[i].gameObject.SetActive(false);
         }
 
+        p1ActiveSkillButton.interactable = false;
+        p2ActiveSkillButton.interactable = false;
+        foreach (var btn in new[] { p1ActiveSkillButton, p2ActiveSkillButton })
+        {
+            btn.onClick.AddListener(() => StartCoroutine(CoHandleActiveSkill(currPlayer)));
+        }
+
         modeSelectPanel.SetActive(false);
         localModeButton.onClick.AddListener(() => { isVsAI = false; modeSelected = true; });
         vsAIModeButton.onClick.AddListener(() => { isVsAI = true; players[1].isAI = true; modeSelected = true; });
@@ -179,9 +193,9 @@ public class GameMaster : MonoBehaviour
 
     private void UpdateCharacterHUD()
     {
-        //p1CharacterIcon.sprite = players[0].characterData?.icon;
+        p1CharacterIcon.sprite = players[0].characterData?.icon;
         p1CharacterNameText.text = players[0].characterData?.name;
-        //p2CharacterIcon.sprite = players[1].characterData?.icon;
+        p2CharacterIcon.sprite = players[1].characterData?.icon;
         p2CharacterNameText.text = players[1].characterData?.name;
     }
 
@@ -272,6 +286,9 @@ public class GameMaster : MonoBehaviour
                     (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode)));
                 if (player.yutResults.Count == 0) break;
 
+                // 액티브 스킬 버튼 활성화
+                GetActiveSkillButton(player).interactable = player.Skill?.CanUseActive(player) == true;
+
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);
                 yield return new WaitUntil(() => dragAndDrop.MoveConfirmed);
@@ -314,6 +331,7 @@ public class GameMaster : MonoBehaviour
 
                     HandleFinish(piece, stackAll, player);
                     player.yutResults.Remove(chosenOutResult);
+                    isActiveSkillOn = false;
                     LogYutResults(player);
 
                     if (player.AllFinished)
@@ -348,6 +366,13 @@ public class GameMaster : MonoBehaviour
                     RepositionNode(prevNode);
 
                 RepositionNode(targetNode);
+
+                // 액티브 스킬 - 이동 효과
+                if (isActiveSkillOn && pushPath != null)
+                {
+                    player.Skill.OnActiveMoveEffect(player, piece, pushPath, targetNode, RepositionNode);
+                    isActiveSkillOn = false;
+                }
 
                 // 잡기 처리
                 var enemyLeaders = targetNode.piecesOnNode
@@ -492,6 +517,9 @@ public class GameMaster : MonoBehaviour
 
         blackYutButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(false);
+        p1ActiveSkillButton.interactable = false;
+        p2ActiveSkillButton.interactable = false;
+        isActiveSkillOn = false;
     }
 
     private IEnumerator CoEndGame()
@@ -518,7 +546,31 @@ public class GameMaster : MonoBehaviour
         blackYutButton.gameObject.SetActive(player.HasBlackYut);
     }
 
+    private IEnumerator CoHandleActiveSkill(Player player)
+    {
+        var skill = player.Skill;
+        GetActiveSkillButton(player).interactable = false;
+        Debug.Log($"<color=purple>[{skill.ActiveSkillName}] 활성화!</color>");
+
+        if (skill.HasImmediateEffect)
+            yield return StartCoroutine(skill.CoOnActiveActivated(player, RequestPiecePickCoroutine, RepositionNode));
+        else
+        {
+            isActiveSkillOn = true;
+            skill.OnActiveActivated(player);
+        }
+    }
+
+    private IEnumerator RequestPiecePickCoroutine(List<Piece> candidates, Action<Piece> onPicked)
+    {
+        dragAndDrop.BeginSacrificePick(candidates);
+        yield return new WaitUntil(() => dragAndDrop.SacrificeConfirmed);
+        onPicked(dragAndDrop.SacrificeTarget);
+    }
+
     public Player GetOpponent(Player player) => players[1 - player.playerId];
+
+    private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
 
     private void SwitchTurn() => currPlayer = players[1 - currPlayer.playerId];
     
@@ -563,7 +615,7 @@ public class GameMaster : MonoBehaviour
         player.Skill?.OnFinish(piece);
     }
 
-    private BoardNode GetNode(BoardNodeData data)
+    public BoardNode GetNode(BoardNodeData data)
     {
         if (data == null) return null;
         boardNodeMap.TryGetValue(data, out var node);
@@ -591,7 +643,7 @@ public class GameMaster : MonoBehaviour
     }
 
     // 노드 위 말들 재배치
-    private void RepositionNode(BoardNode node)
+    public void RepositionNode(BoardNode node)
     {
         var units = node.piecesOnNode.Where(p => p.stackLeader == null).ToList();
 
@@ -609,7 +661,7 @@ public class GameMaster : MonoBehaviour
     }
 
     // 플레이어 이동 처리와 동일, 자동화되어 있음.
-    public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, List<BoardNodeData> pushPath, YutResult used, bool isOut)
+    public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, List<BoardNodeData> pushPath, YutResult used, bool isOut, bool useActiveSkill = false)
     {
         var player = currPlayer;
         var stackAll = piece.stackedPieces.ToList();
@@ -649,6 +701,13 @@ public class GameMaster : MonoBehaviour
 
         if (prevNode != null) RepositionNode(prevNode);
         RepositionNode(targetNode);
+
+        // 액티브 스킬 - 이동 효과 (AI)
+        if (useActiveSkill && pushPathNodes != null)
+        {
+            player.Skill.OnActiveActivated(player);
+            player.Skill.OnActiveMoveEffect(player, piece, pushPathNodes, targetNode, RepositionNode);
+        }
 
         // 잡기 처리
         var enemyLeaders = targetNode.piecesOnNode
