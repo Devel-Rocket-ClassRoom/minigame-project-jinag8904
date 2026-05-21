@@ -18,9 +18,9 @@ public class BoardNode : MonoBehaviour
         return count switch
         {
             1 => base_,
-            2 => base_ + new Vector3((index == 0 ? -1 : 1) * 0.55f, 0f, 0f),
-            3 => index switch { 0 => base_ + new Vector3(-0.42f, 0f, -0.35f), 1 => base_ + new Vector3(0.42f, 0f, -0.35f), _ => base_ + new Vector3(0f, 0f, 0.52f) },
-            _ => base_ + new Vector3((index % 2 == 0 ? -1 : 1) * 0.55f, 0f, (index < 2 ? 1 : -1) * 0.55f),
+            2 => base_ + new Vector3((index == 0 ? -1 : 1) * 0.75f, 0f, 0f),
+            3 => index switch { 0 => base_ + new Vector3(-0.6f, 0f, -0.5f), 1 => base_ + new Vector3(0.6f, 0f, -0.5f), _ => base_ + new Vector3(0f, 0f, 0.72f) },
+            _ => base_ + new Vector3((index % 2 == 0 ? -1 : 1) * 0.75f, 0f, (index < 2 ? 1 : -1) * 0.75f),
         };
     }
 

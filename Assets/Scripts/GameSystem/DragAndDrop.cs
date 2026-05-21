@@ -100,8 +100,8 @@ public class DragAndDrop : MonoBehaviour
         // PrevOfSelectedPiece = null; (MoveConfirmed와 PrevOfSelectedPiece는 짝지어 써야 함, 현재 코드에서는 초기화 필요 없어서 주석 처리)
 
         ValidOutResults.Clear();
-        
-        // 선택 가능한 말(Finished = false인 애들) 시각화 (나중에)
+
+        PiecesHighLightOn();
     }
 
     private void OnClickStarted(InputAction.CallbackContext ctx)
@@ -141,6 +141,7 @@ public class DragAndDrop : MonoBehaviour
                 halfHeight = h.collider.bounds.extents.y;
                 originPosition = SelectedPiece.pieceObject.transform.position;
                 isDragging = true;
+                PiecesHighLightOff();
                 ComputeAndHighlightDestinations();
                 break;
             }
@@ -184,6 +185,7 @@ public class DragAndDrop : MonoBehaviour
                     IsOutConfirmed = true;
                     MoveConfirmed = true;
                     needSelection = false;
+
                     break;
                 }
             }
@@ -198,6 +200,9 @@ public class DragAndDrop : MonoBehaviour
 
         ClearHighlights();
         isDragging = false;
+
+        if (!MoveConfirmed)
+            PiecesHighLightOn();
     }
 
     private void ComputeAndHighlightDestinations()
@@ -274,6 +279,34 @@ public class DragAndDrop : MonoBehaviour
         {
             if (outZoneHighlight != null) outZoneHighlight.SetActive(false);
             canOut = false;
+        }
+    }
+
+    private void PiecesHighLightOn()
+    {
+        bool onlyBackdo = currPlayer.yutResults.Count > 0 &&
+                          currPlayer.yutResults.TrueForAll(yr => yr == YutResult.BACKDO);
+
+        foreach (var p in currPlayer.pieces)
+        {
+            if (p.hasFinished) continue;
+
+            if (onlyBackdo)
+            {
+                bool canBackdo = p.currentNode != null &&
+                                 (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode);
+                if (!canBackdo) continue;
+            }
+
+            p.pieceObject.SetHighLight(true);
+        }
+    }
+
+    private void PiecesHighLightOff()
+    {
+        foreach (var p in currPlayer.pieces)
+        {
+            p.pieceObject.SetHighLight(false);
         }
     }
 }
