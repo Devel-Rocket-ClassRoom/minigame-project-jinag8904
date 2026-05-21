@@ -100,6 +100,7 @@ public class GameMaster : MonoBehaviour
         blackYutButton.onClick.AddListener(() =>
         {
             currPlayer.Throw(isBlackYut: true);
+            GameLogUI.Log("검은 윷이 던져졌습니다!");
             if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
             LogYutResults(currPlayer);
         });
@@ -270,6 +271,7 @@ public class GameMaster : MonoBehaviour
         player.Throw();
         yield return new WaitForSeconds(3);
 
+        GameLogUI.Log("<color=green>윷 결과가 나왔습니다!</color>");
         LogYutResults(player);
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
@@ -428,6 +430,7 @@ public class GameMaster : MonoBehaviour
 
                             GameLogUI.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
                             if (!noBonus) player.Throw(isCaptureBonus: true);
+                            if (!noBonus) GameLogUI.Log("<color=green>잡기 보너스 윷이 던져졌습니다!</color>");
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
                         }
@@ -598,7 +601,7 @@ public class GameMaster : MonoBehaviour
             s.stackedPieces.Clear(); 
         }
 
-        GameLogUI.Log($"<color=green>{player.name}의 말이 완주! ({player.FinishedCount}/4)</color>");
+        GameLogUI.Log($"<color=green>{player.name} 완주! ({player.FinishedCount}/4)</color>");
         player.Skill?.OnFinish(piece);
     }
 
@@ -772,7 +775,7 @@ public class GameMaster : MonoBehaviour
             piece.stackedPieces.Add(ally);
             ally.stackLeader = piece;
             RepositionNode(targetNode);
-            GameLogUI.Log($"<color=cyan>[AI] 말을 업었습니다.</color>");
+            GameLogUI.Log($"<color=#00CFCF>[AI] 말을 업었습니다.</color>");
         }
 
         player.yutResults.Remove(used);

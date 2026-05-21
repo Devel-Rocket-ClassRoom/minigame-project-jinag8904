@@ -10,7 +10,7 @@ public class MulgwishinSkill : CharacterSkill
     public override bool OnBeingCaptured(Piece captured, Piece attacker)
     {
         attacker.owner.yutResults.Clear();
-        GameLogUI.Log($"<color=cyan>[물귀신 발목잡기] {attacker.owner.name}의 남은 윷 결과 전부 소모 + 보너스 굴림 없음</color>");
+        GameLogUI.Log($"<color=#00CFCF>[물귀신] 발목잡기! {attacker.owner.name}의 윷 결과 소모</color>");
         return true;
     }
 
@@ -66,6 +66,6 @@ public class MulgwishinSkill : CharacterSkill
         reposition?.Invoke(node);
 
         player.AddBlackYut(2);
-        GameLogUI.Log($"<color=cyan>[제물] {player.name} 말 희생 → 검은 윷 +2</color>");
+        GameLogUI.Log($"<color=#00CFCF>[제물] {player.name} 말 희생 - 검은 윷 +2</color>");
     }
 }

@@ -39,7 +39,7 @@ public class GameLogUI : MonoBehaviour
             Instance.yutResultText.text = $"{header}: \n<b><color=#FFD700>{string.Join("  ", results.Select(ToKorean))}</color></b>";
     }
 
-    private static string ToKorean(YutResult yr) => yr switch
+    public static string ToKorean(YutResult yr) => yr switch
     {
         YutResult.BACKDO => "뒷도",
         YutResult.Do     => "도",

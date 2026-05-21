@@ -8,7 +8,7 @@ public class DokkaebiSkill : CharacterSkill
         int dokkaebiCount = totalDefenderCount > 0 ? totalDefenderCount : 1 + target.stackedPieces.Count;
         int attackerCount = 1 + attacker.stackedPieces.Count;
         float chance = (float)dokkaebiCount / (dokkaebiCount + attackerCount);
-        GameLogUI.Log($"<color=purple>[씨름] 승리 확률: {chance * 100:0}% (도깨비 측 {dokkaebiCount}명 vs 공격자 {attackerCount}명)</color>");
+        GameLogUI.Log($"<color=purple>[씨름] {dokkaebiCount} vs {attackerCount} ({chance * 100:0}%)</color>");
         if (Random.value < chance)
         {
             target.owner.AddBlackYut(1);
