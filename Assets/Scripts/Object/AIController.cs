@@ -26,14 +26,23 @@ public class AIController : MonoBehaviour
                     (p.currentNode.data == boardData.startNode || p.nodeHistory.Count > 0)));  // 못 움직이는 경우 걸러내기
                 if (ai.yutResults.Count == 0) break;
 
-                var (piece, dest, pushPath, usedYR, isOut) = FindBestMove(ai);
+                // 즉시 발동 스킬 판단
+                if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinish(ai))
+                {
+                    yield return StartCoroutine(ai.Skill.CoOnActiveActivated(ai, reposition: gm.RepositionNode));
+                    Debug.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 발동!</color>");
+                }
+
+                var (piece, dest, pushPath, usedYR, isOut, useActiveSkill) = FindBestMove(ai);
 
                 if (isOut)
                     Debug.Log($"<color=cyan>[AI] 완주 선택 ({usedYR})</color>");
+                else if (useActiveSkill)
+                    Debug.Log($"<color=cyan>[AI] {ai.Skill.ActiveSkillName} 사용! {usedYR} → {dest?.nodeName}</color>");
                 else
                     Debug.Log($"<color=cyan>[AI] {usedYR} → {dest?.nodeName}</color>");
 
-                yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut));
+                yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
                 if (ai.AllFinished) yield break;
 
@@ -51,16 +60,18 @@ public class AIController : MonoBehaviour
     }
 
     // 전체 말 순회, 완주/이동 후보 점수 매겨서 최고점 반환
-    private (Piece, BoardNodeData, List<BoardNodeData>, YutResult, bool) FindBestMove(Player ai)
+    private (Piece piece, BoardNodeData dest, List<BoardNodeData> pushPath, YutResult usedYR, bool isOut, bool useActiveSkill) FindBestMove(Player ai)
     {
         Piece bestPiece = null;
         BoardNodeData bestTarget = null;
         List<BoardNodeData> bestPushPath = null;
         YutResult bestUse = default;
         bool bestIsOut = false;
+        bool bestUseActiveSkill = false;
 
         var personality = ai.characterData != null ? ai.characterData.aiPersonality : new AIPersonality();
         var opponent = gm.GetOpponent(ai);
+        bool canUseSkill = ai.Skill?.CanUseActive(ai) == true;
 
         float bestScore = float.MinValue;
         foreach (var piece in ai.pieces.Where(p => !p.hasFinished && p.stackLeader == null))
@@ -73,7 +84,7 @@ public class AIController : MonoBehaviour
                 float score = ScoreMove(piece, null, yr, personality, ai, opponent, isOut: true);
                 if (score > bestScore)
                 {
-                    bestScore = score; bestPiece = piece; bestTarget = null; bestPushPath = null; bestUse = yr; bestIsOut = true;
+                    bestScore = score; bestPiece = piece; bestTarget = null; bestPushPath = null; bestUse = yr; bestIsOut = true; bestUseActiveSkill = false;
                 }
             }
 
@@ -81,14 +92,27 @@ public class AIController : MonoBehaviour
             foreach (var kv in moves.Destinations)
             {
                 float score = ScoreMove(piece, kv.Key, kv.Value.yr, personality, ai, opponent, isOut: false);
+                if (kv.Value.pushPath != null && kv.Value.pushPath.Count > 1 &&
+                    kv.Value.pushPath[0].isJunction && kv.Value.pushPath[1] == kv.Value.pushPath[0].shortcutNext)
+                    score += personality.progressWeight * 3f;
+                bool useSkillForThis = false;
+                if (canUseSkill && kv.Value.pushPath != null)
+                {
+                    float bonus = ai.Skill.EvaluateActiveMoveBonus(ai, kv.Value.pushPath, kv.Key, gm.GetNode, personality);
+                    if (bonus > 0f)
+                    {
+                        score += bonus;
+                        useSkillForThis = true;
+                    }
+                }
                 if (score > bestScore)
                 {
-                    bestScore = score; bestPiece = piece; bestTarget = kv.Key; bestPushPath = kv.Value.pushPath; bestUse = kv.Value.yr; bestIsOut = false;
+                    bestScore = score; bestPiece = piece; bestTarget = kv.Key; bestPushPath = kv.Value.pushPath; bestUse = kv.Value.yr; bestIsOut = false; bestUseActiveSkill = useSkillForThis;
                 }
             }
         }
 
-        return (bestPiece, bestTarget, bestPushPath, bestUse, bestIsOut);
+        return (bestPiece, bestTarget, bestPushPath, bestUse, bestIsOut, bestUseActiveSkill);
     }
 
     // 잡기/전진/완주/업기 - 각각 가중치 적용 + random
@@ -120,6 +144,12 @@ public class AIController : MonoBehaviour
         score += p.randomness * Random.value;
         return score;
     }
+
+    private bool IsNearFinish(Player ai) =>
+        boardData.nearFinishNodes != null &&
+        boardData.nearFinishNodes.Count > 0 &&
+        ai.pieces.Any(p => !p.hasFinished && p.currentNode != null &&
+            boardData.nearFinishNodes.Contains(p.currentNode.data));
 
     // 일단 true
     private bool ShouldUseBlackYut() => true;

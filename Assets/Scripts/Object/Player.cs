@@ -36,6 +36,8 @@ public class Player
     // 원한
     private int wonhan = 0;
 
+    public int activeSkillUseCount;
+
     public Player()
     {
         for (int i = 0; i < pieces.Length; i++)
@@ -56,6 +58,7 @@ public class Player
         }
         yutResults.Clear();
         finishedPiecesCount = 0;
+        activeSkillUseCount = 0;
     }
 
     public void FinishPiece(Piece piece)

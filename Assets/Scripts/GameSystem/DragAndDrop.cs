@@ -47,6 +47,12 @@ public class DragAndDrop : MonoBehaviour
     public bool PickConfirmed { get; private set; }
     public bool PickDeclined { get; private set; }
 
+    // 희생 말 선택 모드
+    private bool pickingSacrifice = false;
+    private List<Piece> sacrificeCandidates = new();
+    public Piece SacrificeTarget { get; private set; }
+    public bool SacrificeConfirmed { get; private set; }
+
     // 아웃 존
     [SerializeField] private Collider outZoneCollider;
     [SerializeField] private GameObject outZoneHighlight;
@@ -106,6 +112,26 @@ public class DragAndDrop : MonoBehaviour
 
     private void OnClickStarted(InputAction.CallbackContext ctx)
     {
+        if (pickingSacrifice)
+        {
+            var mousePos = input.GamePlay.Point.ReadValue<Vector2>();
+            var ray = cam.ScreenPointToRay(mousePos);
+            var hits = Physics.RaycastAll(ray, 100f, pieceLayer);
+            foreach (var h in hits)
+            {
+                var pieceObj = h.collider.GetComponent<PieceObject>();
+                var leader = pieceObj.piece.stackLeader ?? pieceObj.piece;
+                if (sacrificeCandidates.Contains(leader))
+                {
+                    SacrificeTarget = leader;
+                    EndSacrificePick();
+                    SacrificeConfirmed = true;
+                    break;
+                }
+            }
+            return;
+        }
+
         if (pickingStackTarget) // 쌓을 대상 선택
         {
             var mousePos = input.GamePlay.Point.ReadValue<Vector2>();
@@ -250,6 +276,24 @@ public class DragAndDrop : MonoBehaviour
 
         foreach (var c in candidates)
             c.pieceObject.SetHighLight(true);
+    }
+
+    public void BeginSacrificePick(List<Piece> candidates)
+    {
+        sacrificeCandidates = candidates;
+        SacrificeTarget = null;
+        SacrificeConfirmed = false;
+        pickingSacrifice = true;
+        foreach (var c in candidates)
+            c.pieceObject.SetHighLight(true);
+    }
+
+    public void EndSacrificePick()
+    {
+        foreach (var c in sacrificeCandidates)
+            c.pieceObject.SetHighLight(false);
+        sacrificeCandidates.Clear();
+        pickingSacrifice = false;
     }
 
     public void DeclineStackTargetPick()
