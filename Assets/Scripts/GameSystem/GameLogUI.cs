@@ -34,9 +34,9 @@ public class GameLogUI : MonoBehaviour
         if (Instance == null) return;
         string header = playerName != null ? $"<b>{playerName}</b> 남은 결과" : "남은 결과";
         if (results == null || results.Count == 0)
-            Instance.yutResultText.text = $"{header}: 없음";
+            Instance.yutResultText.text = $"{header}: \n없음";
         else
-            Instance.yutResultText.text = $"{header}: <b><color=#FFD700>{string.Join("  ", results.Select(ToKorean))}</color></b>";
+            Instance.yutResultText.text = $"{header}: \n<b><color=#FFD700>{string.Join("  ", results.Select(ToKorean))}</color></b>";
     }
 
     private static string ToKorean(YutResult yr) => yr switch

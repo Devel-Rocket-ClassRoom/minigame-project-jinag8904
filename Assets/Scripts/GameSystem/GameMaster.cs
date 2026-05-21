@@ -84,7 +84,7 @@ public class GameMaster : MonoBehaviour
     {
         // 1. 플레이어 초기화
         for (int i = 0; i < players.Length; i++)
-            players[i] = new Player() { playerId = i, name = $"플레이어{i+1}" };
+            players[i] = new Player() { playerId = i, name = $"P{i+1}" };
 
         // 2. 말 초기화
         for (int i = 0; i < 4; i++)
