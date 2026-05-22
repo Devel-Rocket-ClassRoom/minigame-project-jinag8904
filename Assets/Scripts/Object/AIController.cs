@@ -28,7 +28,7 @@ public class AIController : MonoBehaviour
                 if (ai.yutResults.Count == 0) break;
 
                 // 즉시 발동 스킬 판단
-                if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinish(ai))
+                if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinishWithSacrificable(ai))
                 {
                     yield return StartCoroutine(ai.Skill.CoOnActiveActivated(ai, reposition: gm.RepositionNode));
                     GameLogUI.Log($"<color=#00CFCF>[AI] {ai.Skill.ActiveSkillName} 발동!</color>");
@@ -145,11 +145,20 @@ public class AIController : MonoBehaviour
         return score;
     }
 
-    private bool IsNearFinish(Player ai) =>
-        boardData.nearFinishNodes != null &&
-        boardData.nearFinishNodes.Count > 0 &&
-        ai.pieces.Any(p => !p.hasFinished && p.currentNode != null &&
-            boardData.nearFinishNodes.Contains(p.currentNode.data));
+    private bool IsNearFinishWithSacrificable(Player ai)
+    {
+        if (boardData.nearFinishNodes == null || boardData.nearFinishNodes.Count == 0) return false;
+
+        var nearFinishPieces = ai.pieces
+            .Where(p => !p.hasFinished && p.currentNode != null &&
+                        boardData.nearFinishNodes.Contains(p.currentNode.data))
+            .ToList();
+
+        if (nearFinishPieces.Count == 0) return false;
+
+        return ai.pieces.Any(p => !p.hasFinished && p.currentNode != null &&
+                                  p.stackLeader == null && !nearFinishPieces.Contains(p));
+    }
 
     // 일단 true
     private bool ShouldUseBlackYut() => true;
