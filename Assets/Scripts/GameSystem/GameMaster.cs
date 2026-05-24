@@ -38,6 +38,10 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button endTurnButton;
     private bool endTurnRequested;
 
+    // 윷 던지기 버튼
+    [SerializeField] private Button throwYutButton;
+    private bool throwRequested;
+
     // 액티브 스킬
     [SerializeField] private Button p1ActiveSkillButton;
     [SerializeField] private Button p2ActiveSkillButton;
@@ -108,6 +112,9 @@ public class GameMaster : MonoBehaviour
         endTurnButton.gameObject.SetActive(false);
         endTurnButton.onClick.AddListener(() => endTurnRequested = true);
 
+        throwYutButton.gameObject.SetActive(false);
+        throwYutButton.onClick.AddListener(() => throwRequested = true);
+
         stackDecisionPanel.SetActive(false);
         stackYesButton.onClick.AddListener(() => stackDecision = true);
         stackNoButton.onClick.AddListener(() => stackDecision = false);
@@ -151,6 +158,13 @@ public class GameMaster : MonoBehaviour
         aiController = GetComponent<AIController>();
         boardNodeMap = FindObjectsByType<BoardNode>(FindObjectsSortMode.None).ToDictionary(n => n.data);
         dragAndDrop.boardNodeMap = boardNodeMap;
+
+        LocalizationManager.OnLanguageChanged += UpdateCharacterHUD;
+    }
+
+    private void OnDestroy()
+    {
+        LocalizationManager.OnLanguageChanged -= UpdateCharacterHUD;
     }
 
     private void Init()
@@ -194,9 +208,9 @@ public class GameMaster : MonoBehaviour
     private void UpdateCharacterHUD()
     {
         p1CharacterIcon.sprite = players[0].characterData?.icon;
-        p1CharacterNameText.text = players[0].characterData?.name;
+        p1CharacterNameText.text = players[0].characterData != null ? LocalizationManager.Get(players[0].characterData.localizationKey) : "";
         p2CharacterIcon.sprite = players[1].characterData?.icon;
-        p2CharacterNameText.text = players[1].characterData?.name;
+        p2CharacterNameText.text = players[1].characterData != null ? LocalizationManager.Get(players[1].characterData.localizationKey) : "";
     }
 
     private IEnumerator CoSelectCharacterForPlayer(Player player)
@@ -210,7 +224,7 @@ public class GameMaster : MonoBehaviour
             characterSelectButtons[i].gameObject.SetActive(active);
             if (active)
             {
-                characterSelectButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = availableCharacters[i].name;
+                characterSelectButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Get(availableCharacters[i].localizationKey);
                 //characterSelectButtonIcons[i].sprite = availableCharacters[i].icon;
             }
         }
@@ -267,12 +281,20 @@ public class GameMaster : MonoBehaviour
         GameLogUI.Log(LocalizationManager.Get("LOG_YOUR_TURN", player.name));
         yield return new WaitForSeconds(1);
 
-        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_THROWING_YUT")}</color>");
-        player.Throw();
-        yield return new WaitForSeconds(3);
-
+        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_THROW_YUT_PROMPT")}</color>");
+        yield return StartCoroutine(CoWaitThrowButton(player));
         GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_YUT_RESULT")}</color>");
         LogYutResults(player);
+
+        // 윷/모 추가 던지기 (수동)
+        while (player.yutResults.Count > 0 &&
+               (player.yutResults[^1] == YutResult.Yut || player.yutResults[^1] == YutResult.Mo))
+        {
+            GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_EXTRA_THROW")}</color>");
+            yield return StartCoroutine(CoWaitThrowButton(player));
+            GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_YUT_RESULT")}</color>");
+            LogYutResults(player);
+        }
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
         bool wonThisTurn = false;
@@ -429,8 +451,12 @@ public class GameMaster : MonoBehaviour
                             }
 
                             GameLogUI.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
-                            if (!noBonus) player.Throw(isCaptureBonus: true);
-                            if (!noBonus) GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS")}</color>");
+                            if (!noBonus)
+                            {
+                                GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS_THROW")}</color>");
+                                yield return StartCoroutine(CoWaitThrowButton(player, isCaptureBonus: true));
+                                GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS")}</color>");
+                            }
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
                         }
@@ -519,9 +545,21 @@ public class GameMaster : MonoBehaviour
 
         blackYutButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(false);
+        throwYutButton.gameObject.SetActive(false);
         p1ActiveSkillButton.interactable = false;
         p2ActiveSkillButton.interactable = false;
         isActiveSkillOn = false;
+    }
+
+    private IEnumerator CoWaitThrowButton(Player player, bool isCaptureBonus = false)
+    {
+        throwRequested = false;
+        blackYutButton.gameObject.SetActive(false);
+        throwYutButton.gameObject.SetActive(true);
+        yield return new WaitUntil(() => throwRequested);
+        throwYutButton.gameObject.SetActive(false);
+        player.Throw(isCaptureBonus: isCaptureBonus);
+        yield return new WaitForSeconds(2);
     }
 
     private IEnumerator CoEndGame()

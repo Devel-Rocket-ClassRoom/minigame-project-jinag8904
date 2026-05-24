@@ -14,6 +14,7 @@ using UnityEngine;
 public class CharacterData : ScriptableObject
 {
     public string name;
+    public string localizationKey;
     public Sprite icon;
 
     public AIPersonality aiPersonality;
