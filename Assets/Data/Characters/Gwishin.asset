@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Gwishin
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   name: "\uADC0\uC2E0"
+  localizationKey: CHAR_GWISHIN
   icon: {fileID: 0}
   aiPersonality:
     captureWeight: 2

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MulGwishin
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   name: "\uBB3C\uADC0\uC2E0"
+  localizationKey: CHAR_MULGWISHIN
   icon: {fileID: 0}
   aiPersonality:
     captureWeight: 0.5

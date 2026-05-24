@@ -15,6 +15,10 @@ LOG_AI_STACK,[AI] 말을 업었습니다.,[AI] Stacked a piece.
 LOG_FINISH,{0} 완주! ({1}/4),{0} finished! ({1}/4)
 LOG_GAME_END,게임 끝,Game Over
 LOG_ACTIVE_SKILL_ACTIVATED,[{0}] 활성화!,[{0}] Activated!
+LOG_THROW_YUT_PROMPT,윷을 던지세요!,Throw the yut!
+LOG_EXTRA_THROW,한 번 더 던지세요!,Throw again!
+LOG_CAPTURE_BONUS_THROW,잡기 보너스! 윷을 던지세요.,Capture bonus! Throw the yut.
+BTN_THROW_YUT,윷 던지기,Throw Yut
 YUT_RESULT_HEADER,남은 결과,Remaining Results
 YUT_RESULT_NONE,없음,None
 YUT_BACKDO,뒷도,Backdo

@@ -14,6 +14,11 @@ public class AIController : MonoBehaviour
         var ai = gm.CurrPlayer;
 
         ai.Throw();
+        while (ai.yutResults.Count > 0 &&
+               (ai.yutResults[^1] == YutResult.Yut || ai.yutResults[^1] == YutResult.Mo))
+        {
+            ai.Throw();
+        }
         GameLogUI.Log("<color=#00CFCF>[AI] 윷 결과가 나왔습니다!</color>");
         GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
         yield return new WaitForSeconds(1);

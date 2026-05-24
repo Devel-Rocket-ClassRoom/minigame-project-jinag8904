@@ -82,14 +82,6 @@ public class Player
         }
 
         yutResults.Add(ThrowYut.Throw());
-
-        if (isCaptureBonus) return;
-
-        // 윷이나 모가 나오면 한 번 더
-        while (yutResults[^1] == YutResult.Yut || yutResults[^1] == YutResult.Mo)
-        {           
-            Throw();
-        }
     }
 
     public void OnCaught(Piece piece)

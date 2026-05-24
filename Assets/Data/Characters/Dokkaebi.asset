@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Dokkaebi
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   name: "\uB3C4\uAE68\uBE44"
+  localizationKey: CHAR_DOKKAEBI
   icon: {fileID: 0}
   aiPersonality:
     captureWeight: 0.8
