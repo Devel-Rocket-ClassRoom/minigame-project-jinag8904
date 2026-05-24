@@ -100,7 +100,7 @@ public class GameMaster : MonoBehaviour
         blackYutButton.onClick.AddListener(() =>
         {
             currPlayer.Throw(isBlackYut: true);
-            GameLogUI.Log("검은 윷이 던져졌습니다!");
+            GameLogUI.Log(LocalizationManager.Get("LOG_BLACK_YUT_THROWN"));
             if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
             LogYutResults(currPlayer);
         });
@@ -224,11 +224,11 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoRunGame()
     {
-        GameLogUI.Log("모드 선택");
+        GameLogUI.Log(LocalizationManager.Get("LOG_MODE_SELECT"));
         yield return StartCoroutine(CoSelectMode());
         yield return StartCoroutine(CoSelectCharacter());
         Init();
-        GameLogUI.Log("게임 시작");
+        GameLogUI.Log(LocalizationManager.Get("LOG_GAME_START"));
         yield return StartCoroutine(CoWhoGoesFirst());
         yield return StartCoroutine(CoPlayGame());
         yield return StartCoroutine(CoEndGame());
@@ -238,12 +238,12 @@ public class GameMaster : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        GameLogUI.Log("<color=green>순서 정하는 중...</color>");
+        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_FINDING_ORDER")}</color>");
         currPlayer = players[Random.Range(0, 2)];
 
         yield return new WaitForSeconds(3);
 
-        GameLogUI.Log($"<color=yellow>{currPlayer.name}부터 시작</color>");
+        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_FIRST_PLAYER", currPlayer.name)}</color>");
     }
 
     private IEnumerator CoPlayGame()
@@ -264,14 +264,14 @@ public class GameMaster : MonoBehaviour
             yield break;
         }
 
-        GameLogUI.Log($"{player.name}의 차례");
+        GameLogUI.Log(LocalizationManager.Get("LOG_YOUR_TURN", player.name));
         yield return new WaitForSeconds(1);
 
-        GameLogUI.Log("<color=green>윷 던지는 중...</color>");
+        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_THROWING_YUT")}</color>");
         player.Throw();
         yield return new WaitForSeconds(3);
 
-        GameLogUI.Log("<color=green>윷 결과가 나왔습니다!</color>");
+        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_YUT_RESULT")}</color>");
         LogYutResults(player);
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
@@ -324,10 +324,10 @@ public class GameMaster : MonoBehaviour
                     var nodeBeforeOut = piece.currentNode;
 
                     piece.currentNode?.piecesOnNode.Remove(piece);
-                    foreach (var s in stackAll) 
+                    foreach (var s in stackAll)
                         s.currentNode?.piecesOnNode.Remove(s);
 
-                    if (nodeBeforeOut != null) 
+                    if (nodeBeforeOut != null)
                         RepositionNode(nodeBeforeOut);
 
                     HandleFinish(piece, stackAll, player);
@@ -406,7 +406,7 @@ public class GameMaster : MonoBehaviour
                             r.pieceObject.transform.position = r.pieceObject.initPosition;
                         }
 
-                        GameLogUI.Log($"<color=purple>[씨름] {skilledEnemy.owner.name}의 도깨비가 씨름에서 이겼습니다!</color>");
+                        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
                     }
                     else
                     {
@@ -428,9 +428,9 @@ public class GameMaster : MonoBehaviour
                                 caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                             }
 
-                            GameLogUI.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
+                            GameLogUI.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
                             if (!noBonus) player.Throw(isCaptureBonus: true);
-                            if (!noBonus) GameLogUI.Log("<color=green>잡기 보너스 윷이 던져졌습니다!</color>");
+                            if (!noBonus) GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS")}</color>");
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
                         }
@@ -467,12 +467,12 @@ public class GameMaster : MonoBehaviour
                             piece.stackedPieces.Add(s);
                             s.stackLeader = piece;
                         }
-                        ally.stackedPieces.Clear(); // 리더 교체
+                        ally.stackedPieces.Clear();
                         piece.stackedPieces.Add(ally);
                         ally.stackLeader = piece;
 
                         RepositionNode(targetNode);
-                        GameLogUI.Log($"<color=yellow>{player.name}이(가) 말을 업었습니다.</color>");
+                        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_STACK", player.name)}</color>");
                     }
                 }
                 else if (friendlyLeaders.Count >= 2)
@@ -496,7 +496,7 @@ public class GameMaster : MonoBehaviour
                         piece.stackedPieces.Add(ally);
                         ally.stackLeader = piece;
                         RepositionNode(targetNode);
-                        GameLogUI.Log($"<color=yellow>{player.name}이(가) 말을 업었습니다.</color>");
+                        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_STACK", player.name)}</color>");
                     }
                 }
 
@@ -526,7 +526,7 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoEndGame()
     {
-        GameLogUI.Log("게임 끝");
+        GameLogUI.Log(LocalizationManager.Get("LOG_GAME_END"));
         yield return null;
     }
 
@@ -540,7 +540,7 @@ public class GameMaster : MonoBehaviour
     {
         var skill = player.Skill;
         GetActiveSkillButton(player).interactable = false;
-        GameLogUI.Log($"<color=purple>[{skill.ActiveSkillName}] 활성화!</color>");
+        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("LOG_ACTIVE_SKILL_ACTIVATED", skill.ActiveSkillName)}</color>");
 
         if (skill.HasImmediateEffect)
             yield return StartCoroutine(skill.CoOnActiveActivated(player, RequestPiecePickCoroutine, RepositionNode));
@@ -563,7 +563,7 @@ public class GameMaster : MonoBehaviour
     private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
 
     private void SwitchTurn() => currPlayer = players[1 - currPlayer.playerId];
-    
+
     private void ShowOutResultPanel(List<YutResult> options)
     {
         foreach (var kv in outResultToButton)
@@ -595,13 +595,13 @@ public class GameMaster : MonoBehaviour
         }
 
         piece.stackedPieces.Clear();
-        foreach (var s in stackedAll) 
+        foreach (var s in stackedAll)
         {
-            s.stackLeader = null; 
-            s.stackedPieces.Clear(); 
+            s.stackLeader = null;
+            s.stackedPieces.Clear();
         }
 
-        GameLogUI.Log($"<color=green>{player.name} 완주! ({player.FinishedCount}/4)</color>");
+        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_FINISH", player.name, player.FinishedCount)}</color>");
         player.Skill?.OnFinish(piece);
     }
 
@@ -727,7 +727,7 @@ public class GameMaster : MonoBehaviour
                     r.pieceObject.transform.position = r.pieceObject.initPosition;
                 }
 
-                Debug.Log($"<color=purple>[씨름] {skilledEnemy.owner.name}의 도깨비가 씨름에서 이겼습니다!</color>");
+                Debug.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
             }
             else
             {
@@ -749,7 +749,7 @@ public class GameMaster : MonoBehaviour
                         caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                     }
 
-                    Debug.Log($"<color=red>{player.name}이(가) 상대 말 {capturedPieces.Count}개를 잡았습니다!</color>");
+                    Debug.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
                     if (!noBonus) player.Throw(isCaptureBonus: true);
                     player.Skill?.OnCapture(piece, capturedPieces);
                 }
@@ -775,7 +775,7 @@ public class GameMaster : MonoBehaviour
             piece.stackedPieces.Add(ally);
             ally.stackLeader = piece;
             RepositionNode(targetNode);
-            GameLogUI.Log($"<color=#00CFCF>[AI] 말을 업었습니다.</color>");
+            GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("LOG_AI_STACK")}</color>");
         }
 
         player.yutResults.Remove(used);

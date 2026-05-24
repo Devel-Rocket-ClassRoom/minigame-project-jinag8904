@@ -1,0 +1,52 @@
+Key,KO,EN
+LOG_MODE_SELECT,모드 선택,Mode Select
+LOG_GAME_START,게임 시작,Game Start
+LOG_FINDING_ORDER,순서 정하는 중...,Finding order...
+LOG_FIRST_PLAYER,{0}부터 시작,{0} goes first
+LOG_YOUR_TURN,{0}의 차례,{0}'s Turn
+LOG_THROWING_YUT,윷 던지는 중...,Throwing yut...
+LOG_YUT_RESULT,윷 결과가 나왔습니다!,Yut results are in!
+LOG_BLACK_YUT_THROWN,검은 윷이 던져졌습니다!,Black yut thrown!
+LOG_SUMO_WIN,[씨름] {0}의 도깨비가 씨름에서 이겼습니다!,[Ssireum] {0}'s Dokkaebi won the match!
+LOG_CAPTURE,{0}이(가) 상대 말 {1}개를 잡았습니다!,{0} captured {1} enemy pieces!
+LOG_CAPTURE_BONUS,잡기 보너스 윷이 던져졌습니다!,Capture bonus yut thrown!
+LOG_STACK,{0}이(가) 말을 업었습니다.,{0} stacked a piece.
+LOG_AI_STACK,[AI] 말을 업었습니다.,[AI] Stacked a piece.
+LOG_FINISH,{0} 완주! ({1}/4),{0} finished! ({1}/4)
+LOG_GAME_END,게임 끝,Game Over
+LOG_ACTIVE_SKILL_ACTIVATED,[{0}] 활성화!,[{0}] Activated!
+YUT_RESULT_HEADER,남은 결과,Remaining Results
+YUT_RESULT_NONE,없음,None
+YUT_BACKDO,뒷도,Backdo
+YUT_DO,도,Do
+YUT_GAE,개,Gae
+YUT_GEOL,걸,Geol
+YUT_YUT,윷,Yut
+YUT_MO,모,Mo
+SKILL_GWISHIN_ACTIVE,원혼 강림,Soul Descent
+SKILL_GWISHIN_ON_CAPTURE,[귀신 저주] {0} 검은 윷 +1,[Ghost Curse] {0} black yut +1
+SKILL_GWISHIN_PATH_CAPTURE,[{0}] 경로에서 적 {1}개 잡음!,[{0}] Captured {1} enemies on path!
+SKILL_MULGWISHIN_ACTIVE,제물,Sacrifice
+SKILL_MULGWISHIN_ON_CAPTURED,[물귀신] 발목잡기! {0}의 윷 결과 소모,[Mulgwishin] Ankle grab! {0}'s yut results consumed
+SKILL_MULGWISHIN_SACRIFICE,[제물] {0} 말 희생 - 검은 윷 +2,[Sacrifice] {0} piece sacrificed - black yut +2
+SKILL_DOKKAEBI_SUMO_LOG,[씨름] {0} vs {1} ({2}%),[Ssireum] {0} vs {1} ({2}%)
+SKILL_DOKKAEBI_SUMO_WIN,[씨름 승리] {0} 검은 윷 +1,[Ssireum Win] {0} black yut +1
+BTN_RESUME,재개,Resume
+BTN_RESTART,재시작,Restart
+BTN_QUIT,나가기,Quit
+BTN_LOCAL_MODE,로컬 모드,Local Mode
+BTN_VS_AI_MODE,AI 대전,VS AI
+BTN_BLACK_YUT,검은 윷,Black Yut
+BTN_END_TURN,차례를 넘긴다,End Turn
+BTN_STACK_YES,업힌다,Stack
+BTN_STACK_NO,업히지 않는다,Don't Stack
+BTN_LANGUAGE,English,한국어
+BTN_RANDOM,무작위,Random
+LABEL_PAUSE,일시정지,Paused
+LABEL_NAME,이름,Name
+LABEL_CHARACTER_SELECT,당신의 정체는...,Who are you...
+LABEL_OPPONENT_SELECT,겨룰 상대는...,Choose your opponent...
+LABEL_GAME_SUBTITLE,곁에 있는 자,By Your Side
+CHAR_GWISHIN,귀신,Gwishin
+CHAR_DOKKAEBI,도깨비,Dokkaebi
+CHAR_MULGWISHIN,물귀신,Mulgwishin

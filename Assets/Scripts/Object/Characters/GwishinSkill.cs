@@ -9,11 +9,11 @@ public class GwishinSkill : CharacterSkill
     public override void OnCapture(Piece piece, List<Piece> captured)
     {
         piece.owner.AddBlackYut(1);
-        GameLogUI.Log($"<color=purple>[귀신 저주] {piece.owner.name} 검은 윷 +1</color>");
+        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("SKILL_GWISHIN_ON_CAPTURE", piece.owner.name)}</color>");
     }
 
     public override int MaxActiveUses => 1;
-    public override string ActiveSkillName => "원혼 강림";
+    public override string ActiveSkillName => LocalizationManager.Get("SKILL_GWISHIN_ACTIVE");
 
     public override void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition)
     {
@@ -45,7 +45,7 @@ public class GwishinSkill : CharacterSkill
                     caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                 }
 
-                GameLogUI.Log($"<color=purple>[{ActiveSkillName}] 경로에서 적 {capturedPieces.Count}개 잡음!</color>");
+                GameLogUI.Log($"<color=purple>{LocalizationManager.Get("SKILL_GWISHIN_PATH_CAPTURE", ActiveSkillName, capturedPieces.Count)}</color>");
                 player.Skill?.OnCapture(mover, capturedPieces);
             }
 

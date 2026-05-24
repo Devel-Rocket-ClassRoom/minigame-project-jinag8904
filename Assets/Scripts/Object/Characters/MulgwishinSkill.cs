@@ -10,12 +10,12 @@ public class MulgwishinSkill : CharacterSkill
     public override bool OnBeingCaptured(Piece captured, Piece attacker)
     {
         attacker.owner.yutResults.Clear();
-        GameLogUI.Log($"<color=#00CFCF>[물귀신] 발목잡기! {attacker.owner.name}의 윷 결과 소모</color>");
+        GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("SKILL_MULGWISHIN_ON_CAPTURED", attacker.owner.name)}</color>");
         return true;
     }
 
     public override int MaxActiveUses => 1;
-    public override string ActiveSkillName => "제물";
+    public override string ActiveSkillName => LocalizationManager.Get("SKILL_MULGWISHIN_ACTIVE");
     public override bool HasImmediateEffect => true;
 
     public override bool CanUseActive(Player player) =>
@@ -45,7 +45,6 @@ public class MulgwishinSkill : CharacterSkill
         var node = sacrificed.currentNode;
         node.piecesOnNode.Remove(sacrificed);
 
-        // 업힌 말이 있으면 첫 번째 말을 새 리더로 지정
         if (sacrificed.stackedPieces.Count > 0)
         {
             var newLeader = sacrificed.stackedPieces[0];
@@ -66,6 +65,6 @@ public class MulgwishinSkill : CharacterSkill
         reposition?.Invoke(node);
 
         player.AddBlackYut(2);
-        GameLogUI.Log($"<color=#00CFCF>[제물] {player.name} 말 희생 - 검은 윷 +2</color>");
+        GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("SKILL_MULGWISHIN_SACRIFICE", player.name)}</color>");
     }
 }

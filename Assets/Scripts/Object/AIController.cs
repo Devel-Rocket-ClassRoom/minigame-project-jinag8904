@@ -39,9 +39,9 @@ public class AIController : MonoBehaviour
                 if (isOut)
                     GameLogUI.Log($"<color=#00CFCF>[AI] 완주 선택 ({usedYR})</color>");
                 else if (useActiveSkill)
-                    GameLogUI.Log($"<color=#00CFCF>[AI] {ai.Skill.ActiveSkillName} 사용! {GameLogUI.ToKorean(usedYR)} > {dest?.nodeName}</color>");
+                    GameLogUI.Log($"<color=#00CFCF>[AI] {ai.Skill.ActiveSkillName} 사용! {GameLogUI.GetYutName(usedYR)} > {dest?.nodeName}</color>");
                 else
-                    GameLogUI.Log($"<color=#00CFCF>[AI] {GameLogUI.ToKorean(usedYR)} > {dest?.nodeName}</color>");
+                    GameLogUI.Log($"<color=#00CFCF>[AI] {GameLogUI.GetYutName(usedYR)} > {dest?.nodeName}</color>");
 
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
