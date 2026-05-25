@@ -1,0 +1,38 @@
+{
+    "asset": "b85c59c5da1f9074290c7e792b013dfc",
+    "fileName": "019e5e24-dec3-77de-9dae-1fdeee625fc7.jpg",
+    "prompt": "Remove the carved 'X' mark from the flat surface of the wooden stick. The surface should be completely smooth wood grain, identical to the rest of the stick. Keep the shape, texture, lighting, and background exactly the same.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "b85c59c5da1f9074290c7e792b013dfc",
+                "unlabeledIndex": -1
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
