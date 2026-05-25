@@ -1,0 +1,28 @@
+{
+    "asset": "32efc5cec3886e548863d6f78734fbd0",
+    "fileName": "019e5e1e-ef90-726f-845b-1f43d5d665a2.jpg",
+    "prompt": "Top-down direct view of the flat rectangular side of a single traditional Korean wooden yut-garak (yut stick). The wood is light-colored. In the center of the flat rectangular surface, there is a rough 'X' mark hand-carved into the wood with a knife. The carving looks slightly darker due to depth. The ends of the stick show a semi-circular cross-section. White background, high detail.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

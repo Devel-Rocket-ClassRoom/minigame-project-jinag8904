@@ -42,6 +42,9 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button throwYutButton;
     private bool throwRequested;
 
+    // 윷 던지기 컨트롤러
+    [SerializeField] private YutThrowController yutThrowController;
+
     // 액티브 스킬
     [SerializeField] private Button p1ActiveSkillButton;
     [SerializeField] private Button p2ActiveSkillButton;
@@ -101,13 +104,7 @@ public class GameMaster : MonoBehaviour
 
         // 3. UI 비활성화, 연결, 리스너 추가
         blackYutButton.gameObject.SetActive(false);
-        blackYutButton.onClick.AddListener(() =>
-        {
-            currPlayer.Throw(isBlackYut: true);
-            GameLogUI.Log(LocalizationManager.Get("LOG_BLACK_YUT_THROWN"));
-            if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
-            LogYutResults(currPlayer);
-        });
+        blackYutButton.onClick.AddListener(() => StartCoroutine(CoHandleBlackYutThrow()));
 
         endTurnButton.gameObject.SetActive(false);
         endTurnButton.onClick.AddListener(() => endTurnRequested = true);
@@ -558,8 +555,36 @@ public class GameMaster : MonoBehaviour
         throwYutButton.gameObject.SetActive(true);
         yield return new WaitUntil(() => throwRequested);
         throwYutButton.gameObject.SetActive(false);
-        player.Throw(isCaptureBonus: isCaptureBonus);
-        yield return new WaitForSeconds(2);
+
+        if (yutThrowController != null)
+        {
+            yield return StartCoroutine(yutThrowController.CoThrow());
+            player.AddThrowResult(yutThrowController.LastResult);
+        }
+        else
+        {
+            player.Throw(isCaptureBonus: isCaptureBonus);
+            yield return new WaitForSeconds(2);
+        }
+    }
+
+    private IEnumerator CoHandleBlackYutThrow()
+    {
+        blackYutButton.interactable = false;
+        if (yutThrowController != null)
+        {
+            yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
+            currPlayer.UseBlackYut(yutThrowController.LastResult);
+        }
+        else
+        {
+            currPlayer.Throw(isBlackYut: true);
+            yield return new WaitForSeconds(2);
+        }
+        GameLogUI.Log(LocalizationManager.Get("LOG_BLACK_YUT_THROWN"));
+        blackYutButton.interactable = true;
+        if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
+        LogYutResults(currPlayer);
     }
 
     private IEnumerator CoEndGame()

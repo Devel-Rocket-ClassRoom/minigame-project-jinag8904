@@ -1,0 +1,38 @@
+{
+    "asset": "b85c59c5da1f9074290c7e792b013dfc",
+    "fileName": "019e5e24-4fbc-7e05-8e96-cf3e79865c09.jpg",
+    "prompt": "On the flat rectangular surface of the wooden stick, add a small, rough 'X' mark that looks like it was hand-carved with a knife. The carving should be centered and look natural. All other parts of the stick (the shape, texture, and background) must remain exactly the same as the reference.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "b85c59c5da1f9074290c7e792b013dfc",
+                "unlabeledIndex": -1
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

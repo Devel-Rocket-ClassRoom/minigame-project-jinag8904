@@ -84,6 +84,17 @@ public class Player
         yutResults.Add(ThrowYut.Throw());
     }
 
+    public void AddThrowResult(YutResult result)
+    {
+        yutResults.Add(result);
+    }
+
+    public void UseBlackYut(YutResult result)
+    {
+        yutResults.Add(result);
+        blackYutCount--;
+    }
+
     public void OnCaught(Piece piece)
     {
         var nodeName = piece.currentNode.data.nodeName;

@@ -1,0 +1,28 @@
+{
+    "asset": "edfd6d7d1c0440a4a910ae8537dcd6ee",
+    "fileName": "019e5e12-489e-7f07-b379-f77e6597ab13.jpg",
+    "prompt": "Traditional Korean Yut stick (Yut-garak) with Baek-do mark, wooden, semi-cylindrical shape, flat side visible with a red X mark, rounded side on the other, stylized low-poly art style, wood texture, white background.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

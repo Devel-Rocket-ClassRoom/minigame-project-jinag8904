@@ -1,0 +1,28 @@
+{
+    "asset": "b85c59c5da1f9074290c7e792b013dfc",
+    "fileName": "019e5e23-e1cd-7ddc-b87f-da60077f8470.jpg",
+    "prompt": "A single traditional Korean wooden Yut stick (Yut-garak). The stick is a perfect, uniform semi-cylinder from end to end. It is lying on its curved side so the flat rectangular wooden surface is facing up toward the camera. The cross-section at the end is a clean, sharp semi-circle. Realistic light wood grain, white background, high quality. No handle, uniform thickness.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

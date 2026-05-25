@@ -1,0 +1,38 @@
+{
+    "asset": "9465fdf176f8a6042bfa47ebc6a322b3",
+    "fileName": "019e5e1c-2d81-7827-971f-13290a3097c4.jpg",
+    "prompt": "On the visible flat side of the wooden stick, add a small, rough 'X' mark that looks like it was carved into the wood with a knife. The mark should look natural and slightly aged. The rest of the stick remains exactly the same.",
+    "negativePrompt": "",
+    "model": "flux-2-pro",
+    "modelName": "Flux 2 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "9465fdf176f8a6042bfa47ebc6a322b3",
+                "unlabeledIndex": -1
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
