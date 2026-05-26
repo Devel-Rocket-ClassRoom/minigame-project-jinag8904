@@ -6,6 +6,10 @@ Shader "Custom/YutStick"
         _RoundColor  ("Round Face / Front (앞면)", Color) = (0.28, 0.16, 0.07, 1)
         _SideColor   ("Side Color",                Color) = (0.52, 0.33, 0.15, 1)
         _Smoothness  ("Smoothness",  Range(0,1))          = 0.12
+        [Toggle] _HasMark ("Has Back Mark (뒷도 표식)", Float) = 0
+        _MarkColor   ("Mark Color",                Color) = (0.55, 0.05, 0.05, 1)
+        _MarkRadius  ("Mark Radius",  Range(0.005, 0.12)) = 0.025
+        _MarkCenterZ ("Mark Center Z", Range(-0.45, 0.45)) = 0.0
     }
 
     SubShader
@@ -17,6 +21,7 @@ Shader "Custom/YutStick"
         {
             Name "UniversalForward"
             Tags { "LightMode"="UniversalForward" }
+            Cull Off
 
             HLSLPROGRAM
             #pragma vertex   vert
@@ -34,6 +39,10 @@ Shader "Custom/YutStick"
                 float4 _RoundColor;
                 float4 _SideColor;
                 float  _Smoothness;
+                float  _HasMark;
+                float4 _MarkColor;
+                float  _MarkRadius;
+                float  _MarkCenterZ;
             CBUFFER_END
 
             struct Attributes
@@ -49,6 +58,7 @@ Shader "Custom/YutStick"
                 float3 normOS : TEXCOORD0;
                 float3 normWS : TEXCOORD1;
                 float3 posWS  : TEXCOORD2;
+                float3 posOS  : TEXCOORD3;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -61,10 +71,11 @@ Shader "Custom/YutStick"
                 o.normOS = i.normOS;
                 o.normWS = TransformObjectToWorldNormal(i.normOS);
                 o.posWS  = TransformObjectToWorld(i.posOS.xyz);
+                o.posOS  = i.posOS.xyz;
                 return o;
             }
 
-            half4 frag(Varyings i) : SV_Target
+            half4 frag(Varyings i, bool isFrontFace : SV_IsFrontFace) : SV_Target
             {
                 // ── 오브젝트 공간 Y 법선으로 면 판별 ──────────────────────────
                 // 평평한 면(뒷면): 법선 Y ≈ -1  (로컬 아래쪽 = 바닥)
@@ -74,12 +85,18 @@ Shader "Custom/YutStick"
                 float roundW = saturate(( nY - 0.45) * 6.0);   // nY >  0.45 → 1
                 float sideW  = 1.0 - saturate(flatW + roundW);
 
+                // DEBUG: flatW=1이면 밝은 초록, 아니면 원래 색
                 float4 albedo = _FlatColor  * flatW
                               + _RoundColor * roundW
                               + _SideColor  * sideW;
 
+                // 뒷도 표식: flat face 중앙에 원형 점
+                float2 markDelta = i.posOS.xz - float2(0.0, _MarkCenterZ);
+                float markMask = _HasMark * flatW * step(length(markDelta), _MarkRadius);
+                albedo = lerp(albedo, _MarkColor, markMask);
+
                 // ── URP 라이팅 ────────────────────────────────────────────────
-                float3 nWS = normalize(i.normWS);
+                float3 nWS = normalize(isFrontFace ? i.normWS : -i.normWS);
 
                 #ifdef _MAIN_LIGHT_SHADOWS
                     float4 shadowCoord = TransformWorldToShadowCoord(i.posWS);
@@ -115,6 +132,7 @@ Shader "Custom/YutStick"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _FlatColor; float4 _RoundColor; float4 _SideColor; float _Smoothness;
+                float _HasMark; float4 _MarkColor; float _MarkRadius; float _MarkCenterZ;
             CBUFFER_END
 
             float3 _LightDirection;

@@ -79,6 +79,9 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button randomCharacterButton;
     private CharacterData characterDecision;
 
+    // 제비뽑기
+    [SerializeField] private LotDrawController lotDrawController;
+
     // AI
     [SerializeField] private BoardData boardData;
     private AIController aiController;
@@ -248,11 +251,8 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoWhoGoesFirst()
     {
-        yield return new WaitForSeconds(1);
-
-        currPlayer = players[Random.Range(0, 2)];
-
-        yield return new WaitForSeconds(3);
+        yield return StartCoroutine(lotDrawController.CoDraw());
+        currPlayer = lotDrawController.LastPickedMarked ? players[0] : players[1];
     }
 
     private IEnumerator CoPlayGame()
