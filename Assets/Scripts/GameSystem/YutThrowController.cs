@@ -7,6 +7,7 @@ public class YutThrowController : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera throwZoneCam;
     [SerializeField] private GameObject yutStickPrefab;
+    [SerializeField] private GameObject backDoYutStickPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
     [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private Vector3 throwForce = new Vector3(0f, 5f, 2f);
     [SerializeField] private float torqueStrength = 8f;
@@ -51,7 +52,8 @@ public class YutThrowController : MonoBehaviour
                 : transform.position + new Vector3(i * 0.2f - 0.3f, 1f, 0f);
 
             var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);
-            var go = Instantiate(yutStickPrefab, pos, spawnRot);
+            var prefab = (i == 3 && backDoYutStickPrefab != null) ? backDoYutStickPrefab : yutStickPrefab;
+            var go = Instantiate(prefab, pos, spawnRot);
             sticks[i] = go.GetComponent<YutStick>();
             var rb = go.GetComponent<Rigidbody>();
             if (rb != null)
