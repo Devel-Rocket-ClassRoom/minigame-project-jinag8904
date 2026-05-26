@@ -8,10 +8,6 @@ public class GameLogUI : MonoBehaviour
     public static GameLogUI Instance { get; private set; }
 
     [SerializeField] private TextMeshProUGUI yutResultText;
-    [SerializeField] private TextMeshProUGUI gameLogText;
-    [SerializeField] private int maxLogLines = 6;
-
-    private readonly Queue<string> logLines = new Queue<string>();
 
     private List<YutResult> lastYutResults;
     private string lastYutPlayerName;
@@ -27,28 +23,15 @@ public class GameLogUI : MonoBehaviour
 
     private void OnLanguageChanged() => UpdateYutResults(lastYutResults, lastYutPlayerName);
 
-    public static void Log(string message)
-    {
-        Debug.Log(message);
-        if (Instance == null) return;
-        Instance.logLines.Enqueue(message);
-        if (Instance.logLines.Count > Instance.maxLogLines)
-            Instance.logLines.Dequeue();
-        Instance.gameLogText.text = string.Join("\n", Instance.logLines);
-    }
-
     public static void UpdateYutResults(List<YutResult> results, string playerName = null)
     {
         if (Instance == null) return;
         Instance.lastYutResults = results;
         Instance.lastYutPlayerName = playerName;
-        string header = playerName != null
-            ? $"<b>{playerName}</b> {LocalizationManager.Get("YUT_RESULT_HEADER")}"
-            : LocalizationManager.Get("YUT_RESULT_HEADER");
         if (results == null || results.Count == 0)
-            Instance.yutResultText.text = $"{header}: \n{LocalizationManager.Get("YUT_RESULT_NONE")}";
+            Instance.yutResultText.text = "";
         else
-            Instance.yutResultText.text = $"{header}: \n<b><color=#FFD700>{string.Join("  ", results.Select(GetYutName))}</color></b>";
+            Instance.yutResultText.text = $"<b><color=#FFD700>{string.Join("  ", results.Select(GetYutName))}</color></b>";
     }
 
     public static string GetYutName(YutResult yr) => yr switch

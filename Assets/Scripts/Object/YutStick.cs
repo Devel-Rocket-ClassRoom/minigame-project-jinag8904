@@ -17,9 +17,19 @@ public class YutStick : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (rb == null || rb.IsSleeping()) return;
+
         // 올라갈 때도 같은 배수 적용해 전체 체공 시간 단축
         // |velocity.y| < 0.3f 구간 제외해 바닥 안착 후 진동 방지
-        if (rb != null && !rb.IsSleeping() && Mathf.Abs(rb.linearVelocity.y) > 0.3f)
+        if (Mathf.Abs(rb.linearVelocity.y) > 0.3f)
             rb.AddForce(Physics.gravity * (fallGravityMultiplier - 1f), ForceMode.Acceleration);
+
+        // 옆으로 서는 것 방지: 앞/뒤 방향으로 쓰러지도록 교정 토크 적용
+        float upDot = Vector3.Dot(transform.up, Vector3.up);
+        if (Mathf.Abs(upDot) < 0.4f)
+        {
+            Vector3 targetUp = upDot >= 0f ? Vector3.up : Vector3.down;
+            rb.AddTorque(Vector3.Cross(transform.up, targetUp) * 5f, ForceMode.Acceleration);
+        }
     }
 }

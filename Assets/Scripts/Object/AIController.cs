@@ -8,18 +8,26 @@ public class AIController : MonoBehaviour
     [SerializeField] private GameMaster gm;
     [SerializeField] private BoardData boardData;
 
+    private YutThrowController yutThrowController;
+
+    public void Init(YutThrowController controller)
+    {
+        yutThrowController = controller;
+    }
+
     // Throw → 이동 루프 → 검은 윷 처리
     public IEnumerator DecideTurn()
     {
         var ai = gm.CurrPlayer;
 
-        ai.Throw();
+        yield return StartCoroutine(yutThrowController.CoThrow());
+        ai.AddThrowResult(yutThrowController.LastResult);
         while (ai.yutResults.Count > 0 &&
                (ai.yutResults[^1] == YutResult.Yut || ai.yutResults[^1] == YutResult.Mo))
         {
-            ai.Throw();
+            yield return StartCoroutine(yutThrowController.CoThrow());
+            ai.AddThrowResult(yutThrowController.LastResult);
         }
-        GameLogUI.Log("<color=#00CFCF>[AI] 윷 결과가 나왔습니다!</color>");
         GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
         yield return new WaitForSeconds(1);
 
@@ -36,17 +44,9 @@ public class AIController : MonoBehaviour
                 if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinishWithSacrificable(ai))
                 {
                     yield return StartCoroutine(ai.Skill.CoOnActiveActivated(ai, reposition: gm.RepositionNode));
-                    GameLogUI.Log($"<color=#00CFCF>[AI] {ai.Skill.ActiveSkillName} 발동!</color>");
                 }
 
                 var (piece, dest, pushPath, usedYR, isOut, useActiveSkill) = FindBestMove(ai);
-
-                if (isOut)
-                    GameLogUI.Log($"<color=#00CFCF>[AI] 완주 선택 ({usedYR})</color>");
-                else if (useActiveSkill)
-                    GameLogUI.Log($"<color=#00CFCF>[AI] {ai.Skill.ActiveSkillName} 사용! {GameLogUI.GetYutName(usedYR)} > {dest?.nodeName}</color>");
-                else
-                    GameLogUI.Log($"<color=#00CFCF>[AI] {GameLogUI.GetYutName(usedYR)} > {dest?.nodeName}</color>");
 
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
@@ -58,7 +58,8 @@ public class AIController : MonoBehaviour
 
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
-            ai.Throw(isBlackYut: true);
+            yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
+            ai.UseBlackYut(yutThrowController.LastResult);
             GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             yield return new WaitForSeconds(1f);
         }

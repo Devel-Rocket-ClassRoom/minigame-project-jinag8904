@@ -9,7 +9,6 @@ public class GwishinSkill : CharacterSkill
     public override void OnCapture(Piece piece, List<Piece> captured)
     {
         piece.owner.AddBlackYut(1);
-        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("SKILL_GWISHIN_ON_CAPTURE", piece.owner.name)}</color>");
     }
 
     public override int MaxActiveUses => 1;
@@ -45,7 +44,6 @@ public class GwishinSkill : CharacterSkill
                     caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                 }
 
-                GameLogUI.Log($"<color=purple>{LocalizationManager.Get("SKILL_GWISHIN_PATH_CAPTURE", ActiveSkillName, capturedPieces.Count)}</color>");
                 player.Skill?.OnCapture(mover, capturedPieces);
             }
 

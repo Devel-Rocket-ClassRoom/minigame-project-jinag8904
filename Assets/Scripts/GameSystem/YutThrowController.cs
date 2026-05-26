@@ -50,7 +50,8 @@ public class YutThrowController : MonoBehaviour
                 ? spawnPoints[i].position
                 : transform.position + new Vector3(i * 0.2f - 0.3f, 1f, 0f);
 
-            var go = Instantiate(yutStickPrefab, pos, Random.rotation);
+            var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);
+            var go = Instantiate(yutStickPrefab, pos, spawnRot);
             sticks[i] = go.GetComponent<YutStick>();
             var rb = go.GetComponent<Rigidbody>();
             if (rb != null)
@@ -58,7 +59,9 @@ public class YutThrowController : MonoBehaviour
                 // 수평 이동 없이 위로만, 스핀만 추가
                 var force = new Vector3(0f, throwForce.y + Random.Range(-0.5f, 0.5f), 0f);
                 rb.AddForce(force, ForceMode.VelocityChange);
-                rb.AddTorque(Random.insideUnitSphere * torqueStrength, ForceMode.VelocityChange);
+                // Y축 토크 제거: 옆으로 서는 현상 방지 (X축 텀블링만 허용)
+                var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;
+                rb.AddTorque(torqueDir * torqueStrength, ForceMode.VelocityChange);
                 rb.angularDamping = 5f;  // 착지 후 구름 억제
             }
         }

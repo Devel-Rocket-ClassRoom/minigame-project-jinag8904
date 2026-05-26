@@ -10,7 +10,6 @@ public class MulgwishinSkill : CharacterSkill
     public override bool OnBeingCaptured(Piece captured, Piece attacker)
     {
         attacker.owner.yutResults.Clear();
-        GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("SKILL_MULGWISHIN_ON_CAPTURED", attacker.owner.name)}</color>");
         return true;
     }
 
@@ -65,6 +64,5 @@ public class MulgwishinSkill : CharacterSkill
         reposition?.Invoke(node);
 
         player.AddBlackYut(2);
-        GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("SKILL_MULGWISHIN_SACRIFICE", player.name)}</color>");
     }
 }

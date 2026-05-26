@@ -83,6 +83,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private BoardData boardData;
     private AIController aiController;
     private Dictionary<BoardNodeData, BoardNode> boardNodeMap;
+    private PieceMoveAnimator pieceMoveAnimator;
 
     // 마우스 선택
     private DragAndDrop dragAndDrop;
@@ -151,8 +152,10 @@ public class GameMaster : MonoBehaviour
         randomCharacterButton.onClick.AddListener(() => characterDecision = availableCharacters[Random.Range(0, availableCharacters.Length)]);
 
         dragAndDrop = GetComponent<DragAndDrop>();
+        pieceMoveAnimator = GetComponent<PieceMoveAnimator>();
 
         aiController = GetComponent<AIController>();
+        aiController.Init(yutThrowController);
         boardNodeMap = FindObjectsByType<BoardNode>(FindObjectsSortMode.None).ToDictionary(n => n.data);
         dragAndDrop.boardNodeMap = boardNodeMap;
 
@@ -235,11 +238,9 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoRunGame()
     {
-        GameLogUI.Log(LocalizationManager.Get("LOG_MODE_SELECT"));
         yield return StartCoroutine(CoSelectMode());
         yield return StartCoroutine(CoSelectCharacter());
         Init();
-        GameLogUI.Log(LocalizationManager.Get("LOG_GAME_START"));
         yield return StartCoroutine(CoWhoGoesFirst());
         yield return StartCoroutine(CoPlayGame());
         yield return StartCoroutine(CoEndGame());
@@ -249,12 +250,9 @@ public class GameMaster : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_FINDING_ORDER")}</color>");
         currPlayer = players[Random.Range(0, 2)];
 
         yield return new WaitForSeconds(3);
-
-        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_FIRST_PLAYER", currPlayer.name)}</color>");
     }
 
     private IEnumerator CoPlayGame()
@@ -275,25 +273,21 @@ public class GameMaster : MonoBehaviour
             yield break;
         }
 
-        GameLogUI.Log(LocalizationManager.Get("LOG_YOUR_TURN", player.name));
         yield return new WaitForSeconds(1);
 
-        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_THROW_YUT_PROMPT")}</color>");
         yield return StartCoroutine(CoWaitThrowButton(player));
-        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_YUT_RESULT")}</color>");
         LogYutResults(player);
 
         // 윷/모 추가 던지기 (수동)
         while (player.yutResults.Count > 0 &&
                (player.yutResults[^1] == YutResult.Yut || player.yutResults[^1] == YutResult.Mo))
         {
-            GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_EXTRA_THROW")}</color>");
             yield return StartCoroutine(CoWaitThrowButton(player));
-            GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_YUT_RESULT")}</color>");
             LogYutResults(player);
         }
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
+        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam(15));
         bool wonThisTurn = false;
         while (true)
         {
@@ -425,7 +419,6 @@ public class GameMaster : MonoBehaviour
                             r.pieceObject.transform.position = r.pieceObject.initPosition;
                         }
 
-                        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
                     }
                     else
                     {
@@ -447,12 +440,9 @@ public class GameMaster : MonoBehaviour
                                 caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                             }
 
-                            GameLogUI.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
                             if (!noBonus)
                             {
-                                GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS_THROW")}</color>");
                                 yield return StartCoroutine(CoWaitThrowButton(player, isCaptureBonus: true));
-                                GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_CAPTURE_BONUS")}</color>");
                             }
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
@@ -495,7 +485,6 @@ public class GameMaster : MonoBehaviour
                         ally.stackLeader = piece;
 
                         RepositionNode(targetNode);
-                        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_STACK", player.name)}</color>");
                     }
                 }
                 else if (friendlyLeaders.Count >= 2)
@@ -519,7 +508,6 @@ public class GameMaster : MonoBehaviour
                         piece.stackedPieces.Add(ally);
                         ally.stackLeader = piece;
                         RepositionNode(targetNode);
-                        GameLogUI.Log($"<color=yellow>{LocalizationManager.Get("LOG_STACK", player.name)}</color>");
                     }
                 }
 
@@ -540,6 +528,7 @@ public class GameMaster : MonoBehaviour
             // 검은 윷을 던진 경우 → inner while 재진입
         }
 
+        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
         blackYutButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(false);
         throwYutButton.gameObject.SetActive(false);
@@ -571,6 +560,7 @@ public class GameMaster : MonoBehaviour
     private IEnumerator CoHandleBlackYutThrow()
     {
         blackYutButton.interactable = false;
+        endTurnButton.interactable = false;
         if (yutThrowController != null)
         {
             yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
@@ -581,15 +571,14 @@ public class GameMaster : MonoBehaviour
             currPlayer.Throw(isBlackYut: true);
             yield return new WaitForSeconds(2);
         }
-        GameLogUI.Log(LocalizationManager.Get("LOG_BLACK_YUT_THROWN"));
         blackYutButton.interactable = true;
+        endTurnButton.interactable = true;
         if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
         LogYutResults(currPlayer);
     }
 
     private IEnumerator CoEndGame()
     {
-        GameLogUI.Log(LocalizationManager.Get("LOG_GAME_END"));
         yield return null;
     }
 
@@ -603,7 +592,6 @@ public class GameMaster : MonoBehaviour
     {
         var skill = player.Skill;
         GetActiveSkillButton(player).interactable = false;
-        GameLogUI.Log($"<color=purple>{LocalizationManager.Get("LOG_ACTIVE_SKILL_ACTIVATED", skill.ActiveSkillName)}</color>");
 
         if (skill.HasImmediateEffect)
             yield return StartCoroutine(skill.CoOnActiveActivated(player, RequestPiecePickCoroutine, RepositionNode));
@@ -664,7 +652,6 @@ public class GameMaster : MonoBehaviour
             s.stackedPieces.Clear();
         }
 
-        GameLogUI.Log($"<color=green>{LocalizationManager.Get("LOG_FINISH", player.name, player.FinishedCount)}</color>");
         player.Skill?.OnFinish(piece);
     }
 
@@ -722,11 +709,18 @@ public class GameMaster : MonoBehaviour
         // 완주 처리
         if (isOut)
         {
+            var nodeBeforeOut = piece.currentNode;
             piece.currentNode?.piecesOnNode.Remove(piece);
             foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
-            var nodeBeforeOut = piece.currentNode;
             if (nodeBeforeOut != null) RepositionNode(nodeBeforeOut);
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
+            var endPositions = player.playerId == 0 ? p1EndPositions : p2EndPositions;
+            var allFinishing = new List<Piece> { piece };
+            allFinishing.AddRange(stackAll);
+            var destPositions = allFinishing.Select((_, i) => endPositions[player.FinishedCount + i].position).ToList();
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceToPositions(allFinishing, destPositions));
             HandleFinish(piece, stackAll, player);
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
             player.yutResults.Remove(used);
             yield break;
         }
@@ -753,7 +747,10 @@ public class GameMaster : MonoBehaviour
         }
 
         if (prevNode != null) RepositionNode(prevNode);
+        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
+        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
         RepositionNode(targetNode);
+        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
 
         // 액티브 스킬 - 이동 효과 (AI)
         if (useActiveSkill && pushPathNodes != null)
@@ -790,7 +787,7 @@ public class GameMaster : MonoBehaviour
                     r.pieceObject.transform.position = r.pieceObject.initPosition;
                 }
 
-                Debug.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
+                //Debug.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
             }
             else
             {
@@ -812,8 +809,12 @@ public class GameMaster : MonoBehaviour
                         caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                     }
 
-                    Debug.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
-                    if (!noBonus) player.Throw(isCaptureBonus: true);
+                    //Debug.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
+                    if (!noBonus)
+                    {
+                        yield return StartCoroutine(yutThrowController.CoThrow());
+                        player.AddThrowResult(yutThrowController.LastResult);
+                    }
                     player.Skill?.OnCapture(piece, capturedPieces);
                 }
             }
@@ -838,7 +839,6 @@ public class GameMaster : MonoBehaviour
             piece.stackedPieces.Add(ally);
             ally.stackLeader = piece;
             RepositionNode(targetNode);
-            GameLogUI.Log($"<color=#00CFCF>{LocalizationManager.Get("LOG_AI_STACK")}</color>");
         }
 
         player.yutResults.Remove(used);
