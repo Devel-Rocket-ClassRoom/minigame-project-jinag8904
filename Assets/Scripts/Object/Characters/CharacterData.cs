@@ -17,6 +17,8 @@ public class CharacterData : ScriptableObject
     public string localizationKey;
     public Sprite icon;
 
+    public Color themeColor = Color.white;
+
     public AIPersonality aiPersonality;
     public CharacterSkill skill;
 }

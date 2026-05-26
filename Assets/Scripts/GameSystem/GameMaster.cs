@@ -407,6 +407,7 @@ public class GameMaster : MonoBehaviour
                         wasReversed = true;
                         var reversedPieces = new[] { piece }.Concat(stackAll).ToList();
 
+                        VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
                         player.OnCaught(piece);
 
                         foreach (var r in reversedPieces)
@@ -429,6 +430,7 @@ public class GameMaster : MonoBehaviour
                             enemyLeader.owner.OnCaught(enemyLeader);
                             enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
                             bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+                            if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
 
                             foreach (var caught in capturedPieces)
                             {
@@ -446,6 +448,7 @@ public class GameMaster : MonoBehaviour
                             }
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
+                            if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                         }
                     }
 
@@ -747,16 +750,23 @@ public class GameMaster : MonoBehaviour
         }
 
         if (prevNode != null) RepositionNode(prevNode);
-        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
-        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
-        RepositionNode(targetNode);
-        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
 
-        // 액티브 스킬 - 이동 효과 (AI)
-        if (useActiveSkill && pushPathNodes != null)
+        if (useActiveSkill)
         {
-            player.Skill.OnActiveActivated(player);
-            player.Skill.OnActiveMoveEffect(player, piece, pushPathNodes, targetNode, RepositionNode);
+            // 액티브 스킬: 플레이어와 동일하게 즉시 텔레포트 후 경로 잡기
+            RepositionNode(targetNode);
+            if (pushPathNodes != null)
+            {
+                player.Skill.OnActiveActivated(player);
+                player.Skill.OnActiveMoveEffect(player, piece, pushPathNodes, targetNode, RepositionNode);
+            }
+        }
+        else
+        {
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
+            RepositionNode(targetNode);
+            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
         }
 
         // 잡기 처리
@@ -775,6 +785,7 @@ public class GameMaster : MonoBehaviour
             {
                 var reversedPieces = new[] { piece }.Concat(stackAll).ToList();
 
+                VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
                 player.OnCaught(piece);
 
                 foreach (var r in reversedPieces)
@@ -798,6 +809,7 @@ public class GameMaster : MonoBehaviour
                     enemyLeader.owner.OnCaught(enemyLeader);
                     enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
                     bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+                    if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
 
                     foreach (var caught in capturedPieces)
                     {
@@ -816,6 +828,7 @@ public class GameMaster : MonoBehaviour
                         player.AddThrowResult(yutThrowController.LastResult);
                     }
                     player.Skill?.OnCapture(piece, capturedPieces);
+                    if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                 }
             }
 

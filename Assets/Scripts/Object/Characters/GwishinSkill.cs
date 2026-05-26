@@ -16,7 +16,7 @@ public class GwishinSkill : CharacterSkill
 
     public override void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition)
     {
-        foreach (var pathNode in path.Where(n => n != dest))
+        foreach (var pathNode in path.Where(n => n != dest && n != null))
         {
             var pathEnemyLeaders = pathNode.piecesOnNode
                 .Where(p => p.owner != player && p.stackLeader == null)
@@ -24,11 +24,6 @@ public class GwishinSkill : CharacterSkill
 
             foreach (var enemyLeader in pathEnemyLeaders)
             {
-                int totalEnemyCount = 1 + enemyLeader.stackedPieces.Count;
-                var outcome = enemyLeader.owner.Skill?.OnCaptureAttempt(enemyLeader, mover, totalEnemyCount)
-                              ?? CaptureOutcome.Captured;
-                if (outcome == CaptureOutcome.Reversed) continue;
-
                 var capturedPieces = new[] { enemyLeader }.Concat(enemyLeader.stackedPieces).ToList();
                 enemyLeader.owner.OnCaught(enemyLeader);
                 enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
@@ -45,6 +40,7 @@ public class GwishinSkill : CharacterSkill
                 }
 
                 player.Skill?.OnCapture(mover, capturedPieces);
+                VFXManager.Instance?.PlayGwishin(pathNode.transform.position);
             }
 
             if (pathEnemyLeaders.Count > 0) reposition(pathNode);
