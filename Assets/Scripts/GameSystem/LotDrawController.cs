@@ -93,17 +93,20 @@ public class LotDrawController : MonoBehaviour
         var other      = _pickedIndex == 0 ? stick1Root : stick0Root;
         var initAngles = _pickedIndex == 0 ? _stick0InitAngles : _stick1InitAngles;
 
-        // 선택 안 된 스틱은 아래로
-        other.DOLocalMoveY(other.localPosition.y - 0.5f, 0.3f).SetEase(Ease.InQuad);
+        // 1단계: 카메라 뒤로
+        var camPulledPos = _camInitPos + new Vector3(0, 0, camPullBackDist);
+        yield return jebiCam.transform.DOMove(camPulledPos, camPullBackDur)
+            .SetEase(Ease.OutCubic).WaitForCompletion();
 
-        // 1단계: 세우기 (기울기 제거)
+        yield return new WaitForSeconds(0.3f);
+
+        // 2단계: 세우기 (기울기 제거)
         var uprightAngles = new Vector3(initAngles.x, initAngles.y, 0f);
         yield return picked.DOLocalRotate(uprightAngles, 0.35f)
             .SetEase(Ease.OutCubic).WaitForCompletion();
 
-        // 2단계: 위로 뽑기 + 카메라 동시에 뒤로
-        var camPulledPos = _camInitPos + new Vector3(0, 0, camPullBackDist);
-        jebiCam.transform.DOMove(camPulledPos, camPullBackDur).SetEase(Ease.OutCubic);
+        // 3단계: 선택 스틱 위로 + 나머지 스틱 아래로 동시에
+        other.DOLocalMoveY(other.localPosition.y - 0.5f, 0.8f).SetEase(Ease.InQuad);
         yield return picked.DOLocalMoveY(picked.localPosition.y + pullOutDistance, 0.8f)
             .SetEase(Ease.OutCubic).WaitForCompletion();
 

@@ -263,6 +263,8 @@ public class GameMaster : MonoBehaviour
             yield return StartCoroutine(CoHandlePlayerTurn(currPlayer));
             SwitchTurn();
         }
+
+        // 게임 끝
     }
 
     private IEnumerator CoHandlePlayerTurn(Player player)
@@ -409,6 +411,7 @@ public class GameMaster : MonoBehaviour
 
                         VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
                         player.OnCaught(piece);
+                        GameEvents.InvokeCaptureFailed(player.playerId);
 
                         foreach (var r in reversedPieces)
                         {
@@ -448,6 +451,7 @@ public class GameMaster : MonoBehaviour
                             }
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
+                            GameEvents.InvokeCaptureSuccess(player.playerId);
                             if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                         }
                     }
@@ -540,42 +544,34 @@ public class GameMaster : MonoBehaviour
         isActiveSkillOn = false;
     }
 
-    private IEnumerator CoWaitThrowButton(Player player, bool isCaptureBonus = false)
+    private IEnumerator CoWaitThrowButton(Player player, bool isCaptureBonus = false)   // 윷 던지기 버튼 입력 대기
     {
-        throwRequested = false;
+        throwRequested = false; // 종료 플래그
+
         blackYutButton.gameObject.SetActive(false);
         throwYutButton.gameObject.SetActive(true);
+
         yield return new WaitUntil(() => throwRequested);
+       
         throwYutButton.gameObject.SetActive(false);
 
-        if (yutThrowController != null)
-        {
-            yield return StartCoroutine(yutThrowController.CoThrow());
-            player.AddThrowResult(yutThrowController.LastResult);
-        }
-        else
-        {
-            player.Throw(isCaptureBonus: isCaptureBonus);
-            yield return new WaitForSeconds(2);
-        }
+        GameEvents.InvokeYutThrown(player.playerId);    // 3D 모델용
+        yield return StartCoroutine(yutThrowController.CoThrow());
+        player.AddThrowResult(yutThrowController.LastResult);
     }
 
     private IEnumerator CoHandleBlackYutThrow()
     {
         blackYutButton.interactable = false;
         endTurnButton.interactable = false;
-        if (yutThrowController != null)
-        {
-            yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
-            currPlayer.UseBlackYut(yutThrowController.LastResult);
-        }
-        else
-        {
-            currPlayer.Throw(isBlackYut: true);
-            yield return new WaitForSeconds(2);
-        }
+
+        GameEvents.InvokeYutThrown(currPlayer.playerId);
+        yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
+        currPlayer.UseBlackYut(yutThrowController.LastResult);
+        
         blackYutButton.interactable = true;
         endTurnButton.interactable = true;
+
         if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
         LogYutResults(currPlayer);
     }
@@ -656,6 +652,7 @@ public class GameMaster : MonoBehaviour
         }
 
         player.Skill?.OnFinish(piece);
+        GameEvents.InvokePieceFinished(player.playerId);
     }
 
     public BoardNode GetNode(BoardNodeData data)
@@ -665,12 +662,12 @@ public class GameMaster : MonoBehaviour
         return node;
     }
 
-    // pushPath == null: 뒷도(팝), non-null: 전진(목록 순서대로 푸시)
     private void ApplyNodeHistory(Piece leader, List<Piece> stacked, List<BoardNode> pushPath)
     {
-        if (pushPath == null)
+        if (pushPath == null)   // 뒷도
         {
             if (leader.nodeHistory.Count > 0) leader.nodeHistory.Pop();
+
             foreach (var s in stacked)
                 if (s.nodeHistory.Count > 0) s.nodeHistory.Pop();
         }
@@ -679,6 +676,7 @@ public class GameMaster : MonoBehaviour
             foreach (var n in pushPath)
             {
                 leader.nodeHistory.Push(n);
+
                 foreach (var s in stacked)
                     s.nodeHistory.Push(n);
             }
@@ -703,46 +701,53 @@ public class GameMaster : MonoBehaviour
         }
     }
 
-    // 플레이어 이동 처리와 동일, 자동화되어 있음.
+    // 플레이어 이동 처리와 동일, but 자동화.
     public IEnumerator ApplyAIMove(Piece piece, BoardNodeData targetData, List<BoardNodeData> pushPath, YutResult used, bool isOut, bool useActiveSkill = false)
     {
-        var player = currPlayer;
-        var stackAll = piece.stackedPieces.ToList();
+        var stackAll = piece.stackedPieces.ToList();    // 쌓인 말들 한꺼번에 다루기
 
-        // 완주 처리
-        if (isOut)
+        if (isOut)  // 말이 나가는 경우
         {
+            // [말 이동과 시각화]
             var nodeBeforeOut = piece.currentNode;
-            piece.currentNode?.piecesOnNode.Remove(piece);
-            foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
-            if (nodeBeforeOut != null) RepositionNode(nodeBeforeOut);
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
-            var endPositions = player.playerId == 0 ? p1EndPositions : p2EndPositions;
-            var allFinishing = new List<Piece> { piece };
-            allFinishing.AddRange(stackAll);
-            var destPositions = allFinishing.Select((_, i) => endPositions[player.FinishedCount + i].position).ToList();
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceToPositions(allFinishing, destPositions));
-            HandleFinish(piece, stackAll, player);
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
-            player.yutResults.Remove(used);
-            yield break;
+
+            nodeBeforeOut.piecesOnNode.Remove(piece);   // 현위치에서 말 제거
+            foreach (var s in stackAll)
+                nodeBeforeOut.piecesOnNode.Remove(s);
+
+            RepositionNode(nodeBeforeOut);
+
+            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());    // 보드캠으로 시점 전환
+
+            var endPositions = currPlayer.playerId == 0 ? p1EndPositions : p2EndPositions;
+            var allFinishing = new List<Piece> { piece };   // 리더
+            allFinishing.AddRange(stackAll);                // + 쌓인 말 모두
+
+            var destPositions = allFinishing.Select((_, i) => endPositions[currPlayer.FinishedCount + i].position).ToList();
+
+            yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceToPositions(allFinishing, destPositions));
+            HandleFinish(piece, stackAll, currPlayer);
+
+            yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+            currPlayer.yutResults.Remove(used);
+
+            yield break;    // 코루틴 종료
         }
 
-        // 이동
-        var targetNode = GetNode(targetData);
-
+        // [말 이동]
         var prevNode = piece.currentNode;
-        piece.currentNode?.piecesOnNode.Remove(piece);
-        foreach (var s in stackAll) s.currentNode?.piecesOnNode.Remove(s);
 
-        var pushPathNodes = pushPath != null
-            ? pushPath.ConvertAll(d => GetNode(d))
-            : null;
+        prevNode?.piecesOnNode.Remove(piece);
+        foreach (var s in stackAll)
+            prevNode?.piecesOnNode.Remove(s);
+
+        var pushPathNodes = pushPath != null ? pushPath.ConvertAll(d => GetNode(d)) : null; // 노드 데이터 -> 노드(obj)
         ApplyNodeHistory(piece, stackAll, pushPathNodes);
 
+        var targetNode = GetNode(targetData);
         piece.currentNode = targetNode;
-        targetNode.piecesOnNode.Add(piece);
 
+        targetNode.piecesOnNode.Add(piece);        
         foreach (var s in stackAll)
         {
             s.currentNode = targetNode;
@@ -753,52 +758,42 @@ public class GameMaster : MonoBehaviour
 
         if (useActiveSkill)
         {
-            // 액티브 스킬: 플레이어와 동일하게 즉시 텔레포트 후 경로 잡기
             RepositionNode(targetNode);
             if (pushPathNodes != null)
             {
-                player.Skill.OnActiveActivated(player);
-                player.Skill.OnActiveMoveEffect(player, piece, pushPathNodes, targetNode, RepositionNode);
+                currPlayer.Skill.OnActiveActivated(currPlayer);
+                currPlayer.Skill.OnActiveMoveEffect(currPlayer, piece, pushPathNodes, targetNode, RepositionNode);
             }
         }
         else
         {
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
+            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
+            yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
             RepositionNode(targetNode);
-            if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+            yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
         }
 
-        // 잡기 처리
-        var enemyLeaders = targetNode.piecesOnNode
-            .Where(p => p.owner != player && p.stackLeader == null)
-            .ToList();
-
+        // [잡기 처리]
+        var enemyLeaders = targetNode.piecesOnNode.Where(p => p.owner != currPlayer && p.stackLeader == null).ToList();
         if (enemyLeaders.Count > 0)
         {
             int totalEnemyCount = enemyLeaders.Sum(e => 1 + e.stackedPieces.Count);
             var skilledEnemy = enemyLeaders.FirstOrDefault(e => e.owner.Skill != null);
-            var outcome = skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount)
-                          ?? CaptureOutcome.Captured;
+            var outcome = skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount) ?? CaptureOutcome.Captured;
 
-            if (outcome == CaptureOutcome.Reversed)
+            if (outcome == CaptureOutcome.Reversed) // 반격당함
             {
                 var reversedPieces = new[] { piece }.Concat(stackAll).ToList();
 
                 VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
-                player.OnCaught(piece);
+                currPlayer.OnCaught(piece);
+                currPlayer.AddWonhan(stackAll.Count);
+                GameEvents.InvokeCaptureFailed(currPlayer.playerId);
 
                 foreach (var r in reversedPieces)
                 {
-                    targetNode.piecesOnNode.Remove(r);
-                    r.currentNode = null;
-                    r.nodeHistory.Clear();
-                    r.stackLeader = null;
-                    r.stackedPieces.Clear();
-                    r.pieceObject.transform.position = r.pieceObject.initPosition;
+                    SendHome(r, targetNode);
                 }
-
-                //Debug.Log($"<color=purple>{LocalizationManager.Get("LOG_SUMO_WIN", skilledEnemy.owner.name)}</color>");
             }
             else
             {
@@ -808,27 +803,25 @@ public class GameMaster : MonoBehaviour
 
                     enemyLeader.owner.OnCaught(enemyLeader);
                     enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
+
                     bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
                     if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
 
                     foreach (var caught in capturedPieces)
                     {
-                        targetNode.piecesOnNode.Remove(caught);
-                        caught.currentNode = null;
-                        caught.nodeHistory.Clear();
-                        caught.stackLeader = null;
-                        caught.stackedPieces.Clear();
-                        caught.pieceObject.transform.position = caught.pieceObject.initPosition;
+                        SendHome(caught, targetNode);
                     }
 
-                    //Debug.Log($"<color=red>{LocalizationManager.Get("LOG_CAPTURE", player.name, capturedPieces.Count)}</color>");
                     if (!noBonus)
                     {
+                        GameEvents.InvokeYutThrown(currPlayer.playerId);
                         yield return StartCoroutine(yutThrowController.CoThrow());
-                        player.AddThrowResult(yutThrowController.LastResult);
+                        currPlayer.AddThrowResult(yutThrowController.LastResult);
                     }
-                    player.Skill?.OnCapture(piece, capturedPieces);
-                    if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
+
+                    currPlayer.Skill?.OnCapture(piece, capturedPieces);
+                    GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
+                    if (currPlayer.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                 }
             }
 
@@ -836,9 +829,7 @@ public class GameMaster : MonoBehaviour
         }
 
         // 업기 처리 (자동)
-        var friendlyLeaders = targetNode.piecesOnNode
-            .Where(p => p.owner == player && p != piece && p.stackLeader == null)
-            .ToList();
+        var friendlyLeaders = targetNode.piecesOnNode.Where(p => p.owner == currPlayer && p != piece && p.stackLeader == null).ToList();
 
         if (friendlyLeaders.Count > 0)
         {
@@ -854,6 +845,16 @@ public class GameMaster : MonoBehaviour
             RepositionNode(targetNode);
         }
 
-        player.yutResults.Remove(used);
+        currPlayer.yutResults.Remove(used);
+    }
+
+    private void SendHome(Piece p, BoardNode fromNode)
+    {
+        fromNode.piecesOnNode.Remove(p);
+        p.currentNode = null;
+        p.nodeHistory.Clear();
+        p.stackLeader = null;
+        p.stackedPieces.Clear();
+        p.pieceObject.transform.position = p.pieceObject.initPosition;
     }
 }
