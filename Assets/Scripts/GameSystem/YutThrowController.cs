@@ -7,6 +7,7 @@ using UnityEngine;
 public class YutThrowController : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera throwZoneCam;
+    [SerializeField] private CinemachineCamera p2ThrowZoneCam;
     [SerializeField] private GameObject yutStickPrefab;
     [SerializeField] private GameObject backDoYutStickPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
     [SerializeField] private GameObject blackYutStickPrefab;        // null이면 yutStickPrefab 사용
@@ -18,6 +19,11 @@ public class YutThrowController : MonoBehaviour
     [SerializeField] private float gravityMultiplier = 2.5f;
 
     public YutResult LastResult { get; private set; }
+
+    private bool _useP2Cam;
+    private CinemachineCamera ActiveThrowCam => _useP2Cam && p2ThrowZoneCam != null ? p2ThrowZoneCam : throwZoneCam;
+
+    public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
 
     private CinemachineBrain _brain;
 
@@ -38,7 +44,7 @@ public class YutThrowController : MonoBehaviour
 
     private void SetThrowCamActive(bool active)
     {
-        throwZoneCam.Priority = new PrioritySettings { Value = active ? 20 : 0 };
+        ActiveThrowCam.Priority = new PrioritySettings { Value = active ? 20 : 0 };
     }
 
     public IEnumerator CoThrow(bool isBlackYut = false) // 윷 던지기 코루틴

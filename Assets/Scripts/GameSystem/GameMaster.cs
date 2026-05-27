@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -79,6 +80,14 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button randomCharacterButton;
     private CharacterData characterDecision;
 
+    // 맞은편 캐릭터
+    [SerializeField] private OpponentCharacterController[] opponentCharacters;
+
+    // 로컬 2인 모드 시점 전환 카메라
+    [SerializeField] private CinemachineCamera p1SideCam;
+    [SerializeField] private CinemachineCamera p2SideCam;
+    private CinemachineBrain _brain;
+
     // 제비뽑기
     [SerializeField] private LotDrawController lotDrawController;
 
@@ -154,6 +163,8 @@ public class GameMaster : MonoBehaviour
         }
         randomCharacterButton.onClick.AddListener(() => characterDecision = availableCharacters[Random.Range(0, availableCharacters.Length)]);
 
+        _brain = Camera.main.GetComponent<CinemachineBrain>();
+
         dragAndDrop = GetComponent<DragAndDrop>();
         pieceMoveAnimator = GetComponent<PieceMoveAnimator>();
 
@@ -206,6 +217,17 @@ public class GameMaster : MonoBehaviour
         yield return StartCoroutine(CoSelectCharacterForPlayer(players[0]));
         yield return StartCoroutine(CoSelectCharacterForPlayer(players[1]));
         UpdateCharacterHUD();
+        ActivateOpponentCharacter();
+    }
+
+    private void ActivateOpponentCharacter()
+    {
+        if (opponentCharacters == null) return;
+        foreach (var oc in opponentCharacters)
+        {
+            bool active = isVsAI && oc.linkedCharacter == players[1].characterData;
+            oc.gameObject.SetActive(active);
+        }
     }
 
     private void UpdateCharacterHUD()
@@ -267,6 +289,25 @@ public class GameMaster : MonoBehaviour
         // 게임 끝
     }
 
+    private IEnumerator CoSwitchSideCam(int playerId)
+    {
+        if (p1SideCam == null || p2SideCam == null) yield break;
+
+        yutThrowController.SetActivePlayer(playerId);
+        pieceMoveAnimator.SetActivePlayer(playerId);
+
+        var incoming = playerId == 0 ? p1SideCam : p2SideCam;
+        var outgoing  = playerId == 0 ? p2SideCam : p1SideCam;
+
+        incoming.Priority = new PrioritySettings { Value = 15 };
+
+        yield return null;
+        if (_brain != null)
+            yield return new WaitUntil(() => !_brain.IsBlending);
+
+        outgoing.Priority = new PrioritySettings { Value = 0 };
+    }
+
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
         if (player.isAI)
@@ -274,6 +315,9 @@ public class GameMaster : MonoBehaviour
             yield return StartCoroutine(aiController.DecideTurn());
             yield break;
         }
+
+        if (!isVsAI)
+            yield return StartCoroutine(CoSwitchSideCam(player.playerId));
 
         yield return new WaitForSeconds(1);
 
@@ -411,7 +455,7 @@ public class GameMaster : MonoBehaviour
 
                         VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
                         player.OnCaught(piece);
-                        GameEvents.InvokeCaptureFailed(player.playerId);
+                        GameEvents.InvokeCaptured(player.playerId);
 
                         foreach (var r in reversedPieces)
                         {
@@ -788,7 +832,7 @@ public class GameMaster : MonoBehaviour
                 VFXManager.Instance?.PlayDokkaebi(targetNode.transform.position);
                 currPlayer.OnCaught(piece);
                 currPlayer.AddWonhan(stackAll.Count);
-                GameEvents.InvokeCaptureFailed(currPlayer.playerId);
+                GameEvents.InvokeCaptured(currPlayer.playerId);
 
                 foreach (var r in reversedPieces)
                 {
@@ -803,6 +847,7 @@ public class GameMaster : MonoBehaviour
 
                     enemyLeader.owner.OnCaught(enemyLeader);
                     enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
+                    GameEvents.InvokeCaptured(enemyLeader.owner.playerId);
 
                     bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
                     if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
