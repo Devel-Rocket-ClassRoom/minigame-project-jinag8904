@@ -3,6 +3,12 @@ using UnityEngine;
 public class OpponentCharacterController : MonoBehaviour
 {
     [SerializeField] private int opponentCharacterId = 1;
+    private Animator _animator;
+
+    void Awake()
+    {
+        _animator = GetComponent<Animator>();
+    }
 
     void OnEnable()
     {
@@ -20,8 +26,27 @@ public class OpponentCharacterController : MonoBehaviour
         GameEvents.OnPieceFinished  -= HandlePieceFinished;
     }
 
-    void HandleYutThrown(int id)      => Debug.Log($"[Opp] YutThrown by {id}");
-    void HandleCaptureSuccess(int id) => Debug.Log($"[Opp] CaptureSuccess by {id}");
-    void HandleCaptureFailed(int id)  => Debug.Log($"[Opp] CaptureFailed by {id}");
-    void HandlePieceFinished(int id)  => Debug.Log($"[Opp] PieceFinished by {id}");
+    void HandleYutThrown(int id)
+    {
+        if (id != opponentCharacterId) return;
+        _animator.SetTrigger("YutThrown");
+    }
+
+    void HandleCaptureSuccess(int id)
+    {
+        if (id != opponentCharacterId) return;
+        _animator.SetTrigger("CaptureSuccess");
+    }
+
+    void HandleCaptureFailed(int id)
+    {
+        if (id != opponentCharacterId) return;
+        _animator.SetTrigger("CaptureFailed");
+    }
+
+    void HandlePieceFinished(int id)
+    {
+        if (id != opponentCharacterId) return;
+        _animator.SetTrigger("PieceFinished");
+    }
 }

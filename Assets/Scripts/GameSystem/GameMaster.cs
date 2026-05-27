@@ -445,13 +445,13 @@ public class GameMaster : MonoBehaviour
                                 caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                             }
 
+                            GameEvents.InvokeCaptureSuccess(player.playerId);
                             if (!noBonus)
                             {
                                 yield return StartCoroutine(CoWaitThrowButton(player, isCaptureBonus: true));
                             }
                             LogYutResults(player);
                             player.Skill?.OnCapture(piece, capturedPieces);
-                            GameEvents.InvokeCaptureSuccess(player.playerId);
                             if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                         }
                     }
@@ -812,6 +812,7 @@ public class GameMaster : MonoBehaviour
                         SendHome(caught, targetNode);
                     }
 
+                    GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
                     if (!noBonus)
                     {
                         GameEvents.InvokeYutThrown(currPlayer.playerId);
@@ -820,7 +821,6 @@ public class GameMaster : MonoBehaviour
                     }
 
                     currPlayer.Skill?.OnCapture(piece, capturedPieces);
-                    GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
                     if (currPlayer.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                 }
             }

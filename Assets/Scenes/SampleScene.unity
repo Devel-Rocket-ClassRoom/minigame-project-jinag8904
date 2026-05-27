@@ -17789,6 +17789,7 @@ GameObject:
   - component: {fileID: 2013892625}
   - component: {fileID: 2013892624}
   - component: {fileID: 2013892628}
+  - component: {fileID: 2013892629}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -17904,6 +17905,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OpponentCharacterController
   opponentCharacterId: 1
+--- !u!95 &2013892629
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013892623}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 63c20e23e7a6c7c4cb569ba19c8730ba, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &2070537910
 GameObject:
   m_ObjectHideFlags: 0
