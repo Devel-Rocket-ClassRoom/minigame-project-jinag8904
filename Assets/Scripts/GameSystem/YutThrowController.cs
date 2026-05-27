@@ -7,6 +7,7 @@ using UnityEngine;
 public class YutThrowController : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera throwZoneCam;
+    [SerializeField] private CinemachineCamera p2ThrowZoneCam;
     [SerializeField] private GameObject yutStickPrefab;
     [SerializeField] private GameObject backDoYutStickPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
     [SerializeField] private GameObject blackYutStickPrefab;        // null이면 yutStickPrefab 사용
@@ -15,8 +16,14 @@ public class YutThrowController : MonoBehaviour
     [SerializeField] private Vector3 throwForce = new Vector3(0f, 5f, 2f);
     [SerializeField] private float torqueStrength = 8f;
     [SerializeField] private float maxWaitSeconds = 8f;
+    [SerializeField] private float gravityMultiplier = 2.5f;
 
     public YutResult LastResult { get; private set; }
+
+    private bool _useP2Cam;
+    private CinemachineCamera ActiveThrowCam => _useP2Cam && p2ThrowZoneCam != null ? p2ThrowZoneCam : throwZoneCam;
+
+    public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
 
     private CinemachineBrain _brain;
 
@@ -25,9 +32,19 @@ public class YutThrowController : MonoBehaviour
         _brain = Camera.main.GetComponent<CinemachineBrain>();
     }
 
+    private IEnumerator ApplyExtraGravity(Rigidbody rb)
+    {
+        while (rb != null && !rb.isKinematic)
+        {
+            yield return new WaitForFixedUpdate();
+            if (rb != null && !rb.isKinematic)
+                rb.AddForce(Physics.gravity * (gravityMultiplier - 1f), ForceMode.Acceleration);
+        }
+    }
+
     private void SetThrowCamActive(bool active)
     {
-        throwZoneCam.Priority = new PrioritySettings { Value = active ? 20 : 0 };
+        ActiveThrowCam.Priority = new PrioritySettings { Value = active ? 20 : 0 };
     }
 
     public IEnumerator CoThrow(bool isBlackYut = false) // 윷 던지기 코루틴
@@ -65,6 +82,7 @@ public class YutThrowController : MonoBehaviour
                     bRbs[i].AddTorque(torqueDir * torqueStrength, ForceMode.VelocityChange);
 
                     bRbs[i].angularDamping = 5f;    // 계속 구르기 방지
+                    StartCoroutine(ApplyExtraGravity(bRbs[i]));
                 }
             }
 
@@ -99,8 +117,8 @@ public class YutThrowController : MonoBehaviour
 
             // 공중으로 띄우기
             var startPositions = bSticks.Select(s => s != null ? s.transform.position : Vector3.zero).ToArray();
-            float floatHeight = 1.5f;
-            float floatDuration = 0.6f;
+            float floatHeight = 2f;
+            float floatDuration = 1f;
             {
                 var moveUpTasks = new System.Collections.Generic.List<Tween>();
                 for (int i = 0; i < 4; i++)
@@ -112,7 +130,7 @@ public class YutThrowController : MonoBehaviour
             }
 
             // 스핀하면서 목표 회전으로 스냅
-            float spinDuration = 1.5f;
+            float spinDuration = 2f;
             Tween lastSpinTween = null;
             for (int i = 0; i < 4; i++)
                 if (bSticks[i] != null)
@@ -162,6 +180,7 @@ public class YutThrowController : MonoBehaviour
                 var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;
                 rb.AddTorque(torqueDir * torqueStrength, ForceMode.VelocityChange);
                 rb.angularDamping = 5f;  // 착지 후 구름 억제
+                StartCoroutine(ApplyExtraGravity(rb));
             }
         }
 

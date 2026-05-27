@@ -20,11 +20,13 @@ public class AIController : MonoBehaviour
     {
         var ai = gm.CurrPlayer;
 
+        GameEvents.InvokeYutThrown(ai.playerId);
         yield return StartCoroutine(yutThrowController.CoThrow());
         ai.AddThrowResult(yutThrowController.LastResult);
         while (ai.yutResults.Count > 0 &&
                (ai.yutResults[^1] == YutResult.Yut || ai.yutResults[^1] == YutResult.Mo))
         {
+            GameEvents.InvokeYutThrown(ai.playerId);
             yield return StartCoroutine(yutThrowController.CoThrow());
             ai.AddThrowResult(yutThrowController.LastResult);
         }
@@ -58,6 +60,7 @@ public class AIController : MonoBehaviour
 
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
+            GameEvents.InvokeYutThrown(ai.playerId);
             yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
             ai.UseBlackYut(yutThrowController.LastResult);
             GameLogUI.UpdateYutResults(ai.yutResults, ai.name);

@@ -7,6 +7,7 @@ using UnityEngine;
 public class PieceMoveAnimator : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera followCam;
+    [SerializeField] private CinemachineCamera p2FollowCam;
     [SerializeField] private float cameraBlendTime = 0.85f;
     [SerializeField] private float preBlendWait  = 0.05f;
     [SerializeField] private float postBlendWait = 0.10f;
@@ -16,6 +17,10 @@ public class PieceMoveAnimator : MonoBehaviour
     [SerializeField] private float groundY       = 0.1f;
 
     private CinemachineBrain _brain;
+    private bool _useP2Cam;
+    private CinemachineCamera ActiveFollowCam => _useP2Cam && p2FollowCam != null ? p2FollowCam : followCam;
+
+    public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
 
     private void Awake()
     {
@@ -24,9 +29,10 @@ public class PieceMoveAnimator : MonoBehaviour
 
     public IEnumerator CoActivateBoardCam(int priority = 20)
     {
-        if (followCam == null) yield break;
+        var cam = ActiveFollowCam;
+        if (cam == null) yield break;
 
-        followCam.Priority = new PrioritySettings { Value = priority };
+        cam.Priority = new PrioritySettings { Value = priority };
 
         yield return new WaitForSeconds(cameraBlendTime);
         if (_brain != null)
@@ -37,11 +43,12 @@ public class PieceMoveAnimator : MonoBehaviour
 
     public IEnumerator CoReleaseFollowCamera()
     {
-        if (followCam == null) yield break;
+        var cam = ActiveFollowCam;
+        if (cam == null) yield break;
 
         yield return new WaitForSeconds(postBlendWait);
 
-        followCam.Priority = new PrioritySettings { Value = 0 };
+        cam.Priority = new PrioritySettings { Value = 0 };
 
         yield return null;
         if (_brain != null)
