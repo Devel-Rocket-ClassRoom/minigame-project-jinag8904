@@ -6924,6 +6924,8 @@ MonoBehaviour:
   throwZoneCam: {fileID: 970819424}
   yutStickPrefab: {fileID: 7163451056564114836, guid: abd2ff63c4ca5a641b00cd5246d6b730, type: 3}
   backDoYutStickPrefab: {fileID: 7163451056564114836, guid: 4b3c6b610f742474ea048deb80d59d18, type: 3}
+  blackYutStickPrefab: {fileID: 7163451056564114836, guid: 6f74760b711a47659f665150f7fa4347, type: 3}
+  blackYutStickMarkedPrefab: {fileID: 7163451056564114836, guid: 1e095d59c329443ebb9fb3979fca25ef, type: 3}
   spawnPoints:
   - {fileID: 64044564}
   - {fileID: 565768741}
