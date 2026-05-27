@@ -50,7 +50,7 @@ public class YutThrowController : MonoBehaviour
             {
                 Vector3 pos = spawnPoints[i].position;
                 var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);    // 랜덤으로 회전
-                var prefab = (i == 3) ? backDoYutStickPrefab : blackYutStickPrefab;
+                var prefab = (i == 3) ? blackYutStickMarkedPrefab : blackYutStickPrefab;
                 var obj = Instantiate(prefab, pos, spawnRot);
 
                 bSticks[i] = obj.GetComponent<YutStick>();
@@ -101,8 +101,6 @@ public class YutThrowController : MonoBehaviour
             var startPositions = bSticks.Select(s => s != null ? s.transform.position : Vector3.zero).ToArray();
             float floatHeight = 1.5f;
             float floatDuration = 0.6f;
-            float lerpT = 0f;
-            while (lerpT < 1f)
             {
                 var moveUpTasks = new System.Collections.Generic.List<Tween>();
                 for (int i = 0; i < 4; i++)
@@ -110,26 +108,20 @@ public class YutThrowController : MonoBehaviour
                         moveUpTasks.Add(
                             bSticks[i].transform.DOMoveY(startPositions[i].y + floatHeight, floatDuration)
                                 .SetEase(Ease.OutCubic));
-                yield return moveUpTasks[0].WaitForCompletion();
+                if (moveUpTasks.Count > 0) yield return moveUpTasks[0].WaitForCompletion();
             }
 
             // 스핀하면서 목표 회전으로 스냅
             float spinDuration = 1.5f;
-            float spinElapsed = 0f;
-            while (spinElapsed < spinDuration)
-            {
-                spinElapsed += Time.deltaTime;
-                float snapT = Mathf.Clamp01(spinElapsed / spinDuration);
-                for (int i = 0; i < 4; i++)
-                    if (bSticks[i] != null)
-                        bSticks[i].transform.rotation = Quaternion.Slerp(spinStartRots[i], targetRots[i], snapT);
-                yield return null;
-            }
+            Tween lastSpinTween = null;
+            for (int i = 0; i < 4; i++)
+                if (bSticks[i] != null)
+                    lastSpinTween = bSticks[i].transform
+                        .DORotateQuaternion(targetRots[i], spinDuration)
+                        .SetEase(Ease.InOutCubic);
+            if (lastSpinTween != null) yield return lastSpinTween.WaitForCompletion();
 
             // 바닥으로 내려놓기
-            var floatPositions = bSticks.Select(s => s != null ? s.transform.position : Vector3.zero).ToArray();
-            lerpT = 0f;
-            while (lerpT < 1f)
             {
                 var moveDownTasks = new System.Collections.Generic.List<Tween>();
                 for (int i = 0; i < 4; i++)
@@ -137,7 +129,7 @@ public class YutThrowController : MonoBehaviour
                         moveDownTasks.Add(
                             bSticks[i].transform.DOMoveY(startPositions[i].y, floatDuration)
                                 .SetEase(Ease.InCubic));
-                yield return moveDownTasks[0].WaitForCompletion();
+                if (moveDownTasks.Count > 0) yield return moveDownTasks[0].WaitForCompletion();
             }
 
             yield return new WaitForSeconds(1f);
