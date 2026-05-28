@@ -11,6 +11,7 @@ public class PauseMenuUI : MonoBehaviour
     [SerializeField] private Button quitButton;
 
     private bool isPaused;
+    private InputAction escAction;
 
     private void Awake()
     {
@@ -18,13 +19,13 @@ public class PauseMenuUI : MonoBehaviour
         resumeButton.onClick.AddListener(Resume);
         restartButton.onClick.AddListener(Restart);
         quitButton.onClick.AddListener(Quit);
+
+        escAction = new InputAction(binding: "<Keyboard>/escape");
+        escAction.performed += _ => SetPaused(!isPaused);
     }
 
-    private void Update()
-    {
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            SetPaused(!isPaused);
-    }
+    private void OnEnable() => escAction.Enable();
+    private void OnDisable() => escAction.Disable();
 
     private void SetPaused(bool paused)
     {

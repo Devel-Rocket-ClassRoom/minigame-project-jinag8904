@@ -49,6 +49,11 @@ BTN_TUTORIAL,설명을 듣는다,Tutorial
 BTN_LANGUAGE,English,한국어
 BTN_RANDOM,무작위,Random
 LABEL_PAUSE,일시정지,Paused
+LABEL_GAME_OVER,게임 종료,Game Over
+LABEL_VICTORY,승리,Victory
+LABEL_DEFEAT,패배,Defeat
+LABEL_P1_WIN,P1 승리,P1 Wins
+LABEL_P2_WIN,P2 승리,P2 Wins
 LABEL_NAME,이름,Name
 LABEL_CHARACTER_SELECT,당신의 정체는...,Who are you...
 LABEL_OPPONENT_SELECT,겨룰 상대는...,Choose your opponent...

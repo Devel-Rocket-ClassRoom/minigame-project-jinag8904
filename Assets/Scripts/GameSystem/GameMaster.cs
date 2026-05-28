@@ -84,6 +84,9 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Button randomCharacterButton;
     private CharacterData characterDecision;
 
+    // 게임 종료 UI
+    [SerializeField] private GameOverUI gameOverUI;
+
     // 맞은편 캐릭터
     [SerializeField] private OpponentCharacterController[] opponentCharacters;
 
@@ -659,7 +662,9 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoEndGame()
     {
-        yield return null;
+        yield return new WaitForSeconds(1f);
+        var winner = System.Linq.Enumerable.First(players, p => p.AllFinished);
+        gameOverUI.Show(winner.playerId, isVsAI);
     }
 
     private void LogYutResults(Player player)
