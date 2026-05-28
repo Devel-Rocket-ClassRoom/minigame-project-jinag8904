@@ -7,7 +7,7 @@ public class TutorialManager : MonoBehaviour
 {
     [SerializeField] private TutorialPanel tutorialPanel;
 
-    public static bool isTutorial = true;
+    public static bool isTutorial = false;
     public static bool readyToPlay = false;
 
     [SerializeField] private BoardNodeData junctionNodeData;      // "5모" 에셋
