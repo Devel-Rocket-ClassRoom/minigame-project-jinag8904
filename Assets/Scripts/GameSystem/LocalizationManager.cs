@@ -55,7 +55,7 @@ public class LocalizationManager : MonoBehaviour
         while ((line = reader.ReadLine()) != null)
         {
             if (string.IsNullOrWhiteSpace(line)) continue;
-            var parts = line.Split(new[] { ',' }, 3);
+            var parts = SplitCsv(line, 3);
             if (parts.Length <= col) continue;
             table[parts[0].Trim()] = parts[col].Trim().Replace("\\n", "\n");
         }
@@ -72,4 +72,41 @@ public class LocalizationManager : MonoBehaviour
     }
 
     public static string Get(string key, params object[] args) => string.Format(Get(key), args);
+
+    private static string[] SplitCsv(string line, int maxParts)
+    {
+        var result = new List<string>();
+        int pos = 0;
+        while (pos < line.Length)
+        {
+            if (result.Count == maxParts - 1)
+            {
+                result.Add(line.Substring(pos));
+                break;
+            }
+            if (line[pos] == '"')
+            {
+                pos++;
+                var sb = new System.Text.StringBuilder();
+                while (pos < line.Length)
+                {
+                    if (line[pos] == '"' && pos + 1 < line.Length && line[pos + 1] == '"')
+                    { sb.Append('"'); pos += 2; }
+                    else if (line[pos] == '"')
+                    { pos++; break; }
+                    else sb.Append(line[pos++]);
+                }
+                result.Add(sb.ToString());
+                if (pos < line.Length && line[pos] == ',') pos++;
+            }
+            else
+            {
+                int comma = line.IndexOf(',', pos);
+                if (comma < 0) { result.Add(line.Substring(pos)); break; }
+                result.Add(line.Substring(pos, comma - pos));
+                pos = comma + 1;
+            }
+        }
+        return result.ToArray();
+    }
 }

@@ -7,8 +7,10 @@ public class TutorialPanel : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI bodyText;
+    [SerializeField] private TextMeshProUGUI bodyTextRight;
     private string _titleKey;
     private string _bodyKey;
+    private string _bodyKeyRight;
 
     [SerializeField] private Button nextButton;
     private bool clicked = false;
@@ -31,12 +33,13 @@ public class TutorialPanel : MonoBehaviour
         LocalizationManager.OnLanguageChanged -= RefreshText;
     }
 
-    public IEnumerator CoShow(string titleKey, string bodyKey)
+    public IEnumerator CoShow(string titleKey, string bodyKey, string bodyKeyRight = null)
     {
         clicked = false;
 
         _titleKey = titleKey;
         _bodyKey = bodyKey;
+        _bodyKeyRight = bodyKeyRight;
         RefreshText();
 
         gameObject.SetActive(true);
@@ -50,5 +53,12 @@ public class TutorialPanel : MonoBehaviour
     {
         titleText.text = LocalizationManager.Get(_titleKey);
         bodyText.text = LocalizationManager.Get(_bodyKey);
+        if (bodyTextRight != null)
+        {
+            var hasRight = !string.IsNullOrEmpty(_bodyKeyRight);
+            bodyTextRight.gameObject.SetActive(hasRight);
+            if (hasRight)
+                bodyTextRight.text = LocalizationManager.Get(_bodyKeyRight);
+        }
     }
 }

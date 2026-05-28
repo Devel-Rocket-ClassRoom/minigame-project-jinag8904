@@ -44,6 +44,8 @@ BTN_BLACK_YUT,검은 윷,Black Yut
 BTN_END_TURN,차례를 넘긴다,End Turn
 BTN_STACK_YES,업힌다,Stack
 BTN_STACK_NO,업히지 않는다,Don't Stack
+BTN_START,시작,Start
+BTN_TUTORIAL,설명을 듣는다,Tutorial
 BTN_LANGUAGE,English,한국어
 BTN_RANDOM,무작위,Random
 LABEL_PAUSE,일시정지,Paused
@@ -58,16 +60,19 @@ BTN_NEXT,다음,Next
 TUTORIAL_INTRO_TITLE,놀이 지침,Playbook
 TUTORIAL_INTRO_BODY,척사는 4개의 윷가락을 던져 영혼을 옮기는 놀이다.\n네 망령을 궁극의 해방으로 인도하라.,Cheoksa is a game of casting four wooden sticks to move the spirits.\nDeliver all four specters to ultimate release.
 TUTORIAL_YUT_RESULT_TITLE,윷 읽기,Reading the Cast
-TUTORIAL_YUT_RESULT_BODY,뒷도<pos=70px>— 1칸 후퇴\n도<pos=70px>— 1칸 전진\n개<pos=70px>— 2칸 전진\n걸<pos=70px>— 3칸 전진\n윷<pos=70px>— 4칸 전진 + 한 번 더\n모<pos=70px>— 5칸 전진 + 한 번 더,Backdo<pos=90px>— Move back 1\nDo<pos=90px>— Move 1\nGae<pos=90px>— Move 2\nGeol<pos=90px>— Move 3\nYut<pos=90px>— Move 4 + Extra turn\nMo<pos=90px>— Move 5 + Extra turn
+TUTORIAL_YUT_RESULT_BODY,뒷도\n도\n개\n걸\n윷\n모,Backdo\nDo\nGae\nGeol\nYut\nMo
+TUTORIAL_YUT_RESULT_BODY_RIGHT,1칸 후퇴\n1칸 전진\n2칸 전진\n3칸 전진\n4칸 전진 + 한 번 더\n5칸 전진 + 한 번 더,Move back 1\nMove 1\nMove 2\nMove 3\nMove 4 + Extra turn\nMove 5 + Extra turn
 TUTORIAL_MOVE_TITLE,말 이동,Move a Piece
 TUTORIAL_MOVE_BODY,걸. 말을 끌어 이동하라.,Geol. Drag and move your piece.
 TUTORIAL_JUNCTION_TITLE,갈림길,Crossroads
 TUTORIAL_JUNCTION_BODY,갈림길에 도착했다면 지름길로 갈 수 있다. 말을 이동시켜라.,At a crossroads, you can take a shortcut. Move your piece.
 TUTORIAL_STACK_TITLE,업기,Stacking
-TUTORIAL_STACK_BODY,자신의 말이 있는 곳에 도착했다면 말을 업어 동시에 이동할 수 있다.\n단, 한 번 업힌 말은 다시 내릴 수 없다.,Land on your own piece to stack them and move together.\nNote: Stacked pieces cannot be unstacked.
+TUTORIAL_STACK_BODY,"자신의 말이 있는 곳에 도착했다면 말을 업어 동시에 이동할 수 있다.\n단, 한 번 업힌 말은 다시 내릴 수 없다.",Land on your own piece to stack them and move together.\nNote: Stacked pieces cannot be unstacked.
 TUTORIAL_CAPTURE_TITLE,잡기,Capture
 TUTORIAL_CAPTURE_BODY,상대의 말이 있는 곳에 도착했다면 말을 잡을 수 있다.,Land on an opponent's piece to capture it.
 TUTORIAL_BLACKYUT_TITLE,검은 윷,Black Yut
-TUTORIAL_BLACKYUT_BODY,당신은 귀신이므로, 잡기에 성공하면 검은 윷을 획득한다.\n검은 윷은 차례가 넘어가기 전 어느 때나 던질 수 있다.\n검은 윷의 결과는 항상 모 아니면 뒷도이다.,As a ghost, capturing earns you a Black Yut.\nYou can cast it anytime before your turn ends.\nIt always results in either Mo or Back-Do.
+TUTORIAL_BLACKYUT_BODY,"너는 귀신이므로, 잡기에 성공하면 검은 윷을 획득한다.\n검은 윷은 차례가 넘어가기 전 어느 때나 던질 수 있다.\n검은 윷의 결과는 항상 모 아니면 뒷도이다.",As a ghost, capturing earns you a Black Yut.\nYou can cast it anytime before your turn ends.\nIt always results in either Mo or Back-Do.
 TUTORIAL_FINISH_TITLE,완주,Finish
 TUTORIAL_FINISH_BODY,말이 한 바퀴를 다 돌면 완주한다. 마지막 말을 완주시켜라.,A piece finishes after completing the circuit. Move your last piece home.
+TUTORIAL_SKILL_TITLE,고유 능력,Special Abilities
+TUTORIAL_SKILL_BODY,귀신\n혼식: 상대 잡기 성공 시 검은 윷 +1\n원혼 강림: 이동 경로의 적을 즉시 모두 잡는다.\n\n도깨비\n씨름: 말이 잡혔을 때 확률적으로 반격한다. 성공 시 검은 윷을 하나 받는다.\n동료가 많을수록 이길 확률이 높다.\n\n물귀신\n발목 붙잡기: 말이 잡히면 상대의 남은 윷 결과를 모두 소모시킨다.\n제물: 말 하나를 희생하여 검은 윷을 두 개 받는다.,Gwishin\nSoul Feast: Earn Black Yut +1 when capturing\nSoul Descent: Instantly capture all enemies on the path\n\nDokkaebi\nSsireum: Chance to counter-capture when caught + Black Yut +1\nThe more allies you have, the higher the win chance.\n\nMulgwishin\nAnkle Grab: When captured, consume all of the attacker's remaining yut results\nSacrifice: Sacrifice one of your pieces to gain Black Yut +2

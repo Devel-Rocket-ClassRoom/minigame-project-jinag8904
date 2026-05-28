@@ -368,7 +368,7 @@ public class GameMaster : MonoBehaviour
                 if (player.yutResults.Count == 0) break;
 
                 // 액티브 스킬 버튼 활성화
-                GetActiveSkillButton(player).interactable = player.Skill?.CanUseActive(player) == true;
+                GetActiveSkillButton(player).interactable = !TutorialManager.isTutorial && player.Skill?.CanUseActive(player) == true;
 
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);

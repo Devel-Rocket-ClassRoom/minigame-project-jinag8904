@@ -48,7 +48,7 @@ public class TutorialManager : MonoBehaviour
         yield return WaitForThrow(1);
 
         // (3) 윷 결과 설명
-        yield return ShowPanel("TUTORIAL_YUT_RESULT_TITLE", "TUTORIAL_YUT_RESULT_BODY");
+        yield return ShowPanel("TUTORIAL_YUT_RESULT_TITLE", "TUTORIAL_YUT_RESULT_BODY", "TUTORIAL_YUT_RESULT_BODY_RIGHT");
 
         // (4) 말 이동 (Geol로 pieces[0])
         yield return ShowPanel("TUTORIAL_MOVE_TITLE", "TUTORIAL_MOVE_BODY");
@@ -90,14 +90,17 @@ public class TutorialManager : MonoBehaviour
         yield return ShowPanel("TUTORIAL_FINISH_TITLE", "TUTORIAL_FINISH_BODY");
         yield return WaitForFinish(null);
 
+        // (10) 스킬 소개
+        yield return ShowPanel("TUTORIAL_SKILL_TITLE", "TUTORIAL_SKILL_BODY");
+
         isTutorial = false;
     }
 
-    private IEnumerator ShowPanel(string titleKey, string bodyKey)
+    private IEnumerator ShowPanel(string titleKey, string bodyKey, string bodyKeyRight = null)
     {
         inputBlocker.SetUIBlocked(true);
         inputBlocker.AllowButton(tutorialPanel.NextButtonRect);
-        yield return StartCoroutine(tutorialPanel.CoShow(titleKey, bodyKey));
+        yield return StartCoroutine(tutorialPanel.CoShow(titleKey, bodyKey, bodyKeyRight));
         inputBlocker.Deactivate();
     }
 
