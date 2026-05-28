@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ThrowYut : MonoBehaviour
 {
+    public static Queue<YutResult> ForcedResults = new();
+
     public class Yut
     {
         public bool isTail; // 뒷면인가?

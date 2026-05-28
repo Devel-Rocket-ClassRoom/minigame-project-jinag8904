@@ -102,7 +102,11 @@ public class Player
         AddWonhan(!isExtraWonhan ? 3 : 5);
     }
 
-    public void AddBlackYut(int count) => blackYutCount += count;
+    public void AddBlackYut(int count) 
+    {
+        blackYutCount += count;
+        GameEvents.InvokeBlackYutObtained(playerId);
+    }
 
     public void AddWonhan(int amount)
     {

@@ -153,6 +153,7 @@ public class DragAndDrop : MonoBehaviour
         }
 
         if (!needSelection) return;
+        if (InputBlocker.BlockingPieces && InputBlocker.AllowedPiece == null) return;
 
         var mousePos2 = input.GamePlay.Point.ReadValue<Vector2>();
         var ray2 = cam.ScreenPointToRay(mousePos2);
@@ -161,7 +162,7 @@ public class DragAndDrop : MonoBehaviour
         {
             var pieceObj = h.collider.GetComponent<PieceObject>();
             var leader = pieceObj.piece.stackLeader ?? pieceObj.piece;  // 겹친 말들의 대표 저장
-            if (leader.owner == currPlayer && !leader.hasFinished)
+            if (leader.owner == currPlayer && !leader.hasFinished && (!InputBlocker.BlockingPieces || InputBlocker.AllowedPiece == leader))
             {
                 SelectedPiece = leader;
                 halfHeight = h.collider.bounds.extents.y;
@@ -186,6 +187,8 @@ public class DragAndDrop : MonoBehaviour
             var node = h.collider.GetComponent<BoardNode>();
             if (node != null && validDestToYutResult.TryGetValue(node, out YutResult usedResult))  // 놓은 곳이 유효한 자리라면
             {
+                if (InputBlocker.AllowedDestinationNode != null && InputBlocker.AllowedDestinationNode != node)
+                    continue;
                 SelectedBoardNode = node;
                 UsedYutResult = usedResult;
 
@@ -335,6 +338,9 @@ public class DragAndDrop : MonoBehaviour
         {
             if (p.hasFinished) continue;
 
+            if (InputBlocker.BlockingPieces && InputBlocker.AllowedPiece != null && p != InputBlocker.AllowedPiece)
+                continue;
+            
             if (onlyBackdo)
             {
                 bool canBackdo = p.currentNode != null &&
@@ -344,6 +350,13 @@ public class DragAndDrop : MonoBehaviour
 
             p.pieceObject.SetHighLight(true);
         }
+    }
+
+    public void RefreshHighlights()
+    {
+        if (!needSelection) return;
+        PiecesHighLightOff();
+        PiecesHighLightOn();
     }
 
     private void PiecesHighLightOff()

@@ -57,7 +57,7 @@ public class LocalizationManager : MonoBehaviour
             if (string.IsNullOrWhiteSpace(line)) continue;
             var parts = line.Split(new[] { ',' }, 3);
             if (parts.Length <= col) continue;
-            table[parts[0].Trim()] = parts[col].Trim();
+            table[parts[0].Trim()] = parts[col].Trim().Replace("\\n", "\n");
         }
 
         tableLoaded = true;

@@ -8,19 +8,25 @@ public class YutThrowController : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera throwZoneCam;
     [SerializeField] private CinemachineCamera p2ThrowZoneCam;
+
     [SerializeField] private GameObject yutStickPrefab;
-    [SerializeField] private GameObject backDoYutStickPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
+    [SerializeField] private GameObject yutStickMarkedPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
     [SerializeField] private GameObject blackYutStickPrefab;        // null이면 yutStickPrefab 사용
     [SerializeField] private GameObject blackYutStickMarkedPrefab;  // 검은 윷 4번째 스틱 (뒷도 판별용)
+
     [SerializeField] private Transform[] spawnPoints;
+
     [SerializeField] private Vector3 throwForce = new Vector3(0f, 5f, 2f);
     [SerializeField] private float torqueStrength = 8f;
+
     [SerializeField] private float maxWaitSeconds = 8f;
+
     [SerializeField] private float gravityMultiplier = 2.5f;
 
     public YutResult LastResult { get; private set; }
 
     private bool _useP2Cam;
+
     private CinemachineCamera ActiveThrowCam => _useP2Cam && p2ThrowZoneCam != null ? p2ThrowZoneCam : throwZoneCam;
 
     public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
@@ -49,6 +55,12 @@ public class YutThrowController : MonoBehaviour
 
     public IEnumerator CoThrow(bool isBlackYut = false) // 윷 던지기 코루틴
     {
+        if (ThrowYut.ForcedResults.Count > 0)   // 튜토리얼 모드
+        {
+            LastResult = ThrowYut.ForcedResults.Dequeue();
+            yield break;
+        }
+
         SetThrowCamActive(true);    // 던지기 카메라 ON
 
         yield return null; // Cinemachine이 블렌드를 시작할 한 프레임 대기
@@ -167,7 +179,7 @@ public class YutThrowController : MonoBehaviour
                 : transform.position + new Vector3(i * 0.2f - 0.3f, 1f, 0f);
 
             var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);
-            var prefab = (i == 3 && backDoYutStickPrefab != null) ? backDoYutStickPrefab : yutStickPrefab;
+            var prefab = (i == 3 && yutStickMarkedPrefab != null) ? yutStickMarkedPrefab : yutStickPrefab;
             var go = Instantiate(prefab, pos, spawnRot);
             sticks[i] = go.GetComponent<YutStick>();
             var rb = go.GetComponent<Rigidbody>();

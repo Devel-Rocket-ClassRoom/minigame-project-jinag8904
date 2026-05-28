@@ -18,6 +18,12 @@ public class AIController : MonoBehaviour
     // Throw → 이동 루프 → 검은 윷 처리
     public IEnumerator DecideTurn()
     {
+        if (TutorialManager.isTutorial)
+        {
+            yield return new WaitForSeconds(1f);
+            yield break;
+        }
+
         var ai = gm.CurrPlayer;
 
         GameEvents.InvokeYutThrown(ai.playerId);
