@@ -6177,7 +6177,6 @@ GameObject:
   - component: {fileID: 765181542}
   - component: {fileID: 765181545}
   - component: {fileID: 765181544}
-  - component: {fileID: 765181543}
   m_Layer: 5
   m_Name: GameOverPanel
   m_TagString: Untagged
@@ -6205,24 +6204,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &765181543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 765181541}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58f3f17760f294f4ab46f9eecbb06209, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
-  panel: {fileID: 765181541}
-  resultText: {fileID: 1738475138}
-  restartButton: {fileID: 1274879337}
-  quitButton: {fileID: 1490921339}
-  pauseMenuUI: {fileID: 909197074}
-  restartSceneName: GameScene
 --- !u!114 &765181544
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7782,7 +7763,7 @@ MonoBehaviour:
   - {fileID: 854992524}
   characterSelectButtonIcons: []
   randomCharacterButton: {fileID: 1318210100}
-  gameOverUI: {fileID: 765181543}
+  gameOverUI: {fileID: 1306108241}
   opponentCharacters:
   - {fileID: 1580371478}
   p1SideCam: {fileID: 1941637362}
@@ -12463,6 +12444,7 @@ GameObject:
   - component: {fileID: 1306108239}
   - component: {fileID: 1306108238}
   - component: {fileID: 1306108237}
+  - component: {fileID: 1306108241}
   m_Layer: 5
   m_Name: GameOverCanvas
   m_TagString: Untagged
@@ -12553,6 +12535,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1306108241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1306108236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58f3f17760f294f4ab46f9eecbb06209, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
+  panel: {fileID: 765181541}
+  resultText: {fileID: 1738475138}
+  restartButton: {fileID: 1274879337}
+  quitButton: {fileID: 1490921339}
+  pauseMenuUI: {fileID: 909197074}
+  restartSceneName: GameScene
 --- !u!1001 &1312243975
 PrefabInstance:
   m_ObjectHideFlags: 0
