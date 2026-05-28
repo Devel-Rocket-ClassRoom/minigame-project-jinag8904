@@ -43,10 +43,7 @@ public class PauseMenuUI : MonoBehaviour
 
     private void Quit()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("TitleScene");
     }
 }

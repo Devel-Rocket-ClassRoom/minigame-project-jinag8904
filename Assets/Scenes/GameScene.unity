@@ -7082,6 +7082,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f491f48b8b268b479fe5dbdec65aaca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  tutorialMode: 0
+  tutorialCharacter: {fileID: 0}
   modeSelectPanel: {fileID: 432132715}
   localModeButton: {fileID: 765060563}
   vsAIModeButton: {fileID: 187648418}
@@ -7227,7 +7229,7 @@ MonoBehaviour:
   throwZoneCam: {fileID: 970819424}
   p2ThrowZoneCam: {fileID: 1639421315}
   yutStickPrefab: {fileID: 7163451056564114836, guid: abd2ff63c4ca5a641b00cd5246d6b730, type: 3}
-  backDoYutStickPrefab: {fileID: 7163451056564114836, guid: 4b3c6b610f742474ea048deb80d59d18, type: 3}
+  yutStickMarkedPrefab: {fileID: 7163451056564114836, guid: 4b3c6b610f742474ea048deb80d59d18, type: 3}
   blackYutStickPrefab: {fileID: 7163451056564114836, guid: 6f74760b711a47659f665150f7fa4347, type: 3}
   blackYutStickMarkedPrefab: {fileID: 7163451056564114836, guid: 1e095d59c329443ebb9fb3979fca25ef, type: 3}
   spawnPoints:
@@ -12087,8 +12089,8 @@ RectTransform:
   - {fileID: 933343289}
   - {fileID: 862375593}
   - {fileID: 545794139}
-  - {fileID: 1352990314}
   - {fileID: 1371485066}
+  - {fileID: 1352990314}
   m_Father: {fileID: 587606160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}

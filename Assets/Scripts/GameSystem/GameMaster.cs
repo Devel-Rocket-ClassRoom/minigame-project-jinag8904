@@ -1,15 +1,19 @@
+using TMPro;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using TMPro;
-using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Cinemachine;
 using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
 {
+    // 튜토리얼 모드
+    [SerializeField] private bool tutorialMode;
+    [SerializeField] private CharacterData tutorialCharacter;
+
     // 모드 선택
     [SerializeField] GameObject modeSelectPanel;
     [SerializeField] Button localModeButton;
@@ -263,10 +267,27 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoRunGame()
     {
-        yield return StartCoroutine(CoSelectMode());
-        yield return StartCoroutine(CoSelectCharacter());
-        Init();
-        yield return StartCoroutine(CoWhoGoesFirst());
+        if (tutorialMode)
+        {
+            isVsAI = true;
+            players[1].isAI = true;
+
+            players[0].characterData = tutorialCharacter;
+            players[1].characterData = tutorialCharacter;
+            UpdateCharacterHUD();
+            ActivateOpponentCharacter();
+
+            Init();
+            currPlayer = players[0];
+            yield return new WaitUntil(() => TutorialManager.readyToPlay);
+        }
+        else
+        {
+            yield return StartCoroutine(CoSelectMode());
+            yield return StartCoroutine(CoSelectCharacter());
+            Init();
+            yield return StartCoroutine(CoWhoGoesFirst());
+        }
         yield return StartCoroutine(CoPlayGame());
         yield return StartCoroutine(CoEndGame());
     }
@@ -347,7 +368,7 @@ public class GameMaster : MonoBehaviour
                 if (player.yutResults.Count == 0) break;
 
                 // 액티브 스킬 버튼 활성화
-                GetActiveSkillButton(player).interactable = player.Skill?.CanUseActive(player) == true;
+                GetActiveSkillButton(player).interactable = !TutorialManager.isTutorial && player.Skill?.CanUseActive(player) == true;
 
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);
@@ -426,6 +447,12 @@ public class GameMaster : MonoBehaviour
                     RepositionNode(prevNode);
 
                 RepositionNode(targetNode);
+
+                GameEvents.InvokePieceMoved(player.playerId);
+                if (targetNode.data.isJunction)
+                {
+                    GameEvents.InvokeJunctionReached(player.playerId);
+                }
 
                 // 액티브 스킬 - 이동 효과
                 if (isActiveSkillOn && pushPath != null)
@@ -510,18 +537,23 @@ public class GameMaster : MonoBehaviour
                 if (wasReversed) continue;
 
                 // 업기 처리
-                var friendlyLeaders = targetNode.piecesOnNode
-                    .Where(p => p.owner == player && p != piece && p.stackLeader == null)
-                    .ToList();
+                var friendlyLeaders = targetNode.piecesOnNode.Where(p => p.owner == player && p != piece && p.stackLeader == null).ToList();
 
                 if (friendlyLeaders.Count == 1)
                 {
-                    stackDecision = null;
-                    stackDecisionPanel.SetActive(true);
+                    if (TutorialManager.isTutorial)
+                    {
+                        stackDecision = true;
+                    }
+                    else
+                    {
+                        stackDecision = null;
+                        stackDecisionPanel.SetActive(true);
 
-                    yield return new WaitUntil(() => stackDecision.HasValue);
+                        yield return new WaitUntil(() => stackDecision.HasValue);
 
-                    stackDecisionPanel.SetActive(false);
+                        stackDecisionPanel.SetActive(false);
+                    }
 
                     if (stackDecision == true)
                     {
@@ -536,6 +568,7 @@ public class GameMaster : MonoBehaviour
                         ally.stackLeader = piece;
 
                         RepositionNode(targetNode);
+                        GameEvents.InvokePieceStacked(player.playerId);
                     }
                 }
                 else if (friendlyLeaders.Count >= 2)
@@ -555,10 +588,13 @@ public class GameMaster : MonoBehaviour
                             piece.stackedPieces.Add(s);
                             s.stackLeader = piece;
                         }
+
                         ally.stackedPieces.Clear();
                         piece.stackedPieces.Add(ally);
                         ally.stackLeader = piece;
+
                         RepositionNode(targetNode);
+                        GameEvents.InvokePieceStacked(player.playerId);
                     }
                 }
 
@@ -612,7 +648,8 @@ public class GameMaster : MonoBehaviour
         GameEvents.InvokeYutThrown(currPlayer.playerId);
         yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
         currPlayer.UseBlackYut(yutThrowController.LastResult);
-        
+        GameEvents.InvokeBlackYutUsed(currPlayer.playerId);
+
         blackYutButton.interactable = true;
         endTurnButton.interactable = true;
 
@@ -901,5 +938,44 @@ public class GameMaster : MonoBehaviour
         p.stackLeader = null;
         p.stackedPieces.Clear();
         p.pieceObject.transform.position = p.pieceObject.initPosition;
+    }
+
+    public Player GetPlayer(int idx) => players[idx];
+
+    public void PlaceTutorialPiece(Piece piece, BoardNodeData targetNodeData) // 튜토 전용
+    {
+        if (piece.stackLeader != null)
+        {
+            piece.stackLeader.stackedPieces.Remove(piece);
+            piece.stackLeader = null;
+        }
+
+        if (piece.currentNode != null)
+        {
+            piece.currentNode.piecesOnNode.Remove(piece);
+            RepositionNode(piece.currentNode);
+            piece.currentNode = null;
+        }
+        piece.stackLeader = null;
+        foreach (var s in piece.stackedPieces)
+        {
+            s.currentNode = null;
+            s.stackLeader = null;
+            s.nodeHistory.Clear();
+            s.pieceObject.transform.position = s.pieceObject.initPosition;
+        }
+        piece.stackedPieces.Clear();
+        piece.nodeHistory.Clear();
+
+        if (targetNodeData == null)
+        {
+            piece.pieceObject.transform.position = piece.pieceObject.initPosition;
+            return;
+        }
+        var node = GetNode(targetNodeData);
+        if (node == null) return;
+        piece.currentNode = node;
+        node.piecesOnNode.Add(piece);
+        RepositionNode(node);
     }
 }
