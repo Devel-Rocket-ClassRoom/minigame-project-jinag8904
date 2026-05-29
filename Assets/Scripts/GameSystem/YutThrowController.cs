@@ -23,6 +23,8 @@ public class YutThrowController : MonoBehaviour
 
     [SerializeField] private float gravityMultiplier = 2.5f;
 
+    [SerializeField] private float worldScale = 0.18f;   // WorldRoot 축소 배율과 일치
+
     public YutResult LastResult { get; private set; }
 
     private bool _useP2Cam;
@@ -81,13 +83,14 @@ public class YutThrowController : MonoBehaviour
                 var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);    // 랜덤으로 회전
                 var prefab = (i == 3) ? blackYutStickMarkedPrefab : blackYutStickPrefab;
                 var obj = Instantiate(prefab, pos, spawnRot);
+                obj.transform.localScale = Vector3.one * worldScale * 2;
 
                 bSticks[i] = obj.GetComponent<YutStick>();
                 bRbs[i] = obj.GetComponent<Rigidbody>();
 
                 if (bRbs[i] != null)
                 {
-                    var force = new Vector3(0f, throwForce.y + Random.Range(-0.5f, 0.5f) + 1f, 0f);
+                    var force = new Vector3(0f, (throwForce.y + Random.Range(-0.5f, 0.5f) + 1f) * Mathf.Sqrt(worldScale), 0f);
                     bRbs[i].AddForce(force, ForceMode.VelocityChange);
 
                     var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;
@@ -129,7 +132,7 @@ public class YutThrowController : MonoBehaviour
 
             // 공중으로 띄우기
             var startPositions = bSticks.Select(s => s != null ? s.transform.position : Vector3.zero).ToArray();
-            float floatHeight = 2f;
+            float floatHeight = 2f * worldScale;
             float floatDuration = 1f;
             {
                 var moveUpTasks = new System.Collections.Generic.List<Tween>();
@@ -181,12 +184,14 @@ public class YutThrowController : MonoBehaviour
             var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);
             var prefab = (i == 3 && yutStickMarkedPrefab != null) ? yutStickMarkedPrefab : yutStickPrefab;
             var go = Instantiate(prefab, pos, spawnRot);
+            go.transform.localScale = Vector3.one * worldScale * 2;
+
             sticks[i] = go.GetComponent<YutStick>();
             var rb = go.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 // 수평 이동 없이 위로만, 스핀만 추가
-                var force = new Vector3(0f, throwForce.y + Random.Range(-0.5f, 0.5f), 0f);
+                var force = new Vector3(0f, (throwForce.y + Random.Range(-0.5f, 0.5f)) * Mathf.Sqrt(worldScale), 0f);
                 rb.AddForce(force, ForceMode.VelocityChange);
                 // Y축 토크 제거: 옆으로 서는 현상 방지 (X축 텀블링만 허용)
                 var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;

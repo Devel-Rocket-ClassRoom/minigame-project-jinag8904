@@ -94,7 +94,7 @@ public class LotDrawController : MonoBehaviour
         var initAngles = _pickedIndex == 0 ? _stick0InitAngles : _stick1InitAngles;
 
         // 1단계: 카메라 뒤로
-        var camPulledPos = _camInitPos + new Vector3(camPullBackDist, 0, 0);
+        var camPulledPos = _camInitPos + new Vector3(0, 0, camPullBackDist);
         yield return jebiCam.transform.DOMove(camPulledPos, camPullBackDur)
             .SetEase(Ease.OutCubic).WaitForCompletion();
 
@@ -120,5 +120,7 @@ public class LotDrawController : MonoBehaviour
 
         SetCamActive(false);
         yield return new WaitForSeconds(0.5f);
+
+        // 제비 윷 사라지게 하기 (아래로 꺼지든 위로 날든)
     }
 }
