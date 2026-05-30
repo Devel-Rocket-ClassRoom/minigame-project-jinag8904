@@ -2438,6 +2438,8 @@ MonoBehaviour:
   holdDuration: 1
   camPullBackDist: 0.5
   camPullBackDur: 0.6
+  disappearDistance: 5
+  disappearDur: 1.5
 --- !u!1 &387876035
 GameObject:
   m_ObjectHideFlags: 0
@@ -15535,11 +15537,11 @@ PrefabInstance:
     - target: {fileID: 2142164529600316708, guid: bb6cde804b669a14687ee836f6a5b2db, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 720d9ba2f08083f4b9db9fe4f2cb28f1, type: 2}
+      objectReference: {fileID: 2100000, guid: c9e68baf4716f334c872240568b183f2, type: 2}
     - target: {fileID: 7299897216210737085, guid: bb6cde804b669a14687ee836f6a5b2db, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 1095a9e6d270cb34b86d52588c200a63, type: 2}
+      objectReference: {fileID: 2100000, guid: 720d9ba2f08083f4b9db9fe4f2cb28f1, type: 2}
     - target: {fileID: 7943184592273937661, guid: bb6cde804b669a14687ee836f6a5b2db, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

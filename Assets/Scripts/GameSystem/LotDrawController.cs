@@ -20,6 +20,8 @@ public class LotDrawController : MonoBehaviour
     [SerializeField] private float holdDuration     = 2f;
     [SerializeField] private float camPullBackDist  = 3f;   // 뽑기 시 카메라 후퇴 거리(X)
     [SerializeField] private float camPullBackDur   = 0.6f; // 카메라 후퇴 시간
+    [SerializeField] private float disappearDistance = 5f;
+    [SerializeField] private float disappearDur = 1.5f;
 
     private CinemachineBrain _brain;
     private Vector3 _camInitPos;
@@ -111,16 +113,19 @@ public class LotDrawController : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        // 3단계: 눕혀서 뒷면 공개
+        // 4단계: 눕혀서 뒷면 공개
         var revealAngles = new Vector3(uprightAngles.x + revealTiltDeg, uprightAngles.y, 0f);
         yield return picked.DOLocalRotate(revealAngles, 0.7f)
             .SetEase(Ease.OutSine).WaitForCompletion();
 
         yield return new WaitForSeconds(holdDuration);
 
+        // 두 스틱 동시에 아래로 사라지기
+        picked.DOLocalMoveY(picked.localPosition.y - disappearDistance, disappearDur).SetEase(Ease.InCubic);
+        other.DOLocalMoveY(other.localPosition.y - disappearDistance, disappearDur).SetEase(Ease.InCubic);
+        yield return new WaitForSeconds(disappearDur);
+
         SetCamActive(false);
         yield return new WaitForSeconds(0.5f);
-
-        // 제비 윷 사라지게 하기 (아래로 꺼지든 위로 날든)
     }
 }
