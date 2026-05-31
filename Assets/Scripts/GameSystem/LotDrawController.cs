@@ -69,7 +69,7 @@ public class LotDrawController : MonoBehaviour
             _pickedIndex = 1;
     }
 
-    public IEnumerator CoDraw()
+    public IEnumerator CoDraw(bool forceWin = false)
     {
         jebiCam.transform.position = _camInitPos;
 
@@ -89,6 +89,8 @@ public class LotDrawController : MonoBehaviour
         _waitingForPick = false;
 
         bool pickedIsMarked = (_pickedIndex == 0) == stick0IsMarked;
+        if (forceWin) pickedIsMarked = true;
+
         LastPickedMarked = pickedIsMarked;
 
         var picked     = _pickedIndex == 0 ? stick0Root : stick1Root;
@@ -110,6 +112,7 @@ public class LotDrawController : MonoBehaviour
         // 3단계: 선택 스틱 위로 + 나머지 스틱 아래로 동시에
         other.DOLocalMoveY(other.localPosition.y - pullOutDistance, 0.8f).SetEase(Ease.InOutCubic);
         yield return picked.DOLocalMoveY(picked.localPosition.y + pullOutDistance, 0.8f).SetEase(Ease.InOutCubic).WaitForCompletion();
+        if (forceWin) ApplyMat(picked, markedMat);  // Mat 변경
 
         yield return new WaitForSeconds(0.2f);
 

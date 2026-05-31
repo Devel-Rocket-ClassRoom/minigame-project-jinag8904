@@ -45,7 +45,7 @@ public class YutThrowController : MonoBehaviour
         while (rb != null && !rb.isKinematic)
         {
             yield return new WaitForFixedUpdate();
-            if (rb != null && !rb.isKinematic)
+            if (rb != null && !rb.isKinematic && !rb.IsSleeping())
                 rb.AddForce(Physics.gravity * (gravityMultiplier - 1f), ForceMode.Acceleration);
         }
     }
@@ -96,7 +96,7 @@ public class YutThrowController : MonoBehaviour
                     var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;
                     bRbs[i].AddTorque(torqueDir * torqueStrength, ForceMode.VelocityChange);
 
-                    bRbs[i].angularDamping = 5f;    // 계속 구르기 방지
+                    bRbs[i].angularDamping = 12f;    // 계속 구르기 방지
                     StartCoroutine(ApplyExtraGravity(bRbs[i]));
                 }
             }
@@ -196,7 +196,7 @@ public class YutThrowController : MonoBehaviour
                 // Y축 토크 제거: 옆으로 서는 현상 방지 (X축 텀블링만 허용)
                 var torqueDir = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-0.2f, 0.2f)).normalized;
                 rb.AddTorque(torqueDir * torqueStrength, ForceMode.VelocityChange);
-                rb.angularDamping = 5f;  // 착지 후 구름 억제
+                rb.angularDamping = 12f;  // 착지 후 구름 억제
                 StartCoroutine(ApplyExtraGravity(rb));
             }
         }

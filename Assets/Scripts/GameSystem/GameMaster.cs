@@ -281,7 +281,7 @@ public class GameMaster : MonoBehaviour
             ActivateOpponentCharacter();
 
             Init();
-            currPlayer = players[0];
+            yield return StartCoroutine(CoWhoGoesFirst());
             yield return new WaitUntil(() => TutorialManager.readyToPlay);
         }
         else
@@ -297,7 +297,7 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoWhoGoesFirst()
     {
-        yield return StartCoroutine(lotDrawController.CoDraw());
+        yield return StartCoroutine(lotDrawController.CoDraw(TutorialManager.isTutorial));
         currPlayer = lotDrawController.LastPickedMarked ? players[0] : players[1];
     }
 
