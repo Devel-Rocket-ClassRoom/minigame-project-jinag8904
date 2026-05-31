@@ -15,6 +15,11 @@ public class YutStick : MonoBehaviour
         && rb.linearVelocity.sqrMagnitude < restThreshold
         && rb.angularVelocity.sqrMagnitude < restThreshold;
 
+    public bool IsAlmostAtRest => rb != null
+        && (rb.IsSleeping()
+        || (rb.linearVelocity.sqrMagnitude < 0.25f
+            && rb.angularVelocity.sqrMagnitude < 0.25f));
+
     private void Awake() => rb = GetComponent<Rigidbody>();
 
     private void FixedUpdate()

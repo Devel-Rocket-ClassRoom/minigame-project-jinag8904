@@ -36,7 +36,7 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Transform[] p1EndPositions = new Transform[4];
     [SerializeField] private Transform[] p2EndPositions = new Transform[4];
 
-    private const float StackYOffset = 0.1f;
+    private const float StackYOffset = 0.05f;
 
     // 검은 윷 + 턴 종료 UI
     [SerializeField] private Button blackYutButton;
@@ -780,11 +780,8 @@ public class GameMaster : MonoBehaviour
             var pos = node.GetPiecePosition(i, units.Count);
             units[i].pieceObject.transform.position = pos;
 
-            var renderer = units[i].pieceObject.GetComponentInChildren<Renderer>();
-            float stackHeight = renderer != null ? renderer.bounds.size.y : StackYOffset;
-
             for (int j = 0; j < units[i].stackedPieces.Count; j++)
-                units[i].stackedPieces[j].pieceObject.transform.position = pos + Vector3.up * stackHeight * (j + 1);
+                units[i].stackedPieces[j].pieceObject.transform.position = pos + Vector3.up * StackYOffset * (j + 1);
         }
     }
 

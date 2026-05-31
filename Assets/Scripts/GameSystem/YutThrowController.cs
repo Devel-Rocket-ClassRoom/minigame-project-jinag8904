@@ -104,11 +104,16 @@ public class YutThrowController : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
 
             float bElapsed = 0f;
+            int bConsistentCount = 0;
             while (bElapsed < maxWaitSeconds)
             {
                 yield return new WaitForSeconds(0.2f);
                 bElapsed += 0.2f;
                 if (bSticks.All(s => s != null && s.IsAtRest)) break;
+
+                if (bSticks.All(s => s != null && s.IsAlmostAtRest)) bConsistentCount++;
+                else bConsistentCount = 0;
+                if (bConsistentCount >= 5) break;
             }
 
             // 물리 고정
@@ -204,11 +209,16 @@ public class YutThrowController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         float elapsed = 0f;
+        int consistentCount = 0;
         while (elapsed < maxWaitSeconds)
         {
             yield return new WaitForSeconds(0.2f);
             elapsed += 0.2f;
             if (sticks.All(s => s != null && s.IsAtRest)) break;
+
+            if (sticks.All(s => s != null && s.IsAlmostAtRest)) consistentCount++;
+            else consistentCount = 0;
+            if (consistentCount >= 5) break;
         }
 
         yield return new WaitForSeconds(1f);
