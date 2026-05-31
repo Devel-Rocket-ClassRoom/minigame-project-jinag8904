@@ -20,6 +20,8 @@ public class LotDrawController : MonoBehaviour
     [SerializeField] private float holdDuration     = 2f;
     [SerializeField] private float camPullBackDist  = 3f;   // 뽑기 시 카메라 후퇴 거리(X)
     [SerializeField] private float camPullBackDur   = 0.6f; // 카메라 후퇴 시간
+    [SerializeField] private float disappearDistance = 5f;
+    [SerializeField] private float disappearDur = 1.5f;
 
     private CinemachineBrain _brain;
     private Vector3 _camInitPos;
@@ -67,7 +69,7 @@ public class LotDrawController : MonoBehaviour
             _pickedIndex = 1;
     }
 
-    public IEnumerator CoDraw()
+    public IEnumerator CoDraw(bool forceWin = false)
     {
         jebiCam.transform.position = _camInitPos;
 
@@ -87,6 +89,8 @@ public class LotDrawController : MonoBehaviour
         _waitingForPick = false;
 
         bool pickedIsMarked = (_pickedIndex == 0) == stick0IsMarked;
+        if (forceWin) pickedIsMarked = true;
+
         LastPickedMarked = pickedIsMarked;
 
         var picked     = _pickedIndex == 0 ? stick0Root : stick1Root;
@@ -94,7 +98,7 @@ public class LotDrawController : MonoBehaviour
         var initAngles = _pickedIndex == 0 ? _stick0InitAngles : _stick1InitAngles;
 
         // 1단계: 카메라 뒤로
-        var camPulledPos = _camInitPos + new Vector3(camPullBackDist, 0, 0);
+        var camPulledPos = _camInitPos + new Vector3(0, 0, camPullBackDist);
         yield return jebiCam.transform.DOMove(camPulledPos, camPullBackDur)
             .SetEase(Ease.OutCubic).WaitForCompletion();
 
@@ -108,15 +112,21 @@ public class LotDrawController : MonoBehaviour
         // 3단계: 선택 스틱 위로 + 나머지 스틱 아래로 동시에
         other.DOLocalMoveY(other.localPosition.y - pullOutDistance, 0.8f).SetEase(Ease.InOutCubic);
         yield return picked.DOLocalMoveY(picked.localPosition.y + pullOutDistance, 0.8f).SetEase(Ease.InOutCubic).WaitForCompletion();
+        if (forceWin) ApplyMat(picked, markedMat);  // Mat 변경
 
         yield return new WaitForSeconds(0.2f);
 
-        // 3단계: 눕혀서 뒷면 공개
+        // 4단계: 눕혀서 뒷면 공개
         var revealAngles = new Vector3(uprightAngles.x + revealTiltDeg, uprightAngles.y, 0f);
         yield return picked.DOLocalRotate(revealAngles, 0.7f)
             .SetEase(Ease.OutSine).WaitForCompletion();
 
         yield return new WaitForSeconds(holdDuration);
+
+        // 두 스틱 동시에 아래로 사라지기
+        picked.DOLocalMoveY(picked.localPosition.y - disappearDistance, disappearDur).SetEase(Ease.InCubic);
+        other.DOLocalMoveY(other.localPosition.y - disappearDistance, disappearDur).SetEase(Ease.InCubic);
+        yield return new WaitForSeconds(disappearDur);
 
         SetCamActive(false);
         yield return new WaitForSeconds(0.5f);

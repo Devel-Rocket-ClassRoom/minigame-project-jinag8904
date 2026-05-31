@@ -60,12 +60,7 @@ public class PieceMoveAnimator : MonoBehaviour
         var hops = BuildHopList(pushPathNodes, targetNode);
         var leaderTf = piece.pieceObject.transform;
 
-        float stackH = 0.1f;
-        if (stackAll.Count > 0)
-        {
-            var rend = piece.pieceObject.GetComponentInChildren<Renderer>();
-            if (rend != null) stackH = rend.bounds.size.y;
-        }
+        const float stackH = 0.05f;
 
         foreach (var node in hops)
         {

@@ -6,12 +6,19 @@ public class YutStick : MonoBehaviour
     [SerializeField] private float fallGravityMultiplier = 2.0f;
 
     private Rigidbody rb;
+    private int _settleFrames;
+    private const int SettleFrameThreshold = 8;
 
     public bool IsTail => Vector3.Dot(transform.up, Vector3.up) < 0f;
 
     public bool IsAtRest => rb != null
         && rb.linearVelocity.sqrMagnitude < restThreshold
         && rb.angularVelocity.sqrMagnitude < restThreshold;
+
+    public bool IsAlmostAtRest => rb != null
+        && (rb.IsSleeping()
+        || (rb.linearVelocity.sqrMagnitude < 0.25f
+            && rb.angularVelocity.sqrMagnitude < 0.25f));
 
     private void Awake() => rb = GetComponent<Rigidbody>();
 
@@ -30,6 +37,25 @@ public class YutStick : MonoBehaviour
         {
             Vector3 targetUp = upDot >= 0f ? Vector3.up : Vector3.down;
             rb.AddTorque(Vector3.Cross(transform.up, targetUp) * 5f, ForceMode.Acceleration);
+        }
+
+        // 착지 후 수평 상태에서 미세 흔들림 제거
+        bool isSettling = rb.linearVelocity.sqrMagnitude < 0.05f;
+        if (isSettling && Mathf.Abs(upDot) > 0.7f)
+        {
+            _settleFrames++;
+            if (_settleFrames >= SettleFrameThreshold)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.angularDamping = 50f;
+                rb.Sleep();
+            }
+        }
+        else
+        {
+            _settleFrames = 0;
+            if (!isSettling) rb.angularDamping = 12f;
         }
     }
 }
