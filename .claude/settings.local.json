@@ -1,6 +1,12 @@
 {
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "unity"
   ],
-  "enableAllProjectMcpServers": true
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"m_LocalPosition: {x: 17, y: 0.1\" Assets/Scenes/TutorialScene.unity)",
+      "Bash(grep -n \"m_LocalPosition: {x: 15, y: 0.1\" Assets/Scenes/TutorialScene.unity)"
+    ]
+  }
 }

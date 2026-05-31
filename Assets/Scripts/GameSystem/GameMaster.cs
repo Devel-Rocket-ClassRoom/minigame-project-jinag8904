@@ -519,6 +519,7 @@ public class GameMaster : MonoBehaviour
                                 caught.pieceObject.transform.position = caught.pieceObject.initPosition;
                             }
 
+                            RepositionNode(targetNode);
                             GameEvents.InvokeCaptureSuccess(player.playerId);
                             if (!noBonus)
                             {
@@ -899,6 +900,7 @@ public class GameMaster : MonoBehaviour
                         SendHome(caught, targetNode);
                     }
 
+                    RepositionNode(targetNode);
                     GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
                     if (!noBonus)
                     {
