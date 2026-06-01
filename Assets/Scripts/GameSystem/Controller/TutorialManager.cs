@@ -47,8 +47,11 @@ public class TutorialManager : MonoBehaviour
         readyToPlay = true;
         yield return WaitForThrow(1);
 
-        // (3) 윷 결과 설명
-        yield return ShowPanel("TUTORIAL_YUT_RESULT_TITLE", "TUTORIAL_YUT_RESULT_BODY", "TUTORIAL_YUT_RESULT_BODY_RIGHT");
+        // (3) 윷 결과 설명 (윷 가이드 표시)
+        yield return ShowPanel("TUTORIAL_YUT_RESULT_TITLE", null, null, true);
+
+        // 윷 가이드를 한 번 보여준 뒤부터 H 키 가이드 활성화
+        gameMaster.ArmGuidePopup();
 
         // (4) 말 이동 (Geol로 pieces[0])
         yield return ShowPanel("TUTORIAL_MOVE_TITLE", "TUTORIAL_MOVE_BODY");
@@ -96,11 +99,11 @@ public class TutorialManager : MonoBehaviour
         isTutorial = false;
     }
 
-    private IEnumerator ShowPanel(string titleKey, string bodyKey, string bodyKeyRight = null)
+    private IEnumerator ShowPanel(string titleKey, string bodyKey, string bodyKeyRight = null, bool useYutGuide = false)
     {
         inputBlocker.SetUIBlocked(true);
         inputBlocker.AllowButton(tutorialPanel.NextButtonRect);
-        yield return StartCoroutine(tutorialPanel.CoShow(titleKey, bodyKey, bodyKeyRight));
+        yield return StartCoroutine(tutorialPanel.CoShow(titleKey, bodyKey, bodyKeyRight, useYutGuide));
         inputBlocker.Deactivate();
     }
 
