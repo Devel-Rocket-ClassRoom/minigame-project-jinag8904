@@ -50,6 +50,9 @@ public class GameMaster : MonoBehaviour
     // 윷 던지기 컨트롤러
     [SerializeField] private YutThrowController yutThrowController;
 
+    // 윷 결과 가이드 팝업 (H 키) — 플레이 중에만 활성화
+    [SerializeField] private YutGuidePopup yutGuidePopup;
+
     // 액티브 스킬
     [SerializeField] private Button p1ActiveSkillButton;
     [SerializeField] private Button p2ActiveSkillButton;
@@ -301,8 +304,16 @@ public class GameMaster : MonoBehaviour
         currPlayer = lotDrawController.LastPickedMarked ? players[0] : players[1];
     }
 
+    // 튜토리얼 모드에서는 (3)단계 윷 가이드 후 TutorialManager가 호출한다.
+    public void ArmGuidePopup()
+    {
+        if (yutGuidePopup != null) yutGuidePopup.Arm();
+    }
+
     private IEnumerator CoPlayGame()
     {
+        if (!tutorialMode) ArmGuidePopup();
+
         while (!players.Any(p => p.AllFinished))
         {
             yield return new WaitForSeconds(1);
@@ -364,11 +375,13 @@ public class GameMaster : MonoBehaviour
             // 결과 다 쓰면 검은 윷 추가 사용 여부 확인
             while (player.yutResults.Count > 0)
             {
-                // 실제로 뒷도를 쓸 수 있는 말이 없으면 제거
-                player.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !player.pieces.Any(p =>
-                    !p.hasFinished && p.currentNode != null &&
-                    (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode)));
-                if (player.yutResults.Count == 0) break;
+                bool noPieceForBackdo = !player.pieces.Any(p => !p.hasFinished && p.currentNode != null && (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode));
+                if (noPieceForBackdo && player.yutResults.All(yr => yr == YutResult.BACKDO))
+                {
+                    player.yutResults.Clear();
+                    LogYutResults(player);
+                    break;
+                }
 
                 // 액티브 스킬 버튼 활성화
                 GetActiveSkillButton(player).interactable = !TutorialManager.isTutorial && player.Skill?.CanUseActive(player) == true;
@@ -664,6 +677,8 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoEndGame()
     {
+        if (yutGuidePopup != null) yutGuidePopup.Disarm();
+
         yield return new WaitForSeconds(1f);
         var winner = System.Linq.Enumerable.First(players, p => p.AllFinished);
         gameOverUI.Show(winner.playerId, isVsAI);

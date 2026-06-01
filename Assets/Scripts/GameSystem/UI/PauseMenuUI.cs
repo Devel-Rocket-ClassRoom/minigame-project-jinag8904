@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class PauseMenuUI : MonoBehaviour
 {
     [SerializeField] private PausePanelView panelView;
+    [SerializeField] private YutGuidePopup guidePopup;
 
     private bool isPaused;
     private InputAction escAction;
@@ -13,6 +14,8 @@ public class PauseMenuUI : MonoBehaviour
     {
         if (panelView == null)
             panelView = FindFirstObjectByType<PausePanelView>(FindObjectsInactive.Include);
+        if (guidePopup == null)
+            guidePopup = FindFirstObjectByType<YutGuidePopup>(FindObjectsInactive.Include);
 
         panelView.gameObject.SetActive(false);
         panelView.resumeButton.onClick.AddListener(Resume);
@@ -20,7 +23,18 @@ public class PauseMenuUI : MonoBehaviour
         panelView.quitButton.onClick.AddListener(Quit);
 
         escAction = new InputAction(binding: "<Keyboard>/escape");
-        escAction.performed += _ => SetPaused(!isPaused);
+        escAction.performed += _ => OnEscape();
+    }
+
+    private void OnEscape()
+    {
+        // 가이드가 열려 있으면 가이드만 닫고 pause는 열지 않는다.
+        if (guidePopup != null && guidePopup.IsOpen)
+        {
+            guidePopup.Hide();
+            return;
+        }
+        SetPaused(!isPaused);
     }
 
     private void OnEnable() => escAction.Enable();
