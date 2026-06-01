@@ -24,7 +24,7 @@ public class YutStick : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (rb == null || rb.IsSleeping()) return;
+        if (rb == null || rb.isKinematic || rb.IsSleeping()) return;
 
         // 올라갈 때도 같은 배수 적용해 전체 체공 시간 단축
         // |velocity.y| < 0.3f 구간 제외해 바닥 안착 후 진동 방지

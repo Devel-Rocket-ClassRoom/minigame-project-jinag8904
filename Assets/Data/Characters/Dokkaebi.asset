@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   name: "\uB3C4\uAE68\uBE44"
   localizationKey: CHAR_DOKKAEBI
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 83c5d6c7a4f1a4baba9eeb75cea02878, type: 3}
+  themeColor: {r: 1, g: 1, b: 1, a: 1}
   aiPersonality:
     captureWeight: 0.8
     progressWeight: 1

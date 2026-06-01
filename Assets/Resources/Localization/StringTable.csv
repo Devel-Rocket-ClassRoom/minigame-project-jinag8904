@@ -18,7 +18,7 @@ LOG_ACTIVE_SKILL_ACTIVATED,[{0}] 활성화!,[{0}] Activated!
 LOG_THROW_YUT_PROMPT,윷을 던지세요!,Throw the yut!
 LOG_EXTRA_THROW,한 번 더 던지세요!,Throw again!
 LOG_CAPTURE_BONUS_THROW,잡기 보너스! 윷을 던지세요.,Capture bonus! Throw the yut.
-BTN_THROW_YUT,윷 던지기,Throw Yut
+BTN_THROW_YUT,던지기,Throw
 YUT_RESULT_HEADER,남은 결과,Remaining Results
 YUT_RESULT_NONE,없음,None
 YUT_BACKDO,뒷도,Backdo
@@ -41,7 +41,7 @@ BTN_QUIT,나가기,Quit
 BTN_LOCAL_MODE,로컬 모드,Local Mode
 BTN_VS_AI_MODE,AI 대전,VS AI
 BTN_BLACK_YUT,검은 윷,Black Yut
-BTN_END_TURN,차례를 넘긴다,End Turn
+BTN_END_TURN,넘긴다,End Turn
 BTN_STACK_YES,업힌다,Stack
 BTN_STACK_NO,업히지 않는다,Don't Stack
 BTN_START,시작,Start
@@ -49,15 +49,15 @@ BTN_TUTORIAL,설명을 듣는다,Tutorial
 BTN_LANGUAGE,English,한국어
 BTN_RANDOM,무작위,Random
 LABEL_PAUSE,일시정지,Paused
-LABEL_GAME_OVER,게임 종료,Game Over
+LABEL_GAME_OVER,종료,Game Over
 LABEL_VICTORY,승리,Victory
 LABEL_DEFEAT,패배,Defeat
 LABEL_P1_WIN,P1 승리,P1 Wins
 LABEL_P2_WIN,P2 승리,P2 Wins
 LABEL_NAME,이름,Name
 LABEL_CHARACTER_SELECT,당신의 정체는...,Who are you...
-LABEL_OPPONENT_SELECT,겨룰 상대는...,Choose your opponent...
-LABEL_GAME_SUBTITLE,곁에 있는 자,By Your Side
+LABEL_OPPONENT_SELECT,당신의 상대는...,Choose your opponent...
+LABEL_GAME_SUBTITLE,친구,Your Friend
 CHAR_GWISHIN,귀신,Gwishin
 CHAR_DOKKAEBI,도깨비,Dokkaebi
 CHAR_MULGWISHIN,물귀신,Mulgwishin

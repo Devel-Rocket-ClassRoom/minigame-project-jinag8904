@@ -452,6 +452,11 @@ public class GameMaster : MonoBehaviour
                 RepositionNode(targetNode);
 
                 GameEvents.InvokePieceMoved(player.playerId);
+
+                // 사용한 결과 제거 (씨름 패배 시에도 소모) → 잡기 연출 전에 즉시 반영
+                player.yutResults.Remove(dragAndDrop.UsedYutResult);
+                LogYutResults(player);
+
                 if (targetNode.data.isJunction)
                 {
                     GameEvents.InvokeJunctionReached(player.playerId);
@@ -533,10 +538,6 @@ public class GameMaster : MonoBehaviour
 
                     RepositionNode(targetNode);
                 }
-
-                // 사용한 결과 제거 (씨름 패배 시에도 소모)
-                player.yutResults.Remove(dragAndDrop.UsedYutResult);
-                LogYutResults(player);
 
                 if (wasReversed) continue;
 
@@ -814,6 +815,7 @@ public class GameMaster : MonoBehaviour
 
             yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
             currPlayer.yutResults.Remove(used);
+            GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
 
             yield break;    // 코루틴 종료
         }
@@ -856,6 +858,10 @@ public class GameMaster : MonoBehaviour
             RepositionNode(targetNode);
             yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
         }
+
+        // 사용한 결과 제거 → 잡기 연출 전에 즉시 반영
+        currPlayer.yutResults.Remove(used);
+        GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
 
         // [잡기 처리]
         var enemyLeaders = targetNode.piecesOnNode.Where(p => p.owner != currPlayer && p.stackLeader == null).ToList();
@@ -904,6 +910,7 @@ public class GameMaster : MonoBehaviour
                         GameEvents.InvokeYutThrown(currPlayer.playerId);
                         yield return StartCoroutine(yutThrowController.CoThrow());
                         currPlayer.AddThrowResult(yutThrowController.LastResult);
+                        GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
                     }
 
                     currPlayer.Skill?.OnCapture(piece, capturedPieces);
@@ -930,8 +937,6 @@ public class GameMaster : MonoBehaviour
             ally.stackLeader = piece;
             RepositionNode(targetNode);
         }
-
-        currPlayer.yutResults.Remove(used);
     }
 
     private void SendHome(Piece p, BoardNode fromNode)

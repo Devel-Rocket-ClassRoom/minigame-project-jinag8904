@@ -1,24 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class PauseMenuUI : MonoBehaviour
 {
-    [SerializeField] private GameObject pausePanel;
-    [SerializeField] private Button resumeButton;
-    [SerializeField] private Button restartButton;
-    [SerializeField] private Button quitButton;
+    [SerializeField] private PausePanelView panelView;
 
     private bool isPaused;
     private InputAction escAction;
 
     private void Awake()
     {
-        pausePanel.SetActive(false);
-        resumeButton.onClick.AddListener(Resume);
-        restartButton.onClick.AddListener(Restart);
-        quitButton.onClick.AddListener(Quit);
+        if (panelView == null)
+            panelView = FindFirstObjectByType<PausePanelView>(FindObjectsInactive.Include);
+
+        panelView.gameObject.SetActive(false);
+        panelView.resumeButton.onClick.AddListener(Resume);
+        panelView.restartButton.onClick.AddListener(Restart);
+        panelView.quitButton.onClick.AddListener(Quit);
 
         escAction = new InputAction(binding: "<Keyboard>/escape");
         escAction.performed += _ => SetPaused(!isPaused);
@@ -30,7 +29,7 @@ public class PauseMenuUI : MonoBehaviour
     private void SetPaused(bool paused)
     {
         isPaused = paused;
-        pausePanel.SetActive(paused);
+        panelView.gameObject.SetActive(paused);
         Time.timeScale = paused ? 0f : 1f;
     }
 
