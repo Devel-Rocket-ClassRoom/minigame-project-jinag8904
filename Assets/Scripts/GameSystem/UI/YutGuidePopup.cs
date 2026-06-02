@@ -53,6 +53,7 @@ public class YutGuidePopup : MonoBehaviour
     {
         if (!armed) return;     // arm 전(선택 화면, 튜토리얼 윷 가이드 전)에는 H 무시
         if (IsBlocked) return;  // 튜토리얼 패널이 떠 있는 동안에는 못 띄움
+        if (Time.timeScale == 0f) return;
         if (IsOpen) Hide();
         else Show();
     }
