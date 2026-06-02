@@ -31,6 +31,7 @@ public class Player
 
     // 검은 윷
     private int blackYutCount = 0;
+    public int BlackYutCount => blackYutCount;
     public bool HasBlackYut => blackYutCount > 0;
 
     // 원한
@@ -59,6 +60,8 @@ public class Player
         yutResults.Clear();
         finishedPiecesCount = 0;
         activeSkillUseCount = 0;
+
+        wonhan = 0; blackYutCount = 0;
     }
 
     public void FinishPiece(Piece piece)
@@ -115,6 +118,8 @@ public class Player
         {
             wonhan -= 5;
             blackYutCount++;
+            GameEvents.InvokeBlackYutObtained(playerId); 
         }
+        GameEvents.InvokeWonhanChanged(playerId, wonhan);
     }
 }
