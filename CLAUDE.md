@@ -19,7 +19,7 @@
 
 | 캐릭터 | Hex |
 |---|---|
-| 귀신 (Gwishin) | `#FF0000` |
+| 귀신 (Gwishin) | `#A0121B` (핏빛 크림슨, 구 #FF0000) |
 | 도깨비 (Dokkaebi) | `#E8751A` |
 | 물귀신 (Mulgwisin) | `#0B7B8A` |
 

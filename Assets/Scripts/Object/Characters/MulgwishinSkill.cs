@@ -23,46 +23,56 @@ public class MulgwishinSkill : CharacterSkill
 
     public override IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null)
     {
-        player.activeSkillUseCount++;
-
-        var candidates = player.pieces
-            .Where(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null)
-            .ToList();
-
-        Piece sacrificed = null;
-        if (requestPick != null)
-            yield return requestPick(candidates, p => sacrificed = p);
-        else
+        VFXManager.Instance?.VignetteHoldOn(new Color(0.043f, 0.482f, 0.541f), 0.35f);  // 청록 ON
+        try
         {
-            var solos = candidates.Where(p => p.stackedPieces.Count == 0).ToList();
-            var pool = solos.Count > 0 ? solos : candidates;
-            sacrificed = pool.OrderBy(p => p.nodeHistory.Count).First();
-        }
+            player.activeSkillUseCount++;
 
-        if (sacrificed == null) yield break;
+            var candidates = player.pieces
+                .Where(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null)
+                .ToList();
 
-        var node = sacrificed.currentNode;
-        node.piecesOnNode.Remove(sacrificed);
-
-        if (sacrificed.stackedPieces.Count > 0)
-        {
-            var newLeader = sacrificed.stackedPieces[0];
-            newLeader.stackLeader = null;
-            newLeader.stackedPieces.Clear();
-            for (int i = 1; i < sacrificed.stackedPieces.Count; i++)
+            Piece sacrificed = null;
+            if (requestPick != null)
+                yield return requestPick(candidates, p => sacrificed = p);
+            else
             {
-                newLeader.stackedPieces.Add(sacrificed.stackedPieces[i]);
-                sacrificed.stackedPieces[i].stackLeader = newLeader;
+                var solos = candidates.Where(p => p.stackedPieces.Count == 0).ToList();
+                var pool = solos.Count > 0 ? solos : candidates;
+                sacrificed = pool.OrderBy(p => p.nodeHistory.Count).First();
             }
-            sacrificed.stackedPieces.Clear();
+
+            if (sacrificed == null) yield break;
+
+            var node = sacrificed.currentNode;
+            VFXManager.Instance?.PlayMulgwishinParticle(node.transform.position);
+
+            node.piecesOnNode.Remove(sacrificed);
+
+            if (sacrificed.stackedPieces.Count > 0)
+            {
+                var newLeader = sacrificed.stackedPieces[0];
+                newLeader.stackLeader = null;
+                newLeader.stackedPieces.Clear();
+                for (int i = 1; i < sacrificed.stackedPieces.Count; i++)
+                {
+                    newLeader.stackedPieces.Add(sacrificed.stackedPieces[i]);
+                    sacrificed.stackedPieces[i].stackLeader = newLeader;
+                }
+                sacrificed.stackedPieces.Clear();
+            }
+
+            sacrificed.currentNode = null;
+            sacrificed.nodeHistory.Clear();
+            sacrificed.pieceObject.transform.position = sacrificed.pieceObject.initPosition;
+
+            reposition?.Invoke(node);
+
+            player.AddBlackYut(2);
         }
-
-        sacrificed.currentNode = null;
-        sacrificed.nodeHistory.Clear();
-        sacrificed.pieceObject.transform.position = sacrificed.pieceObject.initPosition;
-
-        reposition?.Invoke(node);
-
-        player.AddBlackYut(2);
+        finally
+        {
+            VFXManager.Instance?.VignetteHoldOff();   // 스킬 끝나면 청록 OFF
+        }
     }
 }

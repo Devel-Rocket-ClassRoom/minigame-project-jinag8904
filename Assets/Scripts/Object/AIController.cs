@@ -37,7 +37,7 @@ public class AIController : MonoBehaviour
             ai.AddThrowResult(yutThrowController.LastResult);
         }
         GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.4f);
 
         while (true)
         {
@@ -60,7 +60,7 @@ public class AIController : MonoBehaviour
 
                 if (ai.AllFinished) yield break;
 
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.3f);
                 GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             }
 
@@ -70,7 +70,7 @@ public class AIController : MonoBehaviour
             yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
             ai.UseBlackYut(yutThrowController.LastResult);
             GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.4f);
         }
     }
 

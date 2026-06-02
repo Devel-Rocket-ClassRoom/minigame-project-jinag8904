@@ -78,6 +78,12 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private Image p2CharacterIcon;
     [SerializeField] private TextMeshProUGUI p2CharacterNameText;
 
+    [SerializeField] private WonhanGauge p1WonhanGauge;
+    [SerializeField] private WonhanGauge p2WonhanGauge;
+
+    [SerializeField] private TMP_Text p1BlackYutCountText;
+    [SerializeField] private TMP_Text p2BlackYutCountText;
+
     // 캐릭터 선택
     [SerializeField] private CharacterData[] availableCharacters;
     [SerializeField] private GameObject characterSelectPanel;
@@ -246,6 +252,15 @@ public class GameMaster : MonoBehaviour
         p1CharacterNameText.text = players[0].characterData != null ? LocalizationManager.Get(players[0].characterData.localizationKey) : "";
         p2CharacterIcon.sprite = players[1].characterData?.icon;
         p2CharacterNameText.text = players[1].characterData != null ? LocalizationManager.Get(players[1].characterData.localizationKey) : "";
+
+        Color c0 = players[0].characterData != null ? players[0].characterData.themeColor : Color.white;
+        Color c1 = players[1].characterData != null ? players[1].characterData.themeColor : Color.white;
+        if (players[0].characterData == players[1].characterData)   // 미러전: p2 톤업
+            c1 = Color.Lerp(c1, Color.white, 0.4f);
+
+        VFXManager.Instance?.SetCaptureColors(c0, c1);
+        p1WonhanGauge?.SetColor(c0);
+        p2WonhanGauge?.SetColor(c1);
     }
 
     private IEnumerator CoSelectCharacterForPlayer(Player player)
@@ -316,7 +331,7 @@ public class GameMaster : MonoBehaviour
 
         while (!players.Any(p => p.AllFinished))
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.4f);
             yield return StartCoroutine(CoHandlePlayerTurn(currPlayer));
             SwitchTurn();
         }
@@ -354,7 +369,7 @@ public class GameMaster : MonoBehaviour
         if (!isVsAI)
             yield return StartCoroutine(CoSwitchSideCam(player.playerId));
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.4f);
 
         yield return StartCoroutine(CoWaitThrowButton(player));
         LogYutResults(player);
@@ -688,6 +703,15 @@ public class GameMaster : MonoBehaviour
     {
         GameLogUI.UpdateYutResults(player.yutResults, player.name);
         blackYutButton.gameObject.SetActive(player.HasBlackYut);
+
+        UpdateBlackYutCount(p1BlackYutCountText, players[0].BlackYutCount);
+        UpdateBlackYutCount(p2BlackYutCountText, players[1].BlackYutCount);
+    }
+
+    private void UpdateBlackYutCount(TMP_Text txt, int count)
+    {
+        if (txt == null) return;
+        txt.text = "x" + count;   // 0이어도 x0 표시
     }
 
     private IEnumerator CoHandleActiveSkill(Player player)
