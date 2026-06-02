@@ -31,9 +31,9 @@ Material:
     - _MarkRadius: 0.025
     - _Smoothness: 0.3
     m_Colors:
-    - _FlatColor: {r: 0.08, g: 0.07, b: 0.06, a: 1}
+    - _FlatColor: {r: 0.4, g: 0.26, b: 0.14, a: 1}
     - _MarkColor: {r: 0.54999995, g: 0.049999982, b: 0.049999982, a: 1}
-    - _RoundColor: {r: 0.04, g: 0.03, b: 0.03, a: 1}
-    - _SideColor: {r: 0.06, g: 0.05, b: 0.04, a: 1}
+    - _RoundColor: {r: 0.07, g: 0.04, b: 0.03, a: 1}
+    - _SideColor: {r: 0.2, g: 0.13, b: 0.08, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

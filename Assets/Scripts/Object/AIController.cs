@@ -32,6 +32,7 @@ public class AIController : MonoBehaviour
         while (ai.yutResults.Count > 0 &&
                (ai.yutResults[^1] == YutResult.Yut || ai.yutResults[^1] == YutResult.Mo))
         {
+            VFXManager.Instance?.PlayBonusThrow();
             GameEvents.InvokeYutThrown(ai.playerId);
             yield return StartCoroutine(yutThrowController.CoThrow());
             ai.AddThrowResult(yutThrowController.LastResult);
@@ -66,9 +67,11 @@ public class AIController : MonoBehaviour
 
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
+            ai.ConsumeBlackYut();   // 던지기 전 즉시 개수 차감 + UI 갱신
             GameEvents.InvokeYutThrown(ai.playerId);
+            VFXManager.Instance?.PlayBlackYutThrow();
             yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
-            ai.UseBlackYut(yutThrowController.LastResult);
+            ai.AddThrowResult(yutThrowController.LastResult);
             GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             yield return new WaitForSeconds(0.4f);
         }
