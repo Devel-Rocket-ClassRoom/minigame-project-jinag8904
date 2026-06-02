@@ -71,6 +71,22 @@ public class VFXManager : MonoBehaviour
         VignettePulse(new Color(0.043f, 0.482f, 0.541f), 0.4f); // 청록 #0B7B8A
     }
 
+    public void PlayBonusThrow()
+    {
+        ShowBanner(LocalizationManager.Get("BANNER_BONUS_THROW"),
+                   new Color(1f, 0.78f, 0.24f));  // 금빛 #FFC83D
+        ZoomPunch(-6f, 0.15f);   // 도깨비보다 살짝 약한 줌 펀치
+        ShakeCamera(0.2f);       // 가벼운 흔들림
+    }
+
+    public void PlayBlackYutThrow()
+    {
+        ShowBanner(LocalizationManager.Get("BANNER_BLACK_YUT"),
+                   new Color(0.63f, 0.07f, 0.11f));  // 핏빛 크림슨 #A0121B
+        VignettePulse(new Color(0.1f, 0f, 0.05f), 0.45f);  // 화면 가장자리 어둡게
+        ShakeCamera(0.3f);
+    }
+
     // ---- 연출 헬퍼 ----
     private void ShakeCamera(float force)
     {

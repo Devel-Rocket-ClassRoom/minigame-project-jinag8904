@@ -92,10 +92,12 @@ public class Player
         yutResults.Add(result);
     }
 
-    public void UseBlackYut(YutResult result)
+    // 검은 윷 사용 (개수 차감 + 이벤트) — 던지기 연출 전 클릭 시점에 호출.
+    // 던진 결과는 연출 후 AddThrowResult로 따로 반영.
+    public void ConsumeBlackYut()
     {
-        yutResults.Add(result);
         blackYutCount--;
+        GameEvents.InvokeBlackYutUsed(playerId);
     }
 
     public void OnCaught(Piece piece)
@@ -105,10 +107,12 @@ public class Player
         AddWonhan(!isExtraWonhan ? 3 : 5);
     }
 
-    public void AddBlackYut(int count) 
+    public void AddBlackYut(int count)
     {
         blackYutCount += count;
         GameEvents.InvokeBlackYutObtained(playerId);
+        // 원한 전환이 아닌 직접 획득(귀신 패시브)이라 게이지는 터짐 후 현재 원한으로 복원
+        GameEvents.InvokeWonhanChanged(playerId, wonhan);
     }
 
     public void AddWonhan(int amount)

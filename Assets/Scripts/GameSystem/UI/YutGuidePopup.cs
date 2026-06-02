@@ -15,6 +15,9 @@ public class YutGuidePopup : MonoBehaviour
     [Tooltip("이 패널이 떠 있는 동안에는 H로 열 수 없다(예: 튜토리얼 패널). GameScene에선 비워둠.")]
     [SerializeField] private GameObject blockerPanel;
 
+    [Tooltip("armed 상태에서만 보이는 'H - Hint' 라벨 (HelpCanvas 직속 자식)")]
+    [SerializeField] private GameObject hintLabel;
+
     private InputAction openAction;
     private bool armed;     // 실제 플레이 중에만 true (모드/캐릭터 선택 중에는 H 무시)
 
@@ -55,10 +58,15 @@ public class YutGuidePopup : MonoBehaviour
     }
 
     // 실제 플레이 시작/종료 시 GameMaster가 호출한다.
-    public void Arm() => armed = true;
+    public void Arm()
+    {
+        armed = true;
+        if (hintLabel != null) hintLabel.SetActive(true);
+    }
     public void Disarm()
     {
         armed = false;
+        if (hintLabel != null) hintLabel.SetActive(false);
         Hide();
     }
 

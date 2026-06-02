@@ -101,7 +101,7 @@ public class YutThrowController : MonoBehaviour
                 }
             }
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.3f);
 
             float bElapsed = 0f;
             int bConsistentCount = 0;
@@ -113,7 +113,7 @@ public class YutThrowController : MonoBehaviour
 
                 if (bSticks.All(s => s != null && s.IsAlmostAtRest)) bConsistentCount++;
                 else bConsistentCount = 0;
-                if (bConsistentCount >= 5) break;
+                if (bConsistentCount >= 3) break;
             }
 
             // 물리 고정
@@ -138,7 +138,7 @@ public class YutThrowController : MonoBehaviour
             // 공중으로 띄우기
             var startPositions = bSticks.Select(s => s != null ? s.transform.position : Vector3.zero).ToArray();
             float floatHeight = 2f * worldScale;
-            float floatDuration = 1f;
+            float floatDuration = 0.5f;
             {
                 var moveUpTasks = new System.Collections.Generic.List<Tween>();
                 for (int i = 0; i < 4; i++)
@@ -150,7 +150,7 @@ public class YutThrowController : MonoBehaviour
             }
 
             // 스핀하면서 목표 회전으로 스냅
-            float spinDuration = 2f;
+            float spinDuration = 1f;
             Tween lastSpinTween = null;
             for (int i = 0; i < 4; i++)
                 if (bSticks[i] != null)
@@ -170,7 +170,7 @@ public class YutThrowController : MonoBehaviour
                 if (moveDownTasks.Count > 0) yield return moveDownTasks[0].WaitForCompletion();
             }
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.4f);
 
             foreach (var s in bSticks)
                 if (s != null) Destroy(s.gameObject);
@@ -218,10 +218,10 @@ public class YutThrowController : MonoBehaviour
 
             if (sticks.All(s => s != null && s.IsAlmostAtRest)) consistentCount++;
             else consistentCount = 0;
-            if (consistentCount >= 5) break;
+            if (consistentCount >= 3) break;
         }
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.4f);
 
         int tailCount = 0;
         bool lastStickIsTail = sticks[3] != null && sticks[3].IsTail;

@@ -190,11 +190,17 @@ public class GameMaster : MonoBehaviour
         dragAndDrop.boardNodeMap = boardNodeMap;
 
         LocalizationManager.OnLanguageChanged += UpdateCharacterHUD;
+
+        GameEvents.OnBlackYutObtained += HandleBlackYutCountChanged;
+        GameEvents.OnBlackYutUsed     += HandleBlackYutCountChanged;
     }
 
     private void OnDestroy()
     {
         LocalizationManager.OnLanguageChanged -= UpdateCharacterHUD;
+
+        GameEvents.OnBlackYutObtained -= HandleBlackYutCountChanged;
+        GameEvents.OnBlackYutUsed     -= HandleBlackYutCountChanged;
     }
 
     private void Init()
@@ -288,6 +294,8 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoRunGame()
     {
+        TutorialManager.isTutorial = tutorialMode;
+
         if (tutorialMode)
         {
             isVsAI = true;
@@ -378,6 +386,7 @@ public class GameMaster : MonoBehaviour
         while (player.yutResults.Count > 0 &&
                (player.yutResults[^1] == YutResult.Yut || player.yutResults[^1] == YutResult.Mo))
         {
+            VFXManager.Instance?.PlayBonusThrow();
             yield return StartCoroutine(CoWaitThrowButton(player));
             LogYutResults(player);
         }
@@ -678,15 +687,17 @@ public class GameMaster : MonoBehaviour
         blackYutButton.interactable = false;
         endTurnButton.interactable = false;
 
+        currPlayer.ConsumeBlackYut();   // 클릭 즉시 개수 차감 + UI 갱신
+        if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
+
         GameEvents.InvokeYutThrown(currPlayer.playerId);
+        VFXManager.Instance?.PlayBlackYutThrow();
         yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
-        currPlayer.UseBlackYut(yutThrowController.LastResult);
-        GameEvents.InvokeBlackYutUsed(currPlayer.playerId);
+        currPlayer.AddThrowResult(yutThrowController.LastResult);
 
         blackYutButton.interactable = true;
         endTurnButton.interactable = true;
 
-        if (!currPlayer.HasBlackYut) blackYutButton.gameObject.SetActive(false);
         LogYutResults(currPlayer);
     }
 
@@ -704,6 +715,14 @@ public class GameMaster : MonoBehaviour
         GameLogUI.UpdateYutResults(player.yutResults, player.name);
         blackYutButton.gameObject.SetActive(player.HasBlackYut);
 
+        RefreshBlackYutCounts();
+    }
+
+    // 검은 윷 획득/사용 이벤트 시 즉시 호출 → 게이지와 동기화 (LogYutResults를 기다리지 않음)
+    private void HandleBlackYutCountChanged(int _) => RefreshBlackYutCounts();
+
+    private void RefreshBlackYutCounts()
+    {
         UpdateBlackYutCount(p1BlackYutCountText, players[0].BlackYutCount);
         UpdateBlackYutCount(p2BlackYutCountText, players[1].BlackYutCount);
     }
@@ -881,8 +900,11 @@ public class GameMaster : MonoBehaviour
 
         if (prevNode != null) RepositionNode(prevNode);
 
+        bool camActivated = false;
         if (useActiveSkill)
         {
+            camActivated = true;
+            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam()); // 보드캠 진입(블렌드 완료)까지 기다린 뒤 잡기 연출
             RepositionNode(targetNode);
             if (pushPathNodes != null)
             {
@@ -892,10 +914,11 @@ public class GameMaster : MonoBehaviour
         }
         else
         {
+            camActivated = true;
             yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
             yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
             RepositionNode(targetNode);
-            yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+            // CoReleaseFollowCamera는 잡기·업기 시각화 후 메서드 끝에서 호출
         }
 
         // 사용한 결과 제거 → 잡기 연출 전에 즉시 반영
@@ -976,6 +999,9 @@ public class GameMaster : MonoBehaviour
             ally.stackLeader = piece;
             RepositionNode(targetNode);
         }
+
+        // 잡기·업기 시각화가 끝난 뒤 카메라 릴리즈 (줌인 상태에서 즉시 반영되도록)
+        if (camActivated) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
     }
 
     private void SendHome(Piece p, BoardNode fromNode)

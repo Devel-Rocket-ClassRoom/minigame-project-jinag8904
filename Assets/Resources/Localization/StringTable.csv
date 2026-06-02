@@ -18,6 +18,8 @@ SKILL_GWISHIN_ACTIVE,원혼 강림,Soul Descent
 SKILL_GWISHIN_BRIEF,잡을수록 강해지는 추격자. 경로 위의 적을 단숨에 휩쓴다.,A hunter that grows stronger with each catch. Sweeps enemies off the path at once.
 SKILL_DOKKAEBI_REVERSE,잡았다!,Gotcha!
 BANNER_CAPTURE,잡았다!,Captured!
+BANNER_BONUS_THROW,한 번 더!,Roll Again!
+BANNER_BLACK_YUT,검은 윷!,Black Yut!
 SKILL_DOKKAEBI_BRIEF,잡히면 씨름으로 되받아치는 반격가. 동료가 많을수록 강하다.,A counter-fighter who strikes back with Ssireum. Stronger with more allies.
 SKILL_MULGWISHIN_ACTIVE,제물,Sacrifice
 SKILL_MULGWISHIN_BRIEF,잡히는 순간 상대를 끌어내리는 방해꾼. 제물로 검은 윷을 불린다.,A spoiler who drags foes down when caught. Sacrifices pieces to gain black yut.
@@ -68,3 +70,4 @@ TUTORIAL_FINISH_TITLE,완주,Finish
 TUTORIAL_FINISH_BODY,말이 한 바퀴를 다 돌면 완주한다. 마지막 말을 완주시켜라.,A piece finishes after completing the circuit. Move your last piece home.
 TUTORIAL_SKILL_TITLE,고유 능력,Special Abilities
 TUTORIAL_SKILL_BODY,귀신\n혼식: 상대 잡기 성공 시 검은 윷 +1\n원혼 강림: 이동 경로의 적을 즉시 모두 잡는다.\n\n도깨비\n씨름: 말이 잡혔을 때 확률적으로 반격한다. 성공 시 검은 윷을 하나 받는다.\n동료가 많을수록 이길 확률이 높다.\n\n물귀신\n발목 붙잡기: 말이 잡히면 상대의 남은 윷 결과를 모두 소모시킨다.\n제물: 말 하나를 희생하여 검은 윷을 두 개 받는다.,Gwishin\nSoul Feast: Earn Black Yut +1 when capturing\nSoul Descent: Instantly capture all enemies on the path\n\nDokkaebi\nSsireum: Chance to counter-capture when caught + Black Yut +1\nThe more allies you have, the higher the win chance.\n\nMulgwishin\nAnkle Grab: When captured, consume all of the attacker's remaining yut results\nSacrifice: Sacrifice one of your pieces to gain Black Yut +2
+LABEL_HINT_HELP,H - 도움말,H - Hint
