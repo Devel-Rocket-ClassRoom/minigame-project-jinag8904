@@ -29,7 +29,7 @@ public class InputBlocker : MonoBehaviour
     public void AllowPieceOnly(Piece piece)
     {
         BlockingPieces = true;
-        AllowedPiece = piece;
+        AllowedPiece = piece?.stackLeader ?? piece;
     }
 
     public void AllowDestinationOnly(BoardNode node)
