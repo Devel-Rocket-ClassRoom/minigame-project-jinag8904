@@ -243,6 +243,8 @@ public class DragAndDrop : MonoBehaviour
         foreach (var kv in moves.Destinations)
         {
             var node = boardNodeMap[kv.Key];
+            if (InputBlocker.AllowedDestinationNode != null && InputBlocker.AllowedDestinationNode != node)
+                continue;
             validDestToYutResult[node] = kv.Value.yr;
 
             List<BoardNode> pushPath = null;
@@ -338,7 +340,7 @@ public class DragAndDrop : MonoBehaviour
         {
             if (p.hasFinished) continue;
 
-            if (InputBlocker.BlockingPieces && InputBlocker.AllowedPiece != null && p != InputBlocker.AllowedPiece)
+            if (InputBlocker.BlockingPieces && (InputBlocker.AllowedPiece == null || p != InputBlocker.AllowedPiece))
                 continue;
             
             if (onlyBackdo)

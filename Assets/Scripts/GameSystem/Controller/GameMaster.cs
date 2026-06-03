@@ -271,7 +271,10 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoSelectCharacterForPlayer(Player player)
     {
-        characterSelectTitleText.text = player.name;
+        if (isVsAI)
+            characterSelectTitleText.text = LocalizationManager.Get(player.playerId == 0 ? "LABEL_CHARACTER_SELECT" : "LABEL_OPPONENT_SELECT");
+        else
+            characterSelectTitleText.text = LocalizationManager.Get(player.playerId == 0 ? "LABEL_LOCAL_P1_SELECT" : "LABEL_LOCAL_P2_SELECT");
         characterDecision = null;
 
         for (int i = 0; i < characterSelectButtons.Length; i++)
@@ -313,6 +316,19 @@ public class GameMaster : MonoBehaviour
         else
         {
             yield return StartCoroutine(CoSelectMode());
+
+            bool isKorean = LocalizationManager.CurrentLanguage == Language.Korean;
+            if (isVsAI)
+            {
+                players[0].name = isKorean ? "당신" : "You";
+                players[1].name = isKorean ? "상대" : "Opponent";
+            }
+            else
+            {
+                players[0].name = isKorean ? "플레이어 1" : "Player 1";
+                players[1].name = isKorean ? "플레이어 2" : "Player 2";
+            }
+
             yield return StartCoroutine(CoSelectCharacter());
             Init();
             yield return StartCoroutine(CoWhoGoesFirst());
@@ -408,7 +424,7 @@ public class GameMaster : MonoBehaviour
                 }
 
                 // 액티브 스킬 버튼 활성화
-                GetActiveSkillButton(player).interactable = !TutorialManager.isTutorial && player.Skill?.CanUseActive(player) == true;
+                GetActiveSkillButton(player).interactable = (!TutorialManager.isTutorial || TutorialManager.allowSkillDemo) && player.Skill?.CanUseActive(player) == true;
 
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);
@@ -452,6 +468,7 @@ public class GameMaster : MonoBehaviour
 
                     HandleFinish(piece, stackAll, player);
                     player.yutResults.Remove(chosenOutResult);
+                    if (isActiveSkillOn) player.Skill?.OnActiveTurnEnd();
                     isActiveSkillOn = false;
                     LogYutResults(player);
 
@@ -503,6 +520,7 @@ public class GameMaster : MonoBehaviour
                 if (isActiveSkillOn && pushPath != null)
                 {
                     player.Skill.OnActiveMoveEffect(player, piece, pushPath, targetNode, RepositionNode);
+                    player.Skill?.OnActiveTurnEnd();
                     isActiveSkillOn = false;
                 }
 
@@ -563,13 +581,13 @@ public class GameMaster : MonoBehaviour
 
                             RepositionNode(targetNode);
                             GameEvents.InvokeCaptureSuccess(player.playerId);
+                            player.Skill?.OnCapture(piece, capturedPieces);
+                            if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                             if (!noBonus)
                             {
                                 yield return StartCoroutine(CoWaitThrowButton(player, isCaptureBonus: true));
                             }
                             LogYutResults(player);
-                            player.Skill?.OnCapture(piece, capturedPieces);
-                            if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                         }
                     }
 
@@ -663,6 +681,7 @@ public class GameMaster : MonoBehaviour
         throwYutButton.gameObject.SetActive(false);
         p1ActiveSkillButton.interactable = false;
         p2ActiveSkillButton.interactable = false;
+        if (isActiveSkillOn) player.Skill?.OnActiveTurnEnd();
         isActiveSkillOn = false;
     }
 
@@ -744,6 +763,7 @@ public class GameMaster : MonoBehaviour
         {
             isActiveSkillOn = true;
             skill.OnActiveActivated(player);
+            skill.OnActiveTurnStart();
         }
     }
 
@@ -755,6 +775,8 @@ public class GameMaster : MonoBehaviour
     }
 
     public Player GetOpponent(Player player) => players[1 - player.playerId];
+
+    public bool IsActiveSkillOn => isActiveSkillOn;
 
     private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
 
@@ -967,6 +989,8 @@ public class GameMaster : MonoBehaviour
 
                     RepositionNode(targetNode);
                     GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
+                    currPlayer.Skill?.OnCapture(piece, capturedPieces);
+                    if (currPlayer.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                     if (!noBonus)
                     {
                         GameEvents.InvokeYutThrown(currPlayer.playerId);
@@ -974,9 +998,6 @@ public class GameMaster : MonoBehaviour
                         currPlayer.AddThrowResult(yutThrowController.LastResult);
                         GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
                     }
-
-                    currPlayer.Skill?.OnCapture(piece, capturedPieces);
-                    if (currPlayer.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                 }
             }
 

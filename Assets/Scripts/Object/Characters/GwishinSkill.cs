@@ -47,6 +47,13 @@ public class GwishinSkill : CharacterSkill
         }
     }
 
+    // 귀신 검붉은 비네트 (#A0121B) — 액티브 스킬 대기 중 유지
+    public override void OnActiveTurnStart() =>
+        VFXManager.Instance?.VignetteHoldOn(new Color(0.627f, 0.071f, 0.106f), 0.35f);
+
+    public override void OnActiveTurnEnd() =>
+        VFXManager.Instance?.VignetteHoldOff();
+
     public override float EvaluateActiveMoveBonus(Player player, List<BoardNodeData> path, BoardNodeData dest, Func<BoardNodeData, BoardNode> getNode, AIPersonality personality)
     {
         if (path == null) return 0f;

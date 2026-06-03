@@ -24,6 +24,10 @@ public abstract class CharacterSkill : ScriptableObject
     public virtual bool HasImmediateEffect => false;
     public virtual IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null) { yield break; }
 
+    // isActiveSkillOn 방식(HasImmediateEffect=false)에서 활성/비활성 시 비주얼 처리용
+    public virtual void OnActiveTurnStart() {}
+    public virtual void OnActiveTurnEnd() {}
+
     // 이동 후 경로/목적지에 적용할 효과. reposition은 노드 시각 갱신 콜백.
     public virtual void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition) {}
 

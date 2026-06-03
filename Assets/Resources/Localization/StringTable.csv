@@ -44,8 +44,11 @@ LABEL_DEFEAT,패배,Defeat
 LABEL_P1_WIN,P1 승리,P1 Wins
 LABEL_P2_WIN,P2 승리,P2 Wins
 LABEL_NAME,이름,Name
+LABEL_MODE_SELECT,모드 선택,Mode Select
 LABEL_CHARACTER_SELECT,당신의 정체는...,Who are you...
-LABEL_OPPONENT_SELECT,당신의 상대는...,Choose your opponent...
+LABEL_OPPONENT_SELECT,상대의 정체는...,Who is your opponent...
+LABEL_LOCAL_P1_SELECT,첫 번째 귀신은...,The first ghost is...
+LABEL_LOCAL_P2_SELECT,두 번째 귀신은...,The second ghost is...
 LABEL_GAME_SUBTITLE,친구,Your Friend
 CHAR_GWISHIN,귀신,Gwishin
 CHAR_DOKKAEBI,도깨비,Dokkaebi
@@ -64,10 +67,16 @@ TUTORIAL_STACK_TITLE,업기,Stacking
 TUTORIAL_STACK_BODY,"자신의 말이 있는 곳에 도착했다면 말을 업어 동시에 이동할 수 있다.\n단, 한 번 업힌 말은 다시 내릴 수 없다.",Land on your own piece to stack them and move together.\nNote: Stacked pieces cannot be unstacked.
 TUTORIAL_CAPTURE_TITLE,잡기,Capture
 TUTORIAL_CAPTURE_BODY,상대의 말이 있는 곳에 도착했다면 말을 잡을 수 있다.,Land on an opponent's piece to capture it.
+TUTORIAL_GRUDGE_TITLE,원한,Grudge
+TUTORIAL_GRUDGE_BODY,말을 잡으면 그 말은 윷판에서 쫓겨난다.\n잡힌 말은 원한을 가진다.\n원한이 5개 쌓이면 검은 윷을 획득한다.,When a piece is captured it is expelled from the board.\nCaptured pieces gain Grudge.\nAt 5 Grudge a Black Yut is earned.
 TUTORIAL_BLACKYUT_TITLE,검은 윷,Black Yut
 TUTORIAL_BLACKYUT_BODY,"너는 귀신이므로, 잡기에 성공하면 검은 윷을 획득한다.\n검은 윷은 차례가 넘어가기 전 어느 때나 던질 수 있다.\n검은 윷의 결과는 항상 모 아니면 뒷도이다.",As a ghost, capturing earns you a Black Yut.\nYou can cast it anytime before your turn ends.\nIt always results in either Mo or Back-Do.
 TUTORIAL_FINISH_TITLE,완주,Finish
 TUTORIAL_FINISH_BODY,말이 한 바퀴를 다 돌면 완주한다. 마지막 말을 완주시켜라.,A piece finishes after completing the circuit. Move your last piece home.
+TUTORIAL_LASTNODE_TITLE,참먹이,Home Space
+TUTORIAL_LASTNODE_BODY,참먹이를 밟는 것으로는 충분하지 않다. 참먹이를 넘어가야만 완주할 수 있다.,Stepping on the home space is not enough. You must go past it to finish.
 TUTORIAL_SKILL_TITLE,고유 능력,Special Abilities
-TUTORIAL_SKILL_BODY,귀신\n혼식: 상대 잡기 성공 시 검은 윷 +1\n원혼 강림: 이동 경로의 적을 즉시 모두 잡는다.\n\n도깨비\n씨름: 말이 잡혔을 때 확률적으로 반격한다. 성공 시 검은 윷을 하나 받는다.\n동료가 많을수록 이길 확률이 높다.\n\n물귀신\n발목 붙잡기: 말이 잡히면 상대의 남은 윷 결과를 모두 소모시킨다.\n제물: 말 하나를 희생하여 검은 윷을 두 개 받는다.,Gwishin\nSoul Feast: Earn Black Yut +1 when capturing\nSoul Descent: Instantly capture all enemies on the path\n\nDokkaebi\nSsireum: Chance to counter-capture when caught + Black Yut +1\nThe more allies you have, the higher the win chance.\n\nMulgwishin\nAnkle Grab: When captured, consume all of the attacker's remaining yut results\nSacrifice: Sacrifice one of your pieces to gain Black Yut +2
+TUTORIAL_SKILL_BODY,붉은색으로 변한 버튼을 누르면 능력을 사용한다. '귀신'의 능력이 발동하면 다음 경로 상에 있는 적을 모두 잡아먹는다.,Press the button when it turns red to activate your ability. When '귀신's ability triggers, it instantly captures all enemies along the path.
+TUTORIAL_END_TITLE,운명 개시,Fate Begins
+TUTORIAL_END_BODY,본 승부를 시작하자,Let the real game begin
 LABEL_HINT_HELP,H - 도움말,H - Hint
