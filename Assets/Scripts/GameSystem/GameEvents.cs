@@ -3,6 +3,7 @@ using System;
 public static class GameEvents
 {
     public static event Action<int> OnYutThrown;
+    public static event Action<int> OnYutLanded;
     public static event Action<int> OnCaptureSuccess;
     public static event Action<int> OnCaptured;
     public static event Action<int> OnPieceFinished;
@@ -12,8 +13,11 @@ public static class GameEvents
     public static event Action<int> OnBlackYutObtained;
     public static event Action<int> OnBlackYutUsed;
     public static event Action<int, int> OnWonhanChanged;
+    public static event Action OnSacrificePickStart;  // 제물 선택 대기 시작
+    public static event Action OnSacrificePickEnd;     // 제물 선택 완료
 
     public static void InvokeYutThrown(int id) => OnYutThrown?.Invoke(id);
+    public static void InvokeYutLanded(int id) => OnYutLanded?.Invoke(id);
     public static void InvokeCaptureSuccess(int id) => OnCaptureSuccess?.Invoke(id);
     public static void InvokeCaptured(int id) => OnCaptured?.Invoke(id);
     public static void InvokePieceFinished(int id) => OnPieceFinished?.Invoke(id);
@@ -23,4 +27,6 @@ public static class GameEvents
     public static void InvokeBlackYutObtained(int id) => OnBlackYutObtained?.Invoke(id);
     public static void InvokeBlackYutUsed(int id) => OnBlackYutUsed?.Invoke(id);
     public static void InvokeWonhanChanged(int id, int wonhan) => OnWonhanChanged?.Invoke(id, wonhan);
+    public static void InvokeSacrificePickStart() => OnSacrificePickStart?.Invoke();
+    public static void InvokeSacrificePickEnd() => OnSacrificePickEnd?.Invoke();
 }

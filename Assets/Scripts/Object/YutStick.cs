@@ -9,6 +9,9 @@ public class YutStick : MonoBehaviour
     private int _settleFrames;
     private const int SettleFrameThreshold = 8;
 
+    public event System.Action Landed;  // 바닥에 처음 닿은 순간 (효과음용)
+    private bool _hasLanded;
+
     public bool IsTail => Vector3.Dot(transform.up, Vector3.up) < 0f;
 
     public bool IsAtRest => rb != null
@@ -21,6 +24,13 @@ public class YutStick : MonoBehaviour
             && rb.angularVelocity.sqrMagnitude < 0.25f));
 
     private void Awake() => rb = GetComponent<Rigidbody>();
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (_hasLanded) return;
+        _hasLanded = true;
+        Landed?.Invoke();
+    }
 
     private void FixedUpdate()
     {

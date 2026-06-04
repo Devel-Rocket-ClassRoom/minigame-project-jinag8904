@@ -92,6 +92,7 @@ public class TutorialManager : MonoBehaviour
         ThrowYut.ForcedResults.Enqueue(YutResult.Gae);
         ThrowYut.ForcedResults.Enqueue(YutResult.Do);
         gameMaster.PlaceTutorialPiece(p1.pieces[0], aiPlacementNodeData);
+        p0.AddWonhan(2);   // 잡기 +3과 합쳐 원한 5 → 검은 윷 1개 획득 (8단계용)
         yield return ShowPanel("TUTORIAL_CAPTURE_TITLE", "TUTORIAL_CAPTURE_BODY");
         yield return WaitForThrow(1);
         yield return WaitForCapture(p0.pieces[3]);

@@ -135,6 +135,33 @@ public class VFXManager : MonoBehaviour
             .Append(bannerGroup.DOFade(0f, 0.3f));
     }
 
+    public void BannerHoldOn(string text, Color color)
+    {
+        if (bannerGroup == null || bannerText == null) return;
+        bannerGroup.DOKill();
+        bannerRect.DOKill();
+        bannerText.text = text;
+        bannerText.color = color;
+        bannerGroup.alpha = 0f;
+        bannerRect.localScale = Vector3.one * 0.6f;
+        // 페이드인 후 그대로 유지 (자동으로 사라지지 않음). timeScale 영향 안 받게 SetUpdate(true)
+        DOTween.Sequence().SetUpdate(true)
+            .Append(bannerGroup.DOFade(1f, 0.15f).SetUpdate(true))
+            .Join(bannerRect.DOScale(1f, 0.3f).SetEase(Ease.OutBack).SetUpdate(true));
+    }
+
+    public void BannerHoldOff()
+    {
+        if (bannerGroup == null) return;
+        bannerGroup.DOKill();
+        bannerGroup.DOFade(0f, 0.3f).SetUpdate(true);
+    }
+
+    // 귀신 액티브 잡기 성공 배너 (일회성) — 크림슨 #A0121B
+    public void ShowGwishinActiveBanner() =>
+        ShowBanner(LocalizationManager.Get("SKILL_GWISHIN_ACTIVE"),
+                   new Color(0.627f, 0.071f, 0.106f));
+
     // ---- 물귀신 헬퍼 ----
 
     public void PlayMulgwishinParticle(Vector3 pos) => PlayAt(mulgwishinFXPrefab, pos);

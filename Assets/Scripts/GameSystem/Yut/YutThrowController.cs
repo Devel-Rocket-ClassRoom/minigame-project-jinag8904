@@ -76,6 +76,7 @@ public class YutThrowController : MonoBehaviour
 
             var bSticks = new YutStick[4];
             var bRbs = new Rigidbody[4];
+            bool bLandedSfxPlayed = false;
 
             for (int i = 0; i < 4; i++)
             {
@@ -87,6 +88,15 @@ public class YutThrowController : MonoBehaviour
 
                 bSticks[i] = obj.GetComponent<YutStick>();
                 bRbs[i] = obj.GetComponent<Rigidbody>();
+
+                // 첫 윷이 바닥에 닿는 순간 효과음 (4개 중 한 번만)
+                if (bSticks[i] != null)
+                    bSticks[i].Landed += () =>
+                    {
+                        if (bLandedSfxPlayed) return;
+                        bLandedSfxPlayed = true;
+                        GameEvents.InvokeYutLanded(_useP2Cam ? 1 : 0);
+                    };
 
                 if (bRbs[i] != null)
                 {
@@ -180,6 +190,7 @@ public class YutThrowController : MonoBehaviour
         }
 
         var sticks = new YutStick[4];
+        bool landedSfxPlayed = false;
         for (int i = 0; i < 4; i++)
         {
             Vector3 pos = spawnPoints != null && i < spawnPoints.Length
@@ -192,6 +203,16 @@ public class YutThrowController : MonoBehaviour
             go.transform.localScale = Vector3.one * worldScale * 2;
 
             sticks[i] = go.GetComponent<YutStick>();
+
+            // 첫 윷이 바닥에 닿는 순간 효과음 (4개 중 한 번만)
+            if (sticks[i] != null)
+                sticks[i].Landed += () =>
+                {
+                    if (landedSfxPlayed) return;
+                    landedSfxPlayed = true;
+                    GameEvents.InvokeYutLanded(_useP2Cam ? 1 : 0);
+                };
+
             var rb = go.GetComponent<Rigidbody>();
             if (rb != null)
             {
