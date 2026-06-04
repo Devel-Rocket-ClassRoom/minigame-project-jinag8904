@@ -6,6 +6,7 @@ public class PauseMenuUI : MonoBehaviour
 {
     [SerializeField] private PausePanelView panelView;
     [SerializeField] private YutGuidePopup guidePopup;
+    [SerializeField] private SettingsPanelView settingsPanel;
 
     private bool isPaused;
     private InputAction escAction;
@@ -16,10 +17,13 @@ public class PauseMenuUI : MonoBehaviour
             panelView = FindFirstObjectByType<PausePanelView>(FindObjectsInactive.Include);
         if (guidePopup == null)
             guidePopup = FindFirstObjectByType<YutGuidePopup>(FindObjectsInactive.Include);
+        if (settingsPanel == null)
+            settingsPanel = FindFirstObjectByType<SettingsPanelView>(FindObjectsInactive.Include);
 
         panelView.gameObject.SetActive(false);
         panelView.resumeButton.onClick.AddListener(Resume);
         panelView.restartButton.onClick.AddListener(Restart);
+        panelView.settingsButton.onClick.AddListener(() => settingsPanel?.Show());
         panelView.quitButton.onClick.AddListener(Quit);
 
         escAction = new InputAction(binding: "<Keyboard>/escape");
@@ -28,6 +32,12 @@ public class PauseMenuUI : MonoBehaviour
 
     private void OnEscape()
     {
+        // 설정 패널이 열려 있으면 설정만 닫는다.
+        if (settingsPanel != null && settingsPanel.IsOpen)
+        {
+            settingsPanel.Hide();
+            return;
+        }
         // 가이드가 열려 있으면 가이드만 닫고 pause는 열지 않는다.
         if (guidePopup != null && guidePopup.IsOpen)
         {

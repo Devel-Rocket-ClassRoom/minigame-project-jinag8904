@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5697280334479438043
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 347984508081694863}
+  - component: {fileID: 3902338083914644536}
+  m_Layer: 0
+  m_Name: GameSFX
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &347984508081694863
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5697280334479438043}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3902338083914644536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5697280334479438043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9b851c9b7b29cb4d96f6c9c3e83ff93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSFX
+  yutThrowClips:
+  - {fileID: 8300000, guid: e8df7153e0244994baa8f7676f7eaf8e, type: 3}
+  - {fileID: 8300000, guid: 39d6215c39dd536429be8fd45cb6d2a9, type: 3}
+  - {fileID: 8300000, guid: dbf9c044d8bf8a14e9579e52b6bf0760, type: 3}
+  - {fileID: 8300000, guid: 921c960bfe729a546ad1b2fc345ceca5, type: 3}
+  - {fileID: 8300000, guid: f78f79040b377864abc9120618e60d1a, type: 3}
+  - {fileID: 8300000, guid: 81abd6b679f991e4581f0fe6f6b7a317, type: 3}
+  - {fileID: 8300000, guid: 2e0222edfbe512d4d958af9f9014899b, type: 3}
+  - {fileID: 8300000, guid: f86c7e2d6ac61084a8165ae96a159594, type: 3}
+  - {fileID: 8300000, guid: b96ea6fc744136a48bc7647a7f1015d1, type: 3}
+  - {fileID: 8300000, guid: 1358e2d148d736a4ebd22bb7ad54edbe, type: 3}
+  - {fileID: 8300000, guid: ee570965b3dd1e548b1fef7d1132cdf6, type: 3}
+  - {fileID: 8300000, guid: 2eec36a5d832cf2409b6cc49230ef023, type: 3}
+  - {fileID: 8300000, guid: 6437804eceaf70a459cbecb09a38eca3, type: 3}
+  pieceMoveClip: {fileID: 8300000, guid: 5e7446de393134d48912edfb7f2c0a6a, type: 3}
+  sacrificeLoopClip: {fileID: 8300000, guid: f5c722bd56bfbe8468e25b5ee7d2acfe, type: 3}
+  sacrificePickedClip: {fileID: 8300000, guid: 26506d73334d86c47aa94779faf974ff, type: 3}

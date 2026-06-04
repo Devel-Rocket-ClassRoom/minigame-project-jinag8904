@@ -770,7 +770,12 @@ public class GameMaster : MonoBehaviour
     private IEnumerator RequestPiecePickCoroutine(List<Piece> candidates, Action<Piece> onPicked)
     {
         dragAndDrop.BeginSacrificePick(candidates);
+        VFXManager.Instance?.BannerHoldOn(LocalizationManager.Get("BANNER_SACRIFICE_PICK"),
+                                          new Color(0.043f, 0.482f, 0.541f));  // 청록 #0B7B8A
+        GameEvents.InvokeSacrificePickStart();
         yield return new WaitUntil(() => dragAndDrop.SacrificeConfirmed);
+        GameEvents.InvokeSacrificePickEnd();
+        VFXManager.Instance?.BannerHoldOff();
         onPicked(dragAndDrop.SacrificeTarget);
     }
 

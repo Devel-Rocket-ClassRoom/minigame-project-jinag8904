@@ -111,7 +111,7 @@ public class Player
     {
         blackYutCount += count;
         GameEvents.InvokeBlackYutObtained(playerId);
-        // 원한 전환이 아닌 직접 획득(귀신 패시브)이라 게이지는 터짐 후 현재 원한으로 복원
+        // 원한 전환이 아닌 직접 획득(도깨비 패시브, 물귀신 액티브)이라 게이지는 터짐 후 현재 원한으로 복원
         GameEvents.InvokeWonhanChanged(playerId, wonhan);
     }
 

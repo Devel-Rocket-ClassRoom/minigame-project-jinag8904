@@ -31,7 +31,7 @@
 
 ### 귀신 (Gwishin)
 - AI: `captureWeight 2.0`, `randomness 0.1`
-- 패시브: 잡기 시 검은 윷 +1 (`OnCapture`)
+- 패시브: 잡기 시 원한 +3 (`OnCapture`) — 원한 5 누적 시 검은 윷 전환
 - 액티브: 경로상 적 즉시 잡기 (`OnActiveMoveEffect`) — 도깨비 씨름 우선순위 무시
 
 ### 도깨비 (Dokkaebi)

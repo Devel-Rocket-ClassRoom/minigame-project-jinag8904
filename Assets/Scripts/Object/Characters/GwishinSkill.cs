@@ -8,7 +8,7 @@ public class GwishinSkill : CharacterSkill
 {
     public override void OnCapture(Piece piece, List<Piece> captured)
     {
-        piece.owner.AddBlackYut(1);
+        piece.owner.AddWonhan(3);
     }
 
     public override int MaxActiveUses => 1;
@@ -16,6 +16,7 @@ public class GwishinSkill : CharacterSkill
 
     public override void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition)
     {
+        bool capturedAny = false;
         foreach (var pathNode in path.Where(n => n != dest && n != null))
         {
             var pathEnemyLeaders = pathNode.piecesOnNode
@@ -43,8 +44,14 @@ public class GwishinSkill : CharacterSkill
                 VFXManager.Instance?.PlayGwishin(pathNode.transform.position);
             }
 
-            if (pathEnemyLeaders.Count > 0) reposition(pathNode);
+            if (pathEnemyLeaders.Count > 0)
+            {
+                reposition(pathNode);
+                capturedAny = true;
+            }
         }
+
+        if (capturedAny) VFXManager.Instance?.ShowGwishinActiveBanner();
     }
 
     // 귀신 검붉은 비네트 (#A0121B) — 액티브 스킬 대기 중 유지
