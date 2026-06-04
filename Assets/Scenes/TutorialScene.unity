@@ -6120,6 +6120,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnvironmentVisual
       objectReference: {fileID: 0}
+    - target: {fileID: 7476178459938501865, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
