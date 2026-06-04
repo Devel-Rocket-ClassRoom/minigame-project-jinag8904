@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TitleManager : MonoBehaviour
@@ -16,8 +15,8 @@ public class TitleManager : MonoBehaviour
 
     private void Awake()
     {
-        startButton.onClick.AddListener(() => SceneManager.LoadScene("GameScene"));
-        tutorialButton.onClick.AddListener(() => SceneManager.LoadScene("TutorialScene"));
+        startButton.onClick.AddListener(() => SceneLoader.LoadScene("GameScene"));
+        tutorialButton.onClick.AddListener(() => SceneLoader.LoadScene("TutorialScene"));
         quitButton.onClick.AddListener(Quit);
         languageButton.onClick.AddListener(ToggleLanguage);
         settingsButton.onClick.AddListener(() => settingsPanel.Show());

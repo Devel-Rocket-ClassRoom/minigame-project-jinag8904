@@ -6,6 +6,7 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private GameOverPanelView panelView;
     [SerializeField] private PauseMenuUI pauseMenuUI;
     [SerializeField] private string restartSceneName;   // 비워두면 현재 씬
+    [SerializeField] private AudioClip bellClip;
 
     private void Awake()
     {
@@ -14,11 +15,13 @@ public class GameOverUI : MonoBehaviour
 
         panelView.gameObject.SetActive(false);
         panelView.restartButton.onClick.AddListener(Restart);
-        panelView.quitButton.onClick.AddListener(() => SceneManager.LoadScene("TitleScene"));
+        panelView.quitButton.onClick.AddListener(() => SceneLoader.LoadScene("TitleScene"));
     }
 
     public void Show(int winnerId, bool isVsAI)
     {
+        SoundManager.Instance?.PlaySFX(bellClip);
+
         if (panelView.resultText != null)
         {
             string key = isVsAI
@@ -36,6 +39,6 @@ public class GameOverUI : MonoBehaviour
         string scene = string.IsNullOrEmpty(restartSceneName)
             ? SceneManager.GetActiveScene().name
             : restartSceneName;
-        SceneManager.LoadScene(scene);
+        SceneLoader.LoadScene(scene);
     }
 }

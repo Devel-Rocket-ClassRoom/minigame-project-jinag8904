@@ -5942,7 +5942,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6b1cef217f4ca9a448d3fa060c0347eb, type: 2}
   - {fileID: 11400000, guid: 62d0034fb3b8f48488f164f56c38c170, type: 2}
   gameMaster: {fileID: 909197071}
-  fadeOverlay: {fileID: 1723203964}
 --- !u!1 &854992522
 GameObject:
   m_ObjectHideFlags: 0
@@ -6520,6 +6519,7 @@ MonoBehaviour:
   yutStickMarkedPrefab: {fileID: 7163451056564114836, guid: 4b3c6b610f742474ea048deb80d59d18, type: 3}
   blackYutStickPrefab: {fileID: 7163451056564114836, guid: 6f74760b711a47659f665150f7fa4347, type: 3}
   blackYutStickMarkedPrefab: {fileID: 7163451056564114836, guid: 1e095d59c329443ebb9fb3979fca25ef, type: 3}
+  blackYutWhooshClip: {fileID: 8300000, guid: 9af7c63e4d563fb46908a5f173330159, type: 3}
   spawnPoints:
   - {fileID: 1438521432}
   - {fileID: 1438521431}
@@ -9310,6 +9310,9 @@ MonoBehaviour:
   gwishinFXPrefab: {fileID: 1920042722457988087, guid: 9d8be14bd05793d47a7a23a4a5e70b34, type: 3}
   dokkaebiFXPrefab: {fileID: 6104790750786654526, guid: 58560bebe5c214747b246068bbb3fd72, type: 3}
   mulgwishinFXPrefab: {fileID: 6405248496684387837, guid: 8962094e004972c4998a413f579061c5, type: 3}
+  gwishinActiveClip: {fileID: 8300000, guid: edd39544961007949ae4f8cc781425c8, type: 3}
+  impactClip: {fileID: 8300000, guid: 3b68e279bb9f53f4a8c65ab45e2ca6ce, type: 3}
+  dokkaebiReverseClip: {fileID: 8300000, guid: 7523af0fd91c87d42be0da64a771f34d, type: 3}
   screenOverlay: {fileID: 749610451}
   impulseSource: {fileID: 1239135671}
   bannerGroup: {fileID: 816751567}
@@ -9954,6 +9957,7 @@ MonoBehaviour:
   panelView: {fileID: 1325924121}
   pauseMenuUI: {fileID: 909197074}
   restartSceneName: GameScene
+  bellClip: {fileID: 8300000, guid: 2c8ad12c429f963418cc66e6c89a33cb, type: 3}
 --- !u!1 &1318210098
 GameObject:
   m_ObjectHideFlags: 0

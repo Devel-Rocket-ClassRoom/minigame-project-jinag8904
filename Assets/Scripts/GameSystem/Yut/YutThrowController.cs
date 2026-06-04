@@ -13,6 +13,7 @@ public class YutThrowController : MonoBehaviour
     [SerializeField] private GameObject yutStickMarkedPrefab; // 4번째 윷 (뒷도 판별용 표식 있음)
     [SerializeField] private GameObject blackYutStickPrefab;        // null이면 yutStickPrefab 사용
     [SerializeField] private GameObject blackYutStickMarkedPrefab;  // 검은 윷 4번째 스틱 (뒷도 판별용)
+    [SerializeField] private AudioClip blackYutWhooshClip;
 
     [SerializeField] private Transform[] spawnPoints;
 
@@ -160,6 +161,7 @@ public class YutThrowController : MonoBehaviour
             }
 
             // 스핀하면서 목표 회전으로 스냅
+            SoundManager.Instance?.PlaySFX(blackYutWhooshClip);
             float spinDuration = 1f;
             Tween lastSpinTween = null;
             for (int i = 0; i < 4; i++)

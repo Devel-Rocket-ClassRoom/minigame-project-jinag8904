@@ -13,6 +13,9 @@ public class VFXManager : MonoBehaviour
     [SerializeField] private ParticleSystem gwishinFXPrefab;
     [SerializeField] private ParticleSystem dokkaebiFXPrefab;
     [SerializeField] private ParticleSystem mulgwishinFXPrefab;
+    [SerializeField] private AudioClip gwishinActiveClip;
+    [SerializeField] private AudioClip impactClip;
+    [SerializeField] private AudioClip dokkaebiReverseClip;
 
     [Header("연출 공통")]
     [SerializeField] private Image screenOverlay;
@@ -54,6 +57,7 @@ public class VFXManager : MonoBehaviour
         PlayAt(gwishinFXPrefab, pos);
         ShakeCamera(0.3f);
         Flash(new Color(1f, 0f, 0f), 0.4f, 0.25f);
+        AudioSource.PlayClipAtPoint(gwishinActiveClip, pos);
     }
 
     public void PlayDokkaebi(Vector3 pos)
@@ -62,6 +66,7 @@ public class VFXManager : MonoBehaviour
         ZoomPunch(-8f, 0.15f);   // FOV 8도 확 당겼다 복귀 (줌 펀치)
         ShowBanner(LocalizationManager.Get("SKILL_DOKKAEBI_REVERSE"),
                    new Color(0.91f, 0.46f, 0.10f));  // #E8751A
+        SoundManager.Instance?.PlaySFX(dokkaebiReverseClip);
     }
 
     public void PlayMulgwishin(Vector3 pos)
@@ -77,6 +82,7 @@ public class VFXManager : MonoBehaviour
                    new Color(1f, 0.78f, 0.24f));  // 금빛 #FFC83D
         ZoomPunch(-6f, 0.15f);   // 도깨비보다 살짝 약한 줌 펀치
         ShakeCamera(0.2f);       // 가벼운 흔들림
+        AudioSource.PlayClipAtPoint(impactClip, Camera.main.transform.position);
     }
 
     public void PlayBlackYutThrow()
@@ -85,6 +91,7 @@ public class VFXManager : MonoBehaviour
                    new Color(0.63f, 0.07f, 0.11f));  // 핏빛 크림슨 #A0121B
         VignettePulse(new Color(0.1f, 0f, 0.05f), 0.45f);  // 화면 가장자리 어둡게
         ShakeCamera(0.3f);
+        AudioSource.PlayClipAtPoint(impactClip, Camera.main.transform.position);
     }
 
     // ---- 연출 헬퍼 ----
@@ -222,6 +229,7 @@ public class VFXManager : MonoBehaviour
     {
         ShowBanner(LocalizationManager.Get("BANNER_CAPTURE"), playerId == 0 ? _capColor0 : _capColor1);
         ShakeCamera(0.3f);
+        AudioSource.PlayClipAtPoint(impactClip, Camera.main.transform.position);
     }
 
     public void SetCaptureColors(Color p0, Color p1)

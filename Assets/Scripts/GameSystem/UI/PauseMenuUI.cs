@@ -32,6 +32,7 @@ public class PauseMenuUI : MonoBehaviour
 
     private void OnEscape()
     {
+        if (SceneLoader.IsTransitioning) return;
         // 설정 패널이 열려 있으면 설정만 닫는다.
         if (settingsPanel != null && settingsPanel.IsOpen)
         {
@@ -62,12 +63,12 @@ public class PauseMenuUI : MonoBehaviour
     private void Restart()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneLoader.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void Quit()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("TitleScene");
+        SceneLoader.LoadScene("TitleScene");
     }
 }

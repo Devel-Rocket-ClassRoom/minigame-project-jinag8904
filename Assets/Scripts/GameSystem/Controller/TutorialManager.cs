@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 
@@ -25,15 +24,13 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private BoardNodeData[] skillDemoAiNodeDatas;
 
     [SerializeField] private GameMaster gameMaster;
-    [SerializeField] private Image fadeOverlay;
-    
+
     private void Awake()
     {
         isTutorial = true;
         readyToPlay = false;
         allowSkillDemo = false;
         ThrowYut.ForcedResults.Clear();
-        fadeOverlay.gameObject.SetActive(false);
     }
 
     private void OnDestroy()
@@ -138,29 +135,7 @@ public class TutorialManager : MonoBehaviour
         allowSkillDemo = false;
         isTutorial = false;
         yield return ShowPanel("TUTORIAL_END_TITLE", "TUTORIAL_END_BODY");
-        yield return CoFadeAndLoad("TitleScene");
-    }
-
-    private IEnumerator CoFadeAndLoad(string sceneName)
-    {
-        yield return StartCoroutine(CoFade(0f, 1f, 0.8f));
-        SceneManager.LoadScene(sceneName);
-    }
-
-    private IEnumerator CoFade(float from, float to, float duration)
-    {
-        fadeOverlay.gameObject.SetActive(true);
-        float elapsed = 0f;
-        Color c = fadeOverlay.color;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            c.a = Mathf.Lerp(from, to, elapsed / duration);
-            fadeOverlay.color = c;
-            yield return null;
-        }
-        c.a = to;
-        fadeOverlay.color = c;
+        SceneLoader.LoadScene("TitleScene");
     }
 
     private IEnumerator ShowPanel(string titleKey, string bodyKey, string bodyKeyRight = null, bool useYutGuide = false)
