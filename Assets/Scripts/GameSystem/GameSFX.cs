@@ -19,6 +19,7 @@ public class GameSFX : MonoBehaviour
         GameEvents.OnPieceMoved += HandlePieceMoved;
         GameEvents.OnSacrificePickStart += HandleSacrificePickStart;
         GameEvents.OnSacrificePickEnd += HandleSacrificePickEnd;
+        GameEvents.OnPieceFinished += HandlePieceFinished;
     }
 
     private void OnDisable()
@@ -27,6 +28,7 @@ public class GameSFX : MonoBehaviour
         GameEvents.OnPieceMoved -= HandlePieceMoved;
         GameEvents.OnSacrificePickStart -= HandleSacrificePickStart;
         GameEvents.OnSacrificePickEnd -= HandleSacrificePickEnd;
+        GameEvents.OnPieceFinished -= HandlePieceFinished;
     }
 
     private void HandleYutLanded(int playerId)
@@ -43,6 +45,9 @@ public class GameSFX : MonoBehaviour
         SoundManager.Instance?.StopSustained();
         SoundManager.Instance?.PlaySFX(sacrificePickedClip);
     }
+
+    private void HandlePieceFinished(int playerId)
+        => SoundManager.Instance?.PlaySFX(pieceMoveClip);  // 이동과 같은 효과음 사용
 
     // 랜덤 재생하되 직전 클립의 연속 재생은 피한다.
     private void PlayRandom(AudioClip[] clips, ref int lastIndex)
