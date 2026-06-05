@@ -38,6 +38,10 @@ public class GameMaster : MonoBehaviour
 
     private const float StackYOffset = 0.05f;
 
+    // 업힌 말 개수 배지 (런타임에 말마다 1개씩 부착)
+    [SerializeField] private StackCountBadge stackBadgePrefab;
+    private readonly List<StackCountBadge> _stackBadges = new();
+
     // 검은 윷 + 턴 종료 UI
     [SerializeField] private Button blackYutButton;
     [SerializeField] private Button endTurnButton;
@@ -130,6 +134,9 @@ public class GameMaster : MonoBehaviour
             players[0].pieces[i].pieceObject = p1PieceObjects[i];
             p2PieceObjects[i].Bind(players[1].pieces[i]);
             players[1].pieces[i].pieceObject = p2PieceObjects[i];
+
+            AttachStackBadge(p1PieceObjects[i], players[0].pieces[i]);
+            AttachStackBadge(p2PieceObjects[i], players[1].pieces[i]);
         }
 
         // 3. UI 비활성화, 연결, 리스너 추가
@@ -202,6 +209,23 @@ public class GameMaster : MonoBehaviour
 
         GameEvents.OnBlackYutObtained -= HandleBlackYutCountChanged;
         GameEvents.OnBlackYutUsed     -= HandleBlackYutCountChanged;
+    }
+
+    // 말마다 스택 배지를 자식으로 붙이고 목록에 등록
+    private void AttachStackBadge(PieceObject po, Piece piece)
+    {
+        if (stackBadgePrefab == null || po == null) return;
+        var badge = Instantiate(stackBadgePrefab);  // 말의 자식 X → 말 스케일 영향 제거
+        badge.Bind(piece);                          // 위치는 배지가 말을 월드 좌표로 따라감
+        _stackBadges.Add(badge);
+    }
+
+    // 탑뷰(보드캠)일 때만 배지가 보이도록 매 프레임 게이팅 + 개수 갱신
+    private void Update()
+    {
+        bool topView = pieceMoveAnimator != null && pieceMoveAnimator.IsBoardCamActive;
+        for (int i = 0; i < _stackBadges.Count; i++)
+            _stackBadges[i].Refresh(topView);
     }
 
     private void Init()
@@ -428,8 +452,7 @@ public class GameMaster : MonoBehaviour
             // 결과 다 쓰면 검은 윷 추가 사용 여부 확인
             while (player.yutResults.Count > 0)
             {
-                bool noPieceForBackdo = !player.pieces.Any(p => !p.hasFinished && p.currentNode != null && (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode));
-                if (noPieceForBackdo && player.yutResults.All(yr => yr == YutResult.BACKDO))
+                if (IsStuckOnBackdo(player))
                 {
                     player.yutResults.Clear();
                     LogYutResults(player);
@@ -441,7 +464,15 @@ public class GameMaster : MonoBehaviour
 
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);
-                yield return new WaitUntil(() => dragAndDrop.MoveConfirmed);
+                // 대기 중 물귀신 스킬 등으로 말이 사라져 남은 뒷도를 쓸 수 없게 되면 함께 깨어남
+                yield return new WaitUntil(() => dragAndDrop.MoveConfirmed || IsStuckOnBackdo(player));
+
+                // 스킬로 보드 말이 사라져 뒷도가 무효가 된 경우 → 선택 취소 후 루프 상단 정리로 복귀
+                if (!dragAndDrop.MoveConfirmed)
+                {
+                    dragAndDrop.CancelSelection();
+                    continue;
+                }
 
                 // 결정 사항 받아오기
                 var piece = dragAndDrop.SelectedPiece;
@@ -813,6 +844,13 @@ public class GameMaster : MonoBehaviour
     public bool IsActiveSkillOn => isActiveSkillOn;
 
     private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
+
+    // 남은 결과가 뒷도뿐이고 뒷걸음할 말이 없어 진행이 불가능한 상태
+    private bool IsStuckOnBackdo(Player player) =>
+        player.yutResults.Count > 0 &&
+        player.yutResults.All(yr => yr == YutResult.BACKDO) &&
+        !player.pieces.Any(p => !p.hasFinished && p.currentNode != null &&
+            (p.nodeHistory.Count > 0 || p.currentNode.data == boardData.startNode));
 
     private void SwitchTurn() => currPlayer = players[1 - currPlayer.playerId];
 

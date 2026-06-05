@@ -4568,6 +4568,7 @@ MonoBehaviour:
   - {fileID: 453841338}
   - {fileID: 798009363}
   - {fileID: 1131842662}
+  stackBadgePrefab: {fileID: 5738599980860995798, guid: 28a277a2c055739489b1b22dff000e54, type: 3}
   blackYutButton: {fileID: 387876037}
   endTurnButton: {fileID: 1270208331}
   throwYutButton: {fileID: 1112235814}
@@ -4611,6 +4612,7 @@ MonoBehaviour:
   opponentCharacters: []
   p1SideCam: {fileID: 1941637362}
   p2SideCam: {fileID: 1786743868}
+  aiTableViewDwell: 0.9
   lotDrawController: {fileID: 367132992}
   boardData: {fileID: 11400000, guid: 87f0dba7ff7a5894ea14dac4a583cd35, type: 2}
 --- !u!114 &909197072

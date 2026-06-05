@@ -361,6 +361,15 @@ public class DragAndDrop : MonoBehaviour
         PiecesHighLightOn();
     }
 
+    // 선택 대기 중 외부 사정(예: 물귀신 스킬로 말 희생)으로 진행 불가가 되면 선택을 중단
+    public void CancelSelection()
+    {
+        needSelection = false;
+        MoveConfirmed = false;
+        PiecesHighLightOff();   // 말 하이라이트 끄기
+        ClearHighlights();      // 노드/완주존 하이라이트 정리 (방어적)
+    }
+
     private void PiecesHighLightOff()
     {
         foreach (var p in currPlayer.pieces)

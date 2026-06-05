@@ -20,6 +20,12 @@ public class PieceMoveAnimator : MonoBehaviour
     private bool _useP2Cam;
     private CinemachineCamera ActiveFollowCam => _useP2Cam && p2FollowCam != null ? p2FollowCam : followCam;
 
+    // 지금 활성 카메라가 보드캠(탑뷰)인지 — 스택 배지 표시 게이팅용
+    public bool IsBoardCamActive =>
+        _brain != null &&
+        (ReferenceEquals(_brain.ActiveVirtualCamera, followCam) ||
+         ReferenceEquals(_brain.ActiveVirtualCamera, p2FollowCam));
+
     public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
 
     private void Awake()

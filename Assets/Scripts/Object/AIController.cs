@@ -63,6 +63,14 @@ public class AIController : MonoBehaviour
 
                 var (piece, dest, pushPath, usedYR, isOut, useActiveSkill) = FindBestMove(ai);
 
+                // 스킬로 말이 사라지는 등으로 둘 수 있는 수가 없으면(뒷도만 남음) 결과 비우고 종료
+                if (piece == null)
+                {
+                    ai.yutResults.Clear();
+                    GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
+                    break;
+                }
+
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
                 if (ai.AllFinished) yield break;

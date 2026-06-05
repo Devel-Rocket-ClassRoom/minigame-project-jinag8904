@@ -6400,6 +6400,7 @@ MonoBehaviour:
   - {fileID: 1057531009}
   - {fileID: 1057531008}
   - {fileID: 1057531007}
+  stackBadgePrefab: {fileID: 5738599980860995798, guid: 28a277a2c055739489b1b22dff000e54, type: 3}
   blackYutButton: {fileID: 387876037}
   endTurnButton: {fileID: 1270208331}
   throwYutButton: {fileID: 1112235814}
@@ -6443,6 +6444,7 @@ MonoBehaviour:
   opponentCharacters: []
   p1SideCam: {fileID: 1941637362}
   p2SideCam: {fileID: 1786743868}
+  aiTableViewDwell: 0.9
   lotDrawController: {fileID: 2113847855}
   boardData: {fileID: 11400000, guid: 87f0dba7ff7a5894ea14dac4a583cd35, type: 2}
 --- !u!114 &909197072
@@ -7092,8 +7094,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 970819423}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.33036605, y: -0.24321032, z: 0.0885213, w: 0.9076734}
-  m_LocalPosition: {x: -2, y: 2.16, z: -2}
+  m_LocalRotation: {x: 0.3303661, y: -0.24321036, z: 0.08852133, w: 0.9076734}
+  m_LocalPosition: {x: -2.0017128, y: 1.7974396, z: -1.5014505}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12242,8 +12244,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1639421314}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1327665, y: -0.86649644, z: 0.32052672, w: 0.35891455}
-  m_LocalPosition: {x: -1.296, y: 2.16, z: 2.52}
+  m_LocalRotation: {x: 0.13276653, y: -0.86649644, z: 0.32052675, w: 0.35891458}
+  m_LocalPosition: {x: -2.0807028, y: 1.6627426, z: 1.1809864}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
