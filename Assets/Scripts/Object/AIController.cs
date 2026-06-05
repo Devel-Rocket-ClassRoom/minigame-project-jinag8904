@@ -44,10 +44,16 @@ public class AIController : MonoBehaviour
         {
             while (ai.yutResults.Count > 0)
             {
-                ai.yutResults.RemoveAll(yr => yr == YutResult.BACKDO && !ai.pieces.Any(p =>
+                // 뒷도만 남았고 뒷걸음할 말이 없을 때만 정리 (윷 등 다른 결과로 말을 먼저 올리면 뒷도 보존)
+                bool noPieceForBackdo = !ai.pieces.Any(p =>
                     !p.hasFinished && p.stackLeader == null && p.currentNode != null &&
-                    (p.currentNode.data == boardData.startNode || p.nodeHistory.Count > 0)));  // 못 움직이는 경우 걸러내기
-                if (ai.yutResults.Count == 0) break;
+                    (p.currentNode.data == boardData.startNode || p.nodeHistory.Count > 0));
+                if (noPieceForBackdo && ai.yutResults.All(yr => yr == YutResult.BACKDO))
+                {
+                    ai.yutResults.Clear();
+                    GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
+                    break;
+                }
 
                 // 즉시 발동 스킬 판단
                 if (ai.Skill?.HasImmediateEffect == true && ai.Skill?.CanUseActive(ai) == true && IsNearFinishWithSacrificable(ai))
