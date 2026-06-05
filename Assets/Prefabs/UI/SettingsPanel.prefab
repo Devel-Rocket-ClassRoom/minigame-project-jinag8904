@@ -1268,8 +1268,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "https://soundeffect-lab.info/\n\"evil laugh-20.wav\" by Nanakisan (freesound.org/sounds/132815)
-    \u2014 CC BY 4.0 (creativecommons.org/licenses/by/4.0/)"
+  m_text: "[Soundeffets]\nhttps://pocket-se.info/\nhttps://taira-komori.net/\nhttps://soundeffect-lab.info/\n\"evil
+    laugh-20.wav\" by Nanakisan (freesound.org/sounds/132815) \u2014 CC BY 4.0 (creativecommons.org/licenses/by/4.0/)\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 077b13d4342c3c8499e569c10b18f04d, type: 2}
   m_sharedMaterial: {fileID: 1408973244239900429, guid: 077b13d4342c3c8499e569c10b18f04d, type: 2}
