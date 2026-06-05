@@ -77,7 +77,7 @@ public class DragAndDrop : MonoBehaviour
             SelectedPiece.pieceObject.transform.position = hit.point + Vector3.up * halfHeight;
 
             for (int i = 0; i < SelectedPiece.stackedPieces.Count; i++) // 쌓인 말들도 다같이
-                SelectedPiece.stackedPieces[i].pieceObject.transform.position = hit.point + Vector3.up * (halfHeight + 0.1f * (i + 1));            
+                SelectedPiece.stackedPieces[i].pieceObject.transform.position = hit.point + Vector3.up * (halfHeight + 0.05f * (i + 1));            
         }
     }
 
@@ -224,7 +224,7 @@ public class DragAndDrop : MonoBehaviour
         {
             SelectedPiece.pieceObject.transform.position = originPosition;
             for (int i = 0; i < SelectedPiece.stackedPieces.Count; i++)
-                SelectedPiece.stackedPieces[i].pieceObject.transform.position = originPosition + Vector3.up * 0.1f * (i + 1);
+                SelectedPiece.stackedPieces[i].pieceObject.transform.position = originPosition + Vector3.up * 0.05f * (i + 1);
         }
 
         ClearHighlights();

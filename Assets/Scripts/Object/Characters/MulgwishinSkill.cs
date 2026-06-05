@@ -21,7 +21,7 @@ public class MulgwishinSkill : CharacterSkill
         MaxActiveUses > 0 && player.activeSkillUseCount < MaxActiveUses &&
         player.pieces.Any(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null);
 
-    public override IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null)
+    public override IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null, List<BoardNodeData> protectedNodes = null)
     {
         VFXManager.Instance?.VignetteHoldOn(new Color(0.043f, 0.482f, 0.541f), 0.35f);  // 청록 ON
         try
@@ -37,8 +37,15 @@ public class MulgwishinSkill : CharacterSkill
                 yield return requestPick(candidates, p => sacrificed = p);
             else
             {
-                var solos = candidates.Where(p => p.stackedPieces.Count == 0).ToList();
-                var pool = solos.Count > 0 ? solos : candidates;
+                var pool = candidates;
+                // 완주 임박 말은 희생 후보에서 제외 (전멸/임박말 손실 방지)
+                if (protectedNodes != null)
+                {
+                    var safe = candidates.Where(p => !protectedNodes.Contains(p.currentNode.data)).ToList();
+                    if (safe.Count > 0) pool = safe;
+                }
+                var solos = pool.Where(p => p.stackedPieces.Count == 0).ToList();
+                pool = solos.Count > 0 ? solos : pool;
                 sacrificed = pool.OrderBy(p => p.nodeHistory.Count).First();
             }
 

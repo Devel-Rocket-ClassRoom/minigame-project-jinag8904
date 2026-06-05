@@ -102,6 +102,7 @@ public class GameMaster : MonoBehaviour
     // 로컬 2인 모드 시점 전환 카메라
     [SerializeField] private CinemachineCamera p1SideCam;
     [SerializeField] private CinemachineCamera p2SideCam;
+    [SerializeField] private float aiTableViewDwell = 0.9f;  // AI 차례 시작 시 테이블뷰에서 머무는 시간
     private CinemachineBrain _brain;
 
     // 제비뽑기
@@ -382,10 +383,22 @@ public class GameMaster : MonoBehaviour
         outgoing.Priority = new PrioritySettings { Value = 0 };
     }
 
+    // 던지기 캠(20) → 보드캠(15) 직접 전환.
+    // 던지기 캠을 먼저 내려 같은 프레임에 보드캠이 최상위가 되게 함 → 테이블뷰를 거치지 않음.
+    private IEnumerator CoEnterBoardCam(int priority = 15)
+    {
+        if (pieceMoveAnimator == null) yield break;
+        yutThrowController?.ReleaseThrowCam();
+        yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam(priority));
+    }
+
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
         if (player.isAI)
         {
+            yutThrowController?.ReleaseThrowCam();                       // 던지기 캠 잔여분 정리 → 테이블뷰 보장
+            if (_brain != null) yield return new WaitUntil(() => !_brain.IsBlending);  // 이전 턴 블렌드 마무리 대기
+            yield return new WaitForSeconds(aiTableViewDwell);          // 테이블뷰에서 잠시 머무름
             yield return StartCoroutine(aiController.DecideTurn());
             yield break;
         }
@@ -408,7 +421,7 @@ public class GameMaster : MonoBehaviour
         }
 
         // 말 옮기기 단계 (검은 윷 추가 사용 포함)
-        if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam(15));
+        yield return StartCoroutine(CoEnterBoardCam(15));
         bool wonThisTurn = false;
         while (true)
         {
@@ -675,6 +688,16 @@ public class GameMaster : MonoBehaviour
             // 검은 윷을 던진 경우 → inner while 재진입
         }
 
+        // 로컬 모드: 보드캠을 내리기 전에 다음 플레이어(상대) 사이드캠을 먼저 올림
+        // → 보드캠이 내려갈 때 테이블캠을 거치지 않고 상대 시점으로 직접 전환
+        if (!isVsAI && !wonThisTurn)
+        {
+            var nextSide = player.playerId == 0 ? p2SideCam : p1SideCam;
+            var currSide = player.playerId == 0 ? p1SideCam : p2SideCam;
+            if (nextSide != null) nextSide.Priority = new PrioritySettings { Value = 15 };
+            if (currSide != null) currSide.Priority = new PrioritySettings { Value = 0 };
+        }
+
         if (pieceMoveAnimator != null) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
         blackYutButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(false);
@@ -699,6 +722,9 @@ public class GameMaster : MonoBehaviour
         GameEvents.InvokeYutThrown(player.playerId);    // 3D 모델용
         yield return StartCoroutine(yutThrowController.CoThrow());
         player.AddThrowResult(yutThrowController.LastResult);
+
+        // 이동 단계 도중의 잡기 보너스 던지기 → 던지기 캠을 내려 보드캠(15)으로 복귀
+        if (isCaptureBonus) yutThrowController.ReleaseThrowCam();
     }
 
     private IEnumerator CoHandleBlackYutThrow()
@@ -713,6 +739,9 @@ public class GameMaster : MonoBehaviour
         VFXManager.Instance?.PlayBlackYutThrow();
         yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
         currPlayer.AddThrowResult(yutThrowController.LastResult);
+
+        // 이동 단계 도중의 검은 윷 던지기 → 던지기 캠을 내려 보드캠(15)으로 복귀
+        yutThrowController.ReleaseThrowCam();
 
         blackYutButton.interactable = true;
         endTurnButton.interactable = true;
@@ -887,7 +916,7 @@ public class GameMaster : MonoBehaviour
 
             RepositionNode(nodeBeforeOut);
 
-            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());    // 보드캠으로 시점 전환
+            yield return StartCoroutine(CoEnterBoardCam());    // 보드캠으로 시점 전환
 
             var endPositions = currPlayer.playerId == 0 ? p1EndPositions : p2EndPositions;
             var allFinishing = new List<Piece> { piece };   // 리더
@@ -931,7 +960,7 @@ public class GameMaster : MonoBehaviour
         if (useActiveSkill)
         {
             camActivated = true;
-            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam()); // 보드캠 진입(블렌드 완료)까지 기다린 뒤 잡기 연출
+            yield return StartCoroutine(CoEnterBoardCam()); // 보드캠 진입(블렌드 완료)까지 기다린 뒤 잡기 연출
             RepositionNode(targetNode);
             if (pushPathNodes != null)
             {
@@ -942,7 +971,7 @@ public class GameMaster : MonoBehaviour
         else
         {
             camActivated = true;
-            yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam());
+            yield return StartCoroutine(CoEnterBoardCam());
             yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
             RepositionNode(targetNode);
             // CoReleaseFollowCamera는 잡기·업기 시각화 후 메서드 끝에서 호출
@@ -1002,6 +1031,9 @@ public class GameMaster : MonoBehaviour
                         yield return StartCoroutine(yutThrowController.CoThrow());
                         currPlayer.AddThrowResult(yutThrowController.LastResult);
                         GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
+
+                        // 잡기 보너스 던지기 → 던지기 캠을 내려 보드캠(15)으로 복귀
+                        yutThrowController.ReleaseThrowCam();
                     }
                 }
             }

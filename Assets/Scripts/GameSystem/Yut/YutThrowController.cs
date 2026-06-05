@@ -56,6 +56,12 @@ public class YutThrowController : MonoBehaviour
         ActiveThrowCam.Priority = new PrioritySettings { Value = active ? 20 : 0 };
     }
 
+    public void ReleaseThrowCam()
+    {
+        if (ActiveThrowCam != null)
+            ActiveThrowCam.Priority = new PrioritySettings { Value = 0 };
+    }
+
     public IEnumerator CoThrow(bool isBlackYut = false) // 윷 던지기 코루틴
     {
         if (ThrowYut.ForcedResults.Count > 0)   // 튜토리얼 모드
@@ -187,7 +193,6 @@ public class YutThrowController : MonoBehaviour
             foreach (var s in bSticks)
                 if (s != null) Destroy(s.gameObject);
 
-            SetThrowCamActive(false);
             yield break;
         }
 
@@ -263,7 +268,5 @@ public class YutThrowController : MonoBehaviour
 
         foreach (var s in sticks)
             if (s != null) Destroy(s.gameObject);
-
-        SetThrowCamActive(false);
     }
 }

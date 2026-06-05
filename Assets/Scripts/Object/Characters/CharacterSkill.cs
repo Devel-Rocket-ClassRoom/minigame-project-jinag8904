@@ -22,7 +22,7 @@ public abstract class CharacterSkill : ScriptableObject
 
     // true면 버튼 클릭 즉시 CoOnActiveActivated 실행 (이동과 무관). false면 기존 방식(isActiveSkillOn).
     public virtual bool HasImmediateEffect => false;
-    public virtual IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null) { yield break; }
+    public virtual IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null, List<BoardNodeData> protectedNodes = null) { yield break; }
 
     // isActiveSkillOn 방식(HasImmediateEffect=false)에서 활성/비활성 시 비주얼 처리용
     public virtual void OnActiveTurnStart() {}
