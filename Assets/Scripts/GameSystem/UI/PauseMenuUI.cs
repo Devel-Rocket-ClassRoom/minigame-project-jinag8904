@@ -23,7 +23,11 @@ public class PauseMenuUI : MonoBehaviour
         panelView.gameObject.SetActive(false);
         panelView.resumeButton.onClick.AddListener(Resume);
         panelView.restartButton.onClick.AddListener(Restart);
-        panelView.settingsButton.onClick.AddListener(() => settingsPanel?.Show());
+        panelView.settingsButton.onClick.AddListener(() => {
+            panelView.gameObject.SetActive(false);
+            settingsPanel?.Show();
+        });
+        settingsPanel?.closeButton.onClick.AddListener(() => { if (isPaused) panelView.gameObject.SetActive(true); });
         panelView.quitButton.onClick.AddListener(Quit);
 
         escAction = new InputAction(binding: "<Keyboard>/escape");
@@ -37,6 +41,7 @@ public class PauseMenuUI : MonoBehaviour
         if (settingsPanel != null && settingsPanel.IsOpen)
         {
             settingsPanel.Hide();
+            panelView.gameObject.SetActive(true);
             return;
         }
         // 가이드가 열려 있으면 가이드만 닫고 pause는 열지 않는다.

@@ -10,7 +10,7 @@ public class DokkaebiSkill : CharacterSkill
         float chance = (float)dokkaebiCount / (dokkaebiCount + attackerCount + 1f);
         if (Random.value < chance)
         {
-            target.owner.AddBlackYut(1);
+            target.owner.AddWonhan(3);
             return CaptureOutcome.Reversed;
         }
         return CaptureOutcome.Captured;

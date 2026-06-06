@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Cinemachine;
+using DG.Tweening;
 using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
@@ -91,10 +92,12 @@ public class GameMaster : MonoBehaviour
     // 캐릭터 선택
     [SerializeField] private CharacterData[] availableCharacters;
     [SerializeField] private GameObject characterSelectPanel;
+    [SerializeField] private CanvasGroup characterSelectCanvasGroup;
     [SerializeField] private TextMeshProUGUI characterSelectTitleText;
     [SerializeField] private Button[] characterSelectButtons;
     [SerializeField] private Image[] characterSelectButtonIcons;
     [SerializeField] private Button randomCharacterButton;
+    [SerializeField] private AudioClip characterSelectSfx;
     private CharacterData characterDecision;
 
     // 게임 종료 UI
@@ -310,11 +313,36 @@ public class GameMaster : MonoBehaviour
             {
                 characterSelectButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Get(availableCharacters[i].localizationKey);
                 //characterSelectButtonIcons[i].sprite = availableCharacters[i].icon;
+                characterSelectButtons[i].image.color = Color.white;
             }
         }
 
+        characterSelectCanvasGroup.alpha = 0f;
         characterSelectPanel.SetActive(true);
+        yield return characterSelectCanvasGroup.DOFade(1f, 0.3f).WaitForCompletion();
+
         yield return new WaitUntil(() => characterDecision != null);
+
+        SoundManager.Instance?.PlaySFX(characterSelectSfx);
+
+        int selectedIdx = System.Array.IndexOf(availableCharacters, characterDecision);
+        for (int i = 0; i < characterSelectButtons.Length; i++)
+        {
+            if (!characterSelectButtons[i].gameObject.activeSelf) continue;
+            if (i == selectedIdx)
+            {
+                characterSelectButtons[i].image.DOColor(characterDecision.themeColor, 0.1f);
+                characterSelectButtons[i].transform.DOScale(1.1f, 0.1f).SetLoops(2, LoopType.Yoyo);
+            }
+            else
+            {
+                characterSelectButtons[i].image.DOColor(new Color(1f, 1f, 1f, 0.25f), 0.15f);
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        yield return characterSelectCanvasGroup.DOFade(0f, 0.3f).WaitForCompletion();
         characterSelectPanel.SetActive(false);
 
         player.characterData = characterDecision;
