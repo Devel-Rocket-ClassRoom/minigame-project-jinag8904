@@ -10,7 +10,6 @@ public class SceneLoader : MonoBehaviour
     [SerializeField] private AudioClip transitionClip;
 
     private Image fadeOverlay;
-    private AudioSource audioSource;
     private const float FADE_DURATION = 0.5f;
 
     private void Awake()
@@ -19,8 +18,6 @@ public class SceneLoader : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         CreateFadeOverlay();
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
     }
 
     private void CreateFadeOverlay()
@@ -64,7 +61,7 @@ public class SceneLoader : MonoBehaviour
     private IEnumerator CoFadeAndLoad(string sceneName)
     {
         IsTransitioning = true;
-        if (transitionClip != null) audioSource.PlayOneShot(transitionClip);
+        if (transitionClip != null) SoundManager.Instance?.PlaySFX(transitionClip);
         yield return CoFade(0f, 1f, FADE_DURATION);
         SceneManager.LoadScene(sceneName);
         yield return null;
