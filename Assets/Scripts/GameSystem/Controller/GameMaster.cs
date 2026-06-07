@@ -322,16 +322,17 @@ public class GameMaster : MonoBehaviour
         yield return characterSelectCanvasGroup.DOFade(1f, 0.3f).WaitForCompletion();
 
         yield return new WaitUntil(() => characterDecision != null);
+        var decided = characterDecision; // 0.5s 대기 중 다른 버튼 클릭으로 덮어써지는 것 방지
 
         SoundManager.Instance?.PlaySFX(characterSelectSfx);
 
-        int selectedIdx = System.Array.IndexOf(availableCharacters, characterDecision);
+        int selectedIdx = System.Array.IndexOf(availableCharacters, decided);
         for (int i = 0; i < characterSelectButtons.Length; i++)
         {
             if (!characterSelectButtons[i].gameObject.activeSelf) continue;
             if (i == selectedIdx)
             {
-                characterSelectButtons[i].image.DOColor(characterDecision.themeColor, 0.1f);
+                characterSelectButtons[i].image.DOColor(decided.themeColor, 0.1f);
                 characterSelectButtons[i].transform.DOScale(1.1f, 0.1f).SetLoops(2, LoopType.Yoyo);
             }
             else
@@ -345,7 +346,7 @@ public class GameMaster : MonoBehaviour
         yield return characterSelectCanvasGroup.DOFade(0f, 0.3f).WaitForCompletion();
         characterSelectPanel.SetActive(false);
 
-        player.characterData = characterDecision;
+        player.characterData = decided;
     }
 
     private IEnumerator CoRunGame()
