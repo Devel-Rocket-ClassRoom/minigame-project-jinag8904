@@ -12,6 +12,8 @@ public class YutStick : MonoBehaviour
     public event System.Action Landed;  // 바닥에 처음 닿은 순간 (효과음용)
     private bool _hasLanded;
 
+    private float _initialAngularDamping;
+
     public bool IsTail => Vector3.Dot(transform.up, Vector3.up) < 0f;
 
     public bool IsAtRest => rb != null
@@ -23,7 +25,11 @@ public class YutStick : MonoBehaviour
         || (rb.linearVelocity.sqrMagnitude < 0.25f
             && rb.angularVelocity.sqrMagnitude < 0.25f));
 
-    private void Awake() => rb = GetComponent<Rigidbody>();
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        _initialAngularDamping = rb.angularDamping;
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -66,6 +72,31 @@ public class YutStick : MonoBehaviour
         {
             _settleFrames = 0;
             if (!isSettling) rb.angularDamping = 12f;
+        }
+    }
+
+    private void OnEnable()
+    {
+        _hasLanded = false;
+        _settleFrames = 0;
+        Landed = null;  // 이전 던지기 구독 제거 (누적 방지)
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.angularDamping = _initialAngularDamping;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
         }
     }
 }

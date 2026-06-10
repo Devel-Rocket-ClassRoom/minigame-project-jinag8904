@@ -10826,6 +10826,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1958832919}
   m_CullTransparentMesh: 1
+--- !u!1 &1991708349
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1991708351}
+  - component: {fileID: 1991708350}
+  m_Layer: 0
+  m_Name: ObjectPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1991708350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991708349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5330934030bba6488021331ad852ce1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectPool
+  _entries:
+  - prefab: {fileID: 7163451056564114836, guid: abd2ff63c4ca5a641b00cd5246d6b730, type: 3}
+    prewarmCount: 3
+  - prefab: {fileID: 7163451056564114836, guid: 4b3c6b610f742474ea048deb80d59d18, type: 3}
+    prewarmCount: 1
+  - prefab: {fileID: 7163451056564114836, guid: 6f74760b711a47659f665150f7fa4347, type: 3}
+    prewarmCount: 3
+  - prefab: {fileID: 7163451056564114836, guid: 1e095d59c329443ebb9fb3979fca25ef, type: 3}
+    prewarmCount: 1
+--- !u!4 &1991708351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991708349}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1998045144
 GameObject:
   m_ObjectHideFlags: 0
@@ -13865,3 +13918,4 @@ SceneRoots:
   - {fileID: 749934017}
   - {fileID: 7834981086454534736}
   - {fileID: 1077911097}
+  - {fileID: 1991708351}

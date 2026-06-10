@@ -90,7 +90,7 @@ public class YutThrowController : MonoBehaviour
                 Vector3 pos = spawnPoints[i].position;
                 var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);    // 랜덤으로 회전
                 var prefab = (i == 3) ? blackYutStickMarkedPrefab : blackYutStickPrefab;
-                var obj = Instantiate(prefab, pos, spawnRot);
+                var obj = ObjectPool.Instance.Get(prefab, pos, spawnRot);
                 obj.transform.localScale = Vector3.one * worldScale * 2;
 
                 bSticks[i] = obj.GetComponent<YutStick>();
@@ -191,7 +191,7 @@ public class YutThrowController : MonoBehaviour
             yield return new WaitForSeconds(0.4f);
 
             foreach (var s in bSticks)
-                if (s != null) Destroy(s.gameObject);
+                if (s != null) ObjectPool.Instance.Return(s.gameObject);
 
             yield break;
         }
@@ -206,7 +206,7 @@ public class YutThrowController : MonoBehaviour
 
             var spawnRot = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), 0f);
             var prefab = (i == 3 && yutStickMarkedPrefab != null) ? yutStickMarkedPrefab : yutStickPrefab;
-            var go = Instantiate(prefab, pos, spawnRot);
+            var go = ObjectPool.Instance.Get(prefab, pos, spawnRot);
             go.transform.localScale = Vector3.one * worldScale * 2;
 
             sticks[i] = go.GetComponent<YutStick>();
@@ -267,6 +267,6 @@ public class YutThrowController : MonoBehaviour
         };
 
         foreach (var s in sticks)
-            if (s != null) Destroy(s.gameObject);
+            if (s != null) ObjectPool.Instance.Return(s.gameObject);
     }
 }
