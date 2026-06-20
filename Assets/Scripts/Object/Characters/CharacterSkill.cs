@@ -7,6 +7,16 @@ public enum CaptureOutcome { Captured, Evaded, Reversed }
 
 public abstract class CharacterSkill : ScriptableObject
 {
+    [Header("스킬 설명 (로컬라이즈 키)")]
+    [SerializeField] private string passiveDescKey;
+    [SerializeField] private string activeDescKey;
+
+    public string PassiveDescKey => passiveDescKey;
+    public string ActiveDescKey => activeDescKey;
+    public bool HasActiveDesc => !string.IsNullOrEmpty(activeDescKey);
+    public bool HasPassiveDesc => !string.IsNullOrEmpty(passiveDescKey);
+
+
     // 말 선택 UI 콜백: 후보 목록 → 선택 결과를 onPicked로 반환하는 코루틴
     public delegate IEnumerator PiecePickDelegate(List<Piece> candidates, Action<Piece> onPicked);
 

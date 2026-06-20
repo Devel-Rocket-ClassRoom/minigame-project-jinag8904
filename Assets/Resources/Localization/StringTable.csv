@@ -73,9 +73,9 @@ TUTORIAL_GRUDGE_BODY,말을 잡으면 그 말은 윷판에서 쫓겨난다.\n잡
 TUTORIAL_BLACKYUT_TITLE,검은 윷,Black Yut
 TUTORIAL_BLACKYUT_BODY,"너는 귀신이므로, 잡기에 성공하면 원한 3을 얻는다.\n원한과 뒤바꿔 얻을 수 있는 검은 윷은 차례가 넘어가기 전 어느 때나 던질 수 있다.\n검은 윷의 결과는 항상 모 아니면 뒷도이다.","As a ghost, capturing grants you 3 Grudge.\nThe Black Yut, obtained in exchange for Grudge, can be cast anytime before your turn ends.\nIt always results in either Mo or Back-Do."
 TUTORIAL_FINISH_TITLE,완주,Finish
-TUTORIAL_FINISH_BODY,말이 한 바퀴를 다 돌면 완주한다. 마지막 말을 완주시켜라.,A piece finishes after completing the circuit. Move your last piece home.
+TUTORIAL_FINISH_BODY,말이 한 바퀴를 다 돌면 완주한다. 말을 완주 지점까지 운반하라.,A piece finishes after completing the circuit. Carry your piece to the finish.
 TUTORIAL_LASTNODE_TITLE,참먹이,Home Space
-TUTORIAL_LASTNODE_BODY,참먹이를 밟는 것으로는 충분하지 않다. 참먹이를 넘어가야만 완주할 수 있다.,Stepping on the home space is not enough. You must go past it to finish.
+TUTORIAL_LASTNODE_BODY,완주 지점은 '참먹이'라고 한다.\n참먹이를 밟는 것으로는 충분하지 않다. 참먹이를 넘어가야만 완주할 수 있다.,The finish point is called the "home space."\nStepping on the home space is not enough. You must go past it to finish.
 TUTORIAL_SKILL_TITLE,고유 능력,Special Abilities
 TUTORIAL_SKILL_BODY,붉은색으로 변한 버튼을 누르면 능력을 사용한다. '귀신'의 능력이 발동하면 다음 경로 상에 있는 적을 모두 잡아먹는다.,Press the button when it turns red to activate your ability. When '귀신's ability triggers, it instantly captures all enemies along the path.
 TUTORIAL_END_TITLE,운명 개시,Fate Begins
@@ -84,3 +84,8 @@ LABEL_HINT_HELP,H - 도움말,H - Hint
 LABEL_SETTINGS,설정,Settings
 LABEL_BGM,배경음악,BGM
 LABEL_SFX,효과음,SFX
+SKILL_GWISHIN_PASSIVE_DESC,적을 잡으면 원한 +3.,+3 grudge per capture.
+SKILL_GWISHIN_ACTIVE_DESC,이동 경로 위의 적을 모두 잡아낸다. 도깨비의 씨름 반격도 무시한다.,Captures every enemy on the movement path. It ignores Dokkaebi's Ssireum counter.
+SKILL_DOKKAEBI_PASSIVE_DESC,"잡히려는 순간 씨름으로 반격해 상대를 되잡는다. 업힌 동료가 많을수록 이기기 쉽고, 상대 무리가 클수록 지기 쉽다.",Counters with Ssireum when about to be caught, capturing the attacker instead. The more allies stacked with you, the better your odds; the larger the attacking stack, the more likely you lose.
+SKILL_MULGWISHIN_PASSIVE_DESC,잡히는 순간 자신을 잡은 상대의 남은 윷 결과를 모두 없앤다.,When caught, wipes out all of the attacker's remaining yut results.
+SKILL_MULGWISHIN_ACTIVE_DESC,자신의 말 하나를 제물로 희생해 검은 윷 2개를 얻는다.,Sacrifices one of your own pieces to gain 2 black yut.
