@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbca7e3332221f04885c1594757f8fb1, type: 3}
   m_Name: DokkaebiSkill
   m_EditorClassIdentifier: Assembly-CSharp::DokkaebiSkill
+  passiveDescKey: SKILL_DOKKAEBI_PASSIVE_DESC
+  activeDescKey: 

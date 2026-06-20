@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27aaa1e649105fe419136446c199e057, type: 3}
   m_Name: MulgwishinSkill
   m_EditorClassIdentifier: Assembly-CSharp::MulgwishinSkill
+  passiveDescKey: SKILL_MULGWISHIN_PASSIVE_DESC
+  activeDescKey: SKILL_MULGWISHIN_ACTIVE_DESC

@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02bd2113aa523aa4790f95a19df79e1d, type: 3}
   m_Name: GwishinSkill
   m_EditorClassIdentifier: Assembly-CSharp::GwishinSkill
+  passiveDescKey: SKILL_GWISHIN_PASSIVE_DESC
+  activeDescKey: SKILL_GWISHIN_ACTIVE_DESC
