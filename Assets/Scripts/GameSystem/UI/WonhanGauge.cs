@@ -11,6 +11,7 @@ public class WonhanGauge : MonoBehaviour
     [SerializeField] private float highlightOnAlpha = 0.6f;                              // 채워졌을 때 광택 세기
 
     private Color _fillColor = Color.white;   // 캐릭터 테마색 (주입받음)
+
     private int _displayed;                   // 현재 켜진 구슬 수
     private int _pending = -1;                // 터짐 연출 중 들어온 값 보류
     private bool _bursting;

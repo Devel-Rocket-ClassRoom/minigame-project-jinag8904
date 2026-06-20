@@ -88,8 +88,18 @@ public class GameMaster : MonoBehaviour
     [SerializeField] private WonhanGauge p1WonhanGauge;
     [SerializeField] private WonhanGauge p2WonhanGauge;
 
+    // 캐릭터 테마색 캐시 (미러전 톤업 포함) — 차례 라벨/이름 색에 사용
+    private Color _themeColor0 = Color.white;
+    private Color _themeColor1 = Color.white;
+
     [SerializeField] private TMP_Text p1BlackYutCountText;
     [SerializeField] private TMP_Text p2BlackYutCountText;
+
+    [SerializeField] private TMP_Text turnIndicatorText;
+    [SerializeField] private TMP_Text p1ActiveCooldownText;
+    [SerializeField] private TMP_Text p2ActiveCooldownText;
+    [SerializeField] private GameObject p1ActiveCooldownGroup;  // 아이콘 + 숫자 묶음
+    [SerializeField] private GameObject p2ActiveCooldownGroup;
 
     // 캐릭터 선택
     [SerializeField] private CharacterData[] availableCharacters;
@@ -298,9 +308,16 @@ public class GameMaster : MonoBehaviour
         if (players[0].characterData == players[1].characterData)   // 미러전: p2 톤업
             c1 = Color.Lerp(c1, Color.white, 0.4f);
 
+        _themeColor0 = c0;
+        _themeColor1 = c1;
+
         VFXManager.Instance?.SetCaptureColors(c0, c1);
         p1WonhanGauge?.SetColor(c0);
         p2WonhanGauge?.SetColor(c1);
+
+        RefreshActiveCooldowns();
+        if (currPlayer != null) UpdateTurnIndicator(currPlayer);
+        RefreshTurnNameColors();
     }
 
     private IEnumerator CoSelectCharacterForPlayer(Player player)
@@ -451,13 +468,30 @@ public class GameMaster : MonoBehaviour
         yield return StartCoroutine(pieceMoveAnimator.CoActivateBoardCam(priority));
     }
 
+    // AI 던지기 전 카메라 정리: 던지기 캠 내리고 진행 중 블렌드 완료 대기 후 테이블뷰에서 잠시 머무름
+    public IEnumerator CoAITableViewDwell()
+    {
+        yutThrowController?.ReleaseThrowCam();                       // 던지기 캠 잔여분 정리 → 테이블뷰 보장
+        if (_brain != null) yield return new WaitUntil(() => !_brain.IsBlending);  // 진행 중 블렌드 마무리 대기
+        yield return new WaitForSeconds(aiTableViewDwell);          // 테이블뷰에서 잠시 머무름
+    }
+
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
+        if (player.activeSkillCooldown > 0) player.activeSkillCooldown--;
+
+        UpdateTurnIndicator(player);
+        RefreshActiveCooldowns();
+        RefreshTurnNameColors();
+
+        // 턴 시작 시 양쪽 스킬 버튼 초기화 (AI 턴은 종료 정리를 건너뛰므로 여기서 정리)
+        p1ActiveSkillButton.interactable = false;
+        p2ActiveSkillButton.interactable = false;
+        RefreshAISkillButton();   // AI 버튼 색 갱신 (AI 차례+사용가능이면 빨강, 아니면 흰색)
+
         if (player.isAI)
         {
-            yutThrowController?.ReleaseThrowCam();                       // 던지기 캠 잔여분 정리 → 테이블뷰 보장
-            if (_brain != null) yield return new WaitUntil(() => !_brain.IsBlending);  // 이전 턴 블렌드 마무리 대기
-            yield return new WaitForSeconds(aiTableViewDwell);          // 테이블뷰에서 잠시 머무름
+            yield return StartCoroutine(CoAITableViewDwell());          // 이전 턴 블렌드 마무리 + 테이블뷰 머무름
             yield return StartCoroutine(aiController.DecideTurn());
             yield break;
         }
@@ -496,6 +530,7 @@ public class GameMaster : MonoBehaviour
 
                 // 액티브 스킬 버튼 활성화
                 GetActiveSkillButton(player).interactable = (!TutorialManager.isTutorial || TutorialManager.allowSkillDemo) && player.Skill?.CanUseActive(player) == true;
+                RefreshActiveCooldowns();
 
                 // 선택 시작
                 dragAndDrop.BeginSelection(player);
@@ -824,6 +859,40 @@ public class GameMaster : MonoBehaviour
         gameOverUI.Show(winner.playerId, isVsAI);
     }
 
+    private void UpdateTurnIndicator(Player player)
+    {
+        if (turnIndicatorText == null || player == null) return;
+        string charName = player.characterData != null
+            ? LocalizationManager.Get(player.characterData.localizationKey) : player.name;
+        turnIndicatorText.text = LocalizationManager.Get("TURN_LABEL", charName);
+
+        turnIndicatorText.color = player.playerId == 0 ? _themeColor0 : _themeColor1;   // 캐릭터 색(미러전 톤업 포함)
+    }
+
+    // 현재 차례인 플레이어의 캐릭터 이름만 테마색, 상대는 흰색
+    private void RefreshTurnNameColors()
+    {
+        if (p1CharacterNameText != null)
+            p1CharacterNameText.color = (currPlayer == players[0]) ? _themeColor0 : Color.white;
+        if (p2CharacterNameText != null)
+            p2CharacterNameText.color = (currPlayer == players[1]) ? _themeColor1 : Color.white;
+    }
+
+    private void RefreshActiveCooldowns()
+    {
+        UpdateActiveCooldown(p1ActiveCooldownGroup, p1ActiveCooldownText, players[0]);
+        UpdateActiveCooldown(p2ActiveCooldownGroup, p2ActiveCooldownText, players[1]);
+    }
+
+    private void UpdateActiveCooldown(GameObject group, TMP_Text txt, Player player)
+    {
+        if (group == null) return;
+        bool hasActive = (player.Skill?.ActiveCooldown ?? 0) > 0;
+        group.SetActive(hasActive);                                  // 아이콘+숫자 통째로 (도깨비면 숨김)
+        if (hasActive && txt != null)
+            txt.text = Mathf.Max(0, player.activeSkillCooldown).ToString();
+    }
+
     private void LogYutResults(Player player)
     {
         GameLogUI.UpdateYutResults(player.yutResults, player.name);
@@ -849,6 +918,7 @@ public class GameMaster : MonoBehaviour
 
     private IEnumerator CoHandleActiveSkill(Player player)
     {
+        if (player.isAI) yield break;   // AI 버튼은 사용 가능 여부 표시용으로만 활성 — 클릭은 무시
         var skill = player.Skill;
         GetActiveSkillButton(player).interactable = false;
 
@@ -879,6 +949,22 @@ public class GameMaster : MonoBehaviour
     public bool IsActiveSkillOn => isActiveSkillOn;
 
     private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
+
+    // AI 스킬 버튼: 'AI 차례 + 사용 가능'일 때만 Normal색(빨강), 그 외엔 Disabled색(흰색). 클릭/눌림은 막음(interactable=false).
+    public void RefreshAISkillButton()
+    {
+        Player aiPlayer = players[0].isAI ? players[0] : (players[1].isAI ? players[1] : null);
+        if (aiPlayer == null) return;                      // AI 없는 모드(로컬 2인)면 건너뜀
+        var btn = GetActiveSkillButton(aiPlayer);
+        var cb = btn.colors;                               // 에디터에 설정한 Normal(빨강)/Disabled(흰색) 색
+        btn.interactable = false;                          // 눌림/클릭 차단 (시각 표시 전용)
+        btn.transition = Selectable.Transition.None;       // 자동 틴트 끄고 색을 직접 지정
+        bool active = currPlayer == aiPlayer               // AI 차례일 때만
+                      && (!TutorialManager.isTutorial || TutorialManager.allowSkillDemo)
+                      && aiPlayer.Skill?.CanUseActive(aiPlayer) == true;
+        if (btn.targetGraphic != null)
+            btn.targetGraphic.color = active ? cb.normalColor : cb.disabledColor;
+    }
 
     // 남은 결과가 뒷도뿐이고 뒷걸음할 말이 없어 진행이 불가능한 상태
     private bool IsStuckOnBackdo(Player player) =>

@@ -11,7 +11,7 @@ public class GwishinSkill : CharacterSkill
         piece.owner.AddWonhan(3);
     }
 
-    public override int MaxActiveUses => 1;
+    public override int ActiveCooldown => 2;
     public override string ActiveSkillName => LocalizationManager.Get("SKILL_GWISHIN_ACTIVE");
 
     public override void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition)

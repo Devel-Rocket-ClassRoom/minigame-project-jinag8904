@@ -37,7 +37,7 @@ public class Player
     // 원한
     private int wonhan = 0;
 
-    public int activeSkillUseCount;
+    public int activeSkillCooldown;
 
     public Player()
     {
@@ -59,7 +59,7 @@ public class Player
         }
         yutResults.Clear();
         finishedPiecesCount = 0;
-        activeSkillUseCount = 0;
+        activeSkillCooldown = TutorialManager.isTutorial ? 0 : (Skill?.ActiveCooldown ?? 0);
 
         wonhan = 0; blackYutCount = 0;
     }
