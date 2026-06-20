@@ -61,6 +61,8 @@ public class GameMaster : MonoBehaviour
     // 액티브 스킬
     [SerializeField] private Button p1ActiveSkillButton;
     [SerializeField] private Button p2ActiveSkillButton;
+    private SkillTooltipTrigger p1SkillTrigger;
+    private SkillTooltipTrigger p2SkillTrigger;
     private bool isActiveSkillOn;
 
     // 쌓기(업기) UI
@@ -176,6 +178,8 @@ public class GameMaster : MonoBehaviour
         {
             btn.onClick.AddListener(() => StartCoroutine(CoHandleActiveSkill(currPlayer)));
         }
+        p1SkillTrigger = p1ActiveSkillButton.GetComponent<SkillTooltipTrigger>();
+        p2SkillTrigger = p2ActiveSkillButton.GetComponent<SkillTooltipTrigger>();
 
         modeSelectPanel.SetActive(false);
         localModeButton.onClick.AddListener(() => { isVsAI = false; modeSelected = true; });
@@ -286,6 +290,8 @@ public class GameMaster : MonoBehaviour
         p1CharacterNameText.text = players[0].characterData != null ? LocalizationManager.Get(players[0].characterData.localizationKey) : "";
         p2CharacterIcon.sprite = players[1].characterData?.icon;
         p2CharacterNameText.text = players[1].characterData != null ? LocalizationManager.Get(players[1].characterData.localizationKey) : "";
+        p1SkillTrigger?.SetSkill(players[0].Skill, p1CharacterNameText.text);
+        p2SkillTrigger?.SetSkill(players[1].Skill, p2CharacterNameText.text);
 
         Color c0 = players[0].characterData != null ? players[0].characterData.themeColor : Color.white;
         Color c1 = players[1].characterData != null ? players[1].characterData.themeColor : Color.white;
