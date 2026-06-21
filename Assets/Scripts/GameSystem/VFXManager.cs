@@ -166,12 +166,21 @@ public class VFXManager : MonoBehaviour
 
     // 귀신 액티브 잡기 성공 배너 (일회성) — 크림슨 #A0121B
     public void ShowGwishinActiveBanner() =>
-        ShowBanner(LocalizationManager.Get("SKILL_GWISHIN_ACTIVE"),
+        ShowBanner(LocalizationManager.Get("SKILL_GWISHIN_ACTIVE_BANNER"),
                    new Color(0.627f, 0.071f, 0.106f));
 
     // ---- 물귀신 헬퍼 ----
 
     public void PlayMulgwishinParticle(Vector3 pos) => PlayAt(mulgwishinFXPrefab, pos);
+
+    // 물귀신 액티브 발동 배너 (제물) — 청록 #0B7B8A. AI가 써도 발동이 명확히 보이도록.
+    public void ShowMulgwishinActiveBanner()
+    {
+        ShowBanner(LocalizationManager.Get("SKILL_MULGWISHIN_ACTIVE_BANNER"),
+                   new Color(0.043f, 0.482f, 0.541f));
+        ShakeCamera(0.25f);
+        AudioSource.PlayClipAtPoint(impactClip, Camera.main.transform.position);
+    }
 
     private void SlowMotion(float scale, float toDur, float hold, float backDur)
     {

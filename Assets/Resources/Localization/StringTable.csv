@@ -15,13 +15,15 @@ YUT_EFFECT_GEOL,3칸 전진,Move 3
 YUT_EFFECT_YUT,4칸 전진 + 한 번 더,Move 4 + Roll again
 YUT_EFFECT_MO,5칸 전진 + 한 번 더,Move 5 + Roll again
 SKILL_GWISHIN_ACTIVE,원혼 강림,Soul Descent
+SKILL_GWISHIN_ACTIVE_BANNER,뒤를 봐.,Behind you.
 SKILL_GWISHIN_BRIEF,잡을수록 강해지는 추격자. 경로 위의 적을 단숨에 휩쓴다.,A hunter that grows stronger with each catch. Sweeps enemies off the path at once.
-SKILL_DOKKAEBI_REVERSE,잡았다!,Gotcha!
+SKILL_DOKKAEBI_REVERSE,돌아가!,Back you go!
 BANNER_CAPTURE,잡았다!,Captured!
 BANNER_BONUS_THROW,한 번 더!,Roll Again!
 BANNER_BLACK_YUT,검은 윷!,Black Yut!
 SKILL_DOKKAEBI_BRIEF,잡히면 씨름으로 되받아치는 반격가. 동료가 많을수록 강하다.,A counter-fighter who strikes back with Ssireum. Stronger with more allies.
 SKILL_MULGWISHIN_ACTIVE,제물,Sacrifice
+SKILL_MULGWISHIN_ACTIVE_BANNER,곧 만나자.,We'll meet soon.
 BANNER_SACRIFICE_PICK,제물을 선택하라.,Choose a sacrifice
 SKILL_MULGWISHIN_BRIEF,잡히는 순간 상대를 끌어내리는 방해꾼. 제물로 검은 윷을 불린다.,A spoiler who drags foes down when caught. Sacrifices pieces to gain black yut.
 BTN_RESUME,재개,Resume

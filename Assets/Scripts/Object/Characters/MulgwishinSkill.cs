@@ -51,6 +51,7 @@ public class MulgwishinSkill : CharacterSkill
 
             var node = sacrificed.currentNode;
             VFXManager.Instance?.PlayMulgwishinParticle(node.transform.position);
+            VFXManager.Instance?.ShowMulgwishinActiveBanner();   // 발동 명시 (특히 AI 차례에 잘 보이도록)
 
             node.piecesOnNode.Remove(sacrificed);
 
