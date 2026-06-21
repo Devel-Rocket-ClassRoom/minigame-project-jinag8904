@@ -40,6 +40,19 @@ public class AIController : MonoBehaviour
         GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
         yield return new WaitForSeconds(0.4f);
 
+        // 검은 윷을 결과 사용 전에 먼저 굴려 같은 풀에 넣음 → AI가 전체 결과를 보고 이동 계획
+        while (ai.HasBlackYut && ShouldUseBlackYut())
+        {
+            yield return StartCoroutine(gm.CoAITableViewDwell());   // 캠 블렌드 대기 + 테이블뷰 머무름
+            ai.ConsumeBlackYut();   // 던지기 전 즉시 개수 차감 + UI 갱신
+            GameEvents.InvokeYutThrown(ai.playerId);
+            VFXManager.Instance?.PlayBlackYutThrow();
+            yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
+            ai.AddThrowResult(yutThrowController.LastResult);
+            GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
+            yield return new WaitForSeconds(0.4f);
+        }
+
         while (true)
         {
             while (ai.yutResults.Count > 0)
@@ -86,21 +99,11 @@ public class AIController : MonoBehaviour
                 GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             }
 
-            // 이번에 던진 윷 결과로 둘 이동을 모두 끝냄 → 보드캠 내려 테이블뷰 복귀
+            // 이동 모두 끝냄 → 보드캠 내려 테이블뷰 복귀
+            // (검은 윷은 위에서 먼저 굴려 이 루프에서 함께 사용 → 재진입 불필요, 1회만 실행)
             if (gm.IsBoardCamActive)
                 yield return StartCoroutine(gm.CoReleaseAICamera());
-
-            if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
-
-            yield return StartCoroutine(gm.CoAITableViewDwell());   // 이동 카메라 복귀 대기 + 테이블뷰 머무름
-
-            ai.ConsumeBlackYut();   // 던지기 전 즉시 개수 차감 + UI 갱신
-            GameEvents.InvokeYutThrown(ai.playerId);
-            VFXManager.Instance?.PlayBlackYutThrow();
-            yield return StartCoroutine(yutThrowController.CoThrow(isBlackYut: true));
-            ai.AddThrowResult(yutThrowController.LastResult);
-            GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
-            yield return new WaitForSeconds(0.4f);
+            break;
         }
     }
 
