@@ -733,8 +733,11 @@ public class GameMaster : MonoBehaviour
 
                             RepositionNode(targetNode);
                             GameEvents.InvokeCaptureSuccess(player.playerId);
+                            int blackYutBefore = player.BlackYutCount;
                             player.Skill?.OnCapture(piece, capturedPieces);
-                            if (player.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
+                            // 귀신: 이 잡기로 원한이 차 검은 윷이 새로 생긴 순간에만 파티클 (매 잡기 X)
+                            if (player.Skill is GwishinSkill && player.BlackYutCount > blackYutBefore)
+                                VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                             if (!noBonus)
                             {
                                 yield return StartCoroutine(CoWaitThrowButton(player, isCaptureBonus: true));
@@ -1267,8 +1270,11 @@ public class GameMaster : MonoBehaviour
 
                     RepositionNode(targetNode);
                     GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
+                    int blackYutBefore = currPlayer.BlackYutCount;
                     currPlayer.Skill?.OnCapture(piece, capturedPieces);
-                    if (currPlayer.Skill is GwishinSkill) VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
+                    // 귀신: 이 잡기로 원한이 차 검은 윷이 새로 생긴 순간에만 파티클 (매 잡기 X)
+                    if (currPlayer.Skill is GwishinSkill && currPlayer.BlackYutCount > blackYutBefore)
+                        VFXManager.Instance?.PlayGwishin(targetNode.transform.position);
                     if (!noBonus)
                     {
                         GameEvents.InvokeYutThrown(currPlayer.playerId);
