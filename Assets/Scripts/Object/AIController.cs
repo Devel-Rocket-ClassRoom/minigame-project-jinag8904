@@ -44,6 +44,8 @@ public class AIController : MonoBehaviour
         {
             while (ai.yutResults.Count > 0)
             {
+                gm.RefreshAISkillButton();   // 현재 사용 가능 여부를 버튼 색에 반영 (사용 후 흐려짐)
+
                 // 뒷도만 남았고 뒷걸음할 말이 없을 때만 정리 (윷 등 다른 결과로 말을 먼저 올리면 뒷도 보존)
                 bool noPieceForBackdo = !ai.pieces.Any(p =>
                     !p.hasFinished && p.stackLeader == null && p.currentNode != null &&
@@ -73,13 +75,24 @@ public class AIController : MonoBehaviour
 
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
-                if (ai.AllFinished) yield break;
+                if (ai.AllFinished)
+                {
+                    if (gm.IsBoardCamActive)
+                        yield return StartCoroutine(gm.CoReleaseAICamera());
+                    yield break;
+                }
 
                 yield return new WaitForSeconds(0.3f);
                 GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             }
 
+            // 이번에 던진 윷 결과로 둘 이동을 모두 끝냄 → 보드캠 내려 테이블뷰 복귀
+            if (gm.IsBoardCamActive)
+                yield return StartCoroutine(gm.CoReleaseAICamera());
+
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
+
+            yield return StartCoroutine(gm.CoAITableViewDwell());   // 이동 카메라 복귀 대기 + 테이블뷰 머무름
 
             ai.ConsumeBlackYut();   // 던지기 전 즉시 개수 차감 + UI 갱신
             GameEvents.InvokeYutThrown(ai.playerId);

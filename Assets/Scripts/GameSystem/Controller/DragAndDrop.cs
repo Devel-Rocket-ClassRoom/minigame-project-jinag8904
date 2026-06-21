@@ -52,6 +52,8 @@ public class DragAndDrop : MonoBehaviour
     private List<Piece> sacrificeCandidates = new();
     public Piece SacrificeTarget { get; private set; }
     public bool SacrificeConfirmed { get; private set; }
+    public bool SacrificeCancelled { get; private set; }
+    public bool IsPickingSacrifice => pickingSacrifice;
 
     // 아웃 존
     [SerializeField] private Collider outZoneCollider;
@@ -288,6 +290,7 @@ public class DragAndDrop : MonoBehaviour
         sacrificeCandidates = candidates;
         SacrificeTarget = null;
         SacrificeConfirmed = false;
+        SacrificeCancelled = false;
         pickingSacrifice = true;
         foreach (var c in candidates)
             c.pieceObject.SetHighLight(true);
@@ -299,6 +302,13 @@ public class DragAndDrop : MonoBehaviour
             c.pieceObject.SetHighLight(false);
         sacrificeCandidates.Clear();
         pickingSacrifice = false;
+    }
+
+    // 희생 선택 취소 (쌓기 거절 패턴과 동일)
+    public void CancelSacrificePick()
+    {
+        EndSacrificePick();
+        SacrificeCancelled = true;
     }
 
     public void DeclineStackTargetPick()

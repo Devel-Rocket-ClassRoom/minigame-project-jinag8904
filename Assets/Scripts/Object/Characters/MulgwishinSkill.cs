@@ -13,21 +13,17 @@ public class MulgwishinSkill : CharacterSkill
         return true;
     }
 
-    public override int MaxActiveUses => 1;
+    public override int ActiveCooldown => 2;
     public override string ActiveSkillName => LocalizationManager.Get("SKILL_MULGWISHIN_ACTIVE");
     public override bool HasImmediateEffect => true;
 
-    public override bool CanUseActive(Player player) =>
-        MaxActiveUses > 0 && player.activeSkillUseCount < MaxActiveUses &&
-        player.pieces.Any(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null);
+    public override bool CanUseActive(Player player) => base.CanUseActive(player) && player.pieces.Any(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null);
 
     public override IEnumerator CoOnActiveActivated(Player player, PiecePickDelegate requestPick = null, Action<BoardNode> reposition = null, List<BoardNodeData> protectedNodes = null)
     {
         VFXManager.Instance?.VignetteHoldOn(new Color(0.043f, 0.482f, 0.541f), 0.35f);  // 청록 ON
         try
         {
-            player.activeSkillUseCount++;
-
             var candidates = player.pieces
                 .Where(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null)
                 .ToList();
@@ -49,7 +45,9 @@ public class MulgwishinSkill : CharacterSkill
                 sacrificed = pool.OrderBy(p => p.nodeHistory.Count).First();
             }
 
-            if (sacrificed == null) yield break;
+            if (sacrificed == null) yield break;   // 취소 시 여기서 종료 → 쿨타임 미차감
+
+            OnActiveActivated(player);              // 희생 확정 후에만 쿨타임 차감
 
             var node = sacrificed.currentNode;
             VFXManager.Instance?.PlayMulgwishinParticle(node.transform.position);

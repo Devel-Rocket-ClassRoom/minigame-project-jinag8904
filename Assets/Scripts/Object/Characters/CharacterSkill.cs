@@ -25,10 +25,10 @@ public abstract class CharacterSkill : ScriptableObject
     public virtual bool OnBeingCaptured(Piece captured, Piece attacker) => false;
     public virtual void OnFinish(Piece piece) {}
 
-    public virtual int MaxActiveUses => 0;
+    public virtual int ActiveCooldown => 0;
     public virtual string ActiveSkillName => "";
-    public virtual bool CanUseActive(Player player) => MaxActiveUses > 0 && player.activeSkillUseCount < MaxActiveUses;
-    public virtual void OnActiveActivated(Player player) => player.activeSkillUseCount++;
+    public virtual bool CanUseActive(Player player) => ActiveCooldown > 0 && player.activeSkillCooldown <= 0;
+    public virtual void OnActiveActivated(Player player) => player.activeSkillCooldown = ActiveCooldown;  // 발동 확정 = 쿨타임 부여
 
     // true면 버튼 클릭 즉시 CoOnActiveActivated 실행 (이동과 무관). false면 기존 방식(isActiveSkillOn).
     public virtual bool HasImmediateEffect => false;

@@ -11,7 +11,7 @@ public class GwishinSkill : CharacterSkill
         piece.owner.AddWonhan(3);
     }
 
-    public override int MaxActiveUses => 1;
+    public override int ActiveCooldown => 2;
     public override string ActiveSkillName => LocalizationManager.Get("SKILL_GWISHIN_ACTIVE");
 
     public override void OnActiveMoveEffect(Player player, Piece mover, List<BoardNode> path, BoardNode dest, Action<BoardNode> reposition)
@@ -28,7 +28,7 @@ public class GwishinSkill : CharacterSkill
                 var capturedPieces = new[] { enemyLeader }.Concat(enemyLeader.stackedPieces).ToList();
                 enemyLeader.owner.OnCaught(enemyLeader);
                 enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
-                enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, mover);
+                //enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, mover);
 
                 foreach (var caught in capturedPieces)
                 {

@@ -91,3 +91,4 @@ SKILL_MULGWISHIN_PASSIVE_DESC,잡히는 순간 자신을 잡은 상대의 남은
 SKILL_MULGWISHIN_ACTIVE_DESC,자신의 말 하나를 제물로 희생해 검은 윷 2개를 얻는다.,Sacrifices one of your own pieces to gain 2 black yut.
 LABEL_PASSIVE,패시브,Passive
 LABEL_ACTIVE,액티브,Active
+TURN_LABEL,{0} 차례,{0}'s Turn
