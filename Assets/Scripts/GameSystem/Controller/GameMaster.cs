@@ -733,6 +733,8 @@ public class GameMaster : MonoBehaviour
 
                             RepositionNode(targetNode);
                             GameEvents.InvokeCaptureSuccess(player.playerId);
+                            // 귀신 액티브: 공용 '잡았다!' 배너를 귀신 전용 배너("뒤를 봐.")로 덮어씀
+                            if (gwishinActiveMove) VFXManager.Instance?.ShowGwishinActiveBanner();
                             int blackYutBefore = player.BlackYutCount;
                             player.Skill?.OnCapture(piece, capturedPieces);
                             // 귀신: 이 잡기로 원한이 차 검은 윷이 새로 생긴 순간에만 파티클 (매 잡기 X)
@@ -821,6 +823,7 @@ public class GameMaster : MonoBehaviour
 
             endTurnRequested = false;
             endTurnButton.gameObject.SetActive(true);
+            blackYutButton.gameObject.SetActive(player.HasBlackYut);  // 결과 소진 후에도 검은 윷 즉시 사용 보장(액티브 잡기로 막 얻은 경우 등)
 
             yield return new WaitUntil(() => endTurnRequested || player.yutResults.Count > 0);
 
@@ -1270,6 +1273,8 @@ public class GameMaster : MonoBehaviour
 
                     RepositionNode(targetNode);
                     GameEvents.InvokeCaptureSuccess(currPlayer.playerId);
+                    // 귀신 액티브: 공용 '잡았다!' 배너를 귀신 전용 배너("뒤를 봐.")로 덮어씀
+                    if (gwishinActiveMove) VFXManager.Instance?.ShowGwishinActiveBanner();
                     int blackYutBefore = currPlayer.BlackYutCount;
                     currPlayer.Skill?.OnCapture(piece, capturedPieces);
                     // 귀신: 이 잡기로 원한이 차 검은 윷이 새로 생긴 순간에만 파티클 (매 잡기 X)
