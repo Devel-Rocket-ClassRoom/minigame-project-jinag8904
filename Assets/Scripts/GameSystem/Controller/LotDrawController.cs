@@ -71,6 +71,7 @@ public class LotDrawController : MonoBehaviour
 
     public IEnumerator CoDraw(bool forceWin = false)
     {
+        Time.timeScale = 1f;   // #91 제비뽑기 연출은 어떤 경우에도 1배속 (전역 timeScale 누수 방어)
         jebiCam.transform.position = _camInitPos;
 
         // 시작 시 랜덤 배정 — 뒷면이 카메라에 안 보이므로 플레이어는 구분 불가

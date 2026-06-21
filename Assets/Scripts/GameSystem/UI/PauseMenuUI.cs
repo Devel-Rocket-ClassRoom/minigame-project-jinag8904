@@ -60,6 +60,7 @@ public class PauseMenuUI : MonoBehaviour
     {
         isPaused = paused;
         panelView.gameObject.SetActive(paused);
+        // #91 2배속은 timeScale로 구현하지 않으므로 재개는 항상 1배속.
         Time.timeScale = paused ? 0f : 1f;
     }
 

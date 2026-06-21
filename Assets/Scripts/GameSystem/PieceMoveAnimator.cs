@@ -28,6 +28,9 @@ public class PieceMoveAnimator : MonoBehaviour
 
     public void SetActivePlayer(int playerId) => _useP2Cam = playerId == 1;
 
+    // #91 2배속: 말 이동/정착 속도에만 적용 (튜토리얼은 항상 1배속). timeScale은 건드리지 않음.
+    private float Speed => TutorialManager.isTutorial ? 1f : GameSettings.SpeedMultiplier;
+
     private void Awake()
     {
         _brain = Camera.main.GetComponent<CinemachineBrain>();
@@ -40,11 +43,12 @@ public class PieceMoveAnimator : MonoBehaviour
 
         cam.Priority = new PrioritySettings { Value = priority };
 
-        yield return new WaitForSeconds(cameraBlendTime);
+        // 카메라 블렌드는 2배속 영향에서 제외(브레인 IgnoreTimeScale) → 대기도 실시간으로 맞춤 (#91)
+        yield return new WaitForSecondsRealtime(cameraBlendTime);
         if (_brain != null)
             yield return new WaitUntil(() => !_brain.IsBlending);
 
-        yield return new WaitForSeconds(preBlendWait);
+        yield return new WaitForSecondsRealtime(preBlendWait);
     }
 
     public IEnumerator CoReleaseFollowCamera()
@@ -52,7 +56,7 @@ public class PieceMoveAnimator : MonoBehaviour
         var cam = ActiveFollowCam;
         if (cam == null) yield break;
 
-        yield return new WaitForSeconds(postBlendWait);
+        yield return new WaitForSecondsRealtime(postBlendWait);  // 카메라 블렌드 대기 — 실시간 (#91)
 
         cam.Priority = new PrioritySettings { Value = 0 };
 
@@ -73,7 +77,7 @@ public class PieceMoveAnimator : MonoBehaviour
             var raw = node.transform.position;
             var destPos = new Vector3(raw.x, groundY, raw.z);
 
-            var t = leaderTf.DOJump(destPos, hopHeight, 1, hopDuration);
+            var t = leaderTf.DOJump(destPos, hopHeight, 1, hopDuration / Speed);
             t.OnUpdate(() =>
             {
                 for (int i = 0; i < stackAll.Count; i++)
@@ -83,7 +87,7 @@ public class PieceMoveAnimator : MonoBehaviour
             yield return t.WaitForCompletion();
         }
 
-        yield return new WaitForSeconds(settleWait);
+        yield return new WaitForSeconds(settleWait / Speed);
     }
 
     public IEnumerator CoAnimatePieceToPositions(List<Piece> pieces, List<Vector3> destPositions)
@@ -91,11 +95,11 @@ public class PieceMoveAnimator : MonoBehaviour
         Tween first = null;
         for (int i = 0; i < pieces.Count; i++)
         {
-            var tw = pieces[i].pieceObject.transform.DOJump(destPositions[i], hopHeight, 1, hopDuration);
+            var tw = pieces[i].pieceObject.transform.DOJump(destPositions[i], hopHeight, 1, hopDuration / Speed);
             if (i == 0) first = tw;
         }
         if (first != null) yield return first.WaitForCompletion();
-        yield return new WaitForSeconds(settleWait);
+        yield return new WaitForSeconds(settleWait / Speed);
     }
 
     private static List<BoardNode> BuildHopList(List<BoardNode> pushPathNodes, BoardNode targetNode)
