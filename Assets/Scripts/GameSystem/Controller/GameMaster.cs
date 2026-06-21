@@ -298,12 +298,18 @@ public class GameMaster : MonoBehaviour
 
     private void UpdateCharacterHUD()
     {
-        p1CharacterIcon.sprite = players[0].characterData?.icon;
-        p1CharacterNameText.text = players[0].characterData != null ? LocalizationManager.Get(players[0].characterData.localizationKey) : "";
-        p2CharacterIcon.sprite = players[1].characterData?.icon;
-        p2CharacterNameText.text = players[1].characterData != null ? LocalizationManager.Get(players[1].characterData.localizationKey) : "";
-        p1SkillTrigger?.SetSkill(players[0].Skill, p1CharacterNameText.text);
-        p2SkillTrigger?.SetSkill(players[1].Skill, p2CharacterNameText.text);
+        if (players[0].characterData != null)
+        {
+            p1CharacterIcon.sprite = players[0].characterData.icon;
+            p1CharacterNameText.text = LocalizationManager.Get(players[0].characterData.localizationKey);
+            p1SkillTrigger?.SetSkill(players[0].Skill, p1CharacterNameText.text);
+        }
+        if (players[1].characterData != null)
+        {
+            p2CharacterIcon.sprite = players[1].characterData.icon;
+            p2CharacterNameText.text = LocalizationManager.Get(players[1].characterData.localizationKey);
+            p2SkillTrigger?.SetSkill(players[1].Skill, p2CharacterNameText.text);
+        }
 
         Color c0 = players[0].characterData != null ? players[0].characterData.themeColor : Color.white;
         Color c1 = players[1].characterData != null ? players[1].characterData.themeColor : Color.white;
@@ -378,6 +384,9 @@ public class GameMaster : MonoBehaviour
     {
         TutorialManager.isTutorial = tutorialMode;
 
+        // #91 2배속: 선택/도입 연출은 항상 1배속. 배속은 본 게임 루프(CoPlayGame) 진입 시 적용.
+        Time.timeScale = 1f;
+
         if (tutorialMode)
         {
             isVsAI = true;
@@ -432,9 +441,12 @@ public class GameMaster : MonoBehaviour
     {
         if (!tutorialMode) ArmGuidePopup();
 
+        // #91 2배속은 timeScale이 아니라 말 이동/턴 대기 속도로 구현(UI·연출 보호). 본게임도 timeScale=1 유지.
+        Time.timeScale = 1f;
+
         while (!players.Any(p => p.AllFinished))
         {
-            yield return new WaitForSeconds(0.4f);
+            yield return new WaitForSeconds(0.4f / Speed);
             yield return StartCoroutine(CoHandlePlayerTurn(currPlayer));
             SwitchTurn();
         }
@@ -475,7 +487,7 @@ public class GameMaster : MonoBehaviour
     {
         yutThrowController?.ReleaseThrowCam();                       // 던지기 캠 잔여분 정리 → 테이블뷰 보장
         if (_brain != null) yield return new WaitUntil(() => !_brain.IsBlending);  // 진행 중 블렌드 마무리 대기
-        yield return new WaitForSeconds(aiTableViewDwell);          // 테이블뷰에서 잠시 머무름
+        yield return new WaitForSeconds(aiTableViewDwell / Speed);  // 테이블뷰에서 잠시 머무름
     }
 
     // AI 이동 볼리가 끝났을 때 보드캠 내려 테이블뷰로 복귀 (AIController가 호출)
@@ -487,6 +499,9 @@ public class GameMaster : MonoBehaviour
 
     // 현재 보드캠(탑뷰)이 떠 있는지
     public bool IsBoardCamActive => pieceMoveAnimator != null && pieceMoveAnimator.IsBoardCamActive;
+
+    // #91 2배속: 턴 진행 대기에만 적용 (튜토리얼은 1배속). timeScale은 건드리지 않음.
+    private float Speed => TutorialManager.isTutorial ? 1f : GameSettings.SpeedMultiplier;
 
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
@@ -511,7 +526,7 @@ public class GameMaster : MonoBehaviour
         if (!isVsAI)
             yield return StartCoroutine(CoSwitchSideCam(player.playerId));
 
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(0.4f / Speed);
 
         yield return StartCoroutine(CoWaitThrowButton(player));
         LogYutResults(player);
@@ -838,11 +853,19 @@ public class GameMaster : MonoBehaviour
         throwRequested = false; // 종료 플래그
 
         blackYutButton.gameObject.SetActive(false);
-        throwYutButton.gameObject.SetActive(true);
 
-        yield return new WaitUntil(() => throwRequested);
-       
-        throwYutButton.gameObject.SetActive(false);
+        // #119 자동 던지기: 켜져 있으면 버튼 숨기고 잠깐 뒤 자동으로 던진다. (튜토리얼은 제외 — 검은 윷은 항상 수동)
+        if (GameSettings.AutoThrow && !TutorialManager.isTutorial)
+        {
+            throwYutButton.gameObject.SetActive(false);
+            yield return new WaitForSeconds(0.5f);  // 던지기 캠을 잠깐 보여준 뒤 자동
+        }
+        else
+        {
+            throwYutButton.gameObject.SetActive(true);
+            yield return new WaitUntil(() => throwRequested);
+            throwYutButton.gameObject.SetActive(false);
+        }
 
         GameEvents.InvokeYutThrown(player.playerId);    // 3D 모델용
         yield return StartCoroutine(yutThrowController.CoThrow());

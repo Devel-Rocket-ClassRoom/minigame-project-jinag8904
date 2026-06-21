@@ -92,3 +92,5 @@ SKILL_MULGWISHIN_ACTIVE_DESC,자신의 말 하나를 제물로 희생해 검은 
 LABEL_PASSIVE,패시브,Passive
 LABEL_ACTIVE,액티브,Active
 TURN_LABEL,{0} 차례,{0}'s Turn
+LABEL_DOUBLE_SPEED,2배속,2x Speed
+LABEL_AUTO_THROW,자동 던지기,Auto Throw

@@ -70,6 +70,9 @@ public class YutThrowController : MonoBehaviour
             yield break;
         }
 
+        // #91 윷 던지기 물리만 2배속 (카메라는 IgnoreTimeScale로 보호). 종료 시 1f로 복원.
+        Time.timeScale = GameSettings.SpeedMultiplier;
+
         SetThrowCamActive(true);    // 던지기 카메라 ON
 
         yield return null; // Cinemachine이 블렌드를 시작할 한 프레임 대기
@@ -193,6 +196,7 @@ public class YutThrowController : MonoBehaviour
             foreach (var s in bSticks)
                 if (s != null) ObjectPool.Instance.Return(s.gameObject);
 
+            Time.timeScale = 1f;   // #91 던지기 끝 — 배속 복원
             yield break;
         }
 
@@ -268,5 +272,7 @@ public class YutThrowController : MonoBehaviour
 
         foreach (var s in sticks)
             if (s != null) ObjectPool.Instance.Return(s.gameObject);
+
+        Time.timeScale = 1f;   // #91 던지기 끝 — 배속 복원
     }
 }

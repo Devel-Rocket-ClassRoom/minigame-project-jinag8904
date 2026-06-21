@@ -3399,7 +3399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBrain
   ShowDebugText: 0
   ShowCameraFrustum: 1
-  IgnoreTimeScale: 0
+  IgnoreTimeScale: 1
   WorldUpOverride: {fileID: 0}
   ChannelMask: -1
   UpdateMethod: 2
@@ -6397,13 +6397,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 578551255873737930, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1100267047913117075, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
       propertyPath: jebiCam
       value: 
       objectReference: {fileID: 181156448}
+    - target: {fileID: 1409527167705798016, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1413915202239421553, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
       propertyPath: m_Name
       value: EnvironmentVisual
+      objectReference: {fileID: 0}
+    - target: {fileID: 2640710586468836589, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121595577883518432, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6542782451227658857, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7476178459938501865, guid: 3252396c7a0cec34484ca9c257fa14c0, type: 3}
       propertyPath: m_StaticShadowCaster

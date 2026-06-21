@@ -31,7 +31,7 @@ public class CandleFlicker : MonoBehaviour
 
     private void Update()
     {
-        float t = Time.time * flickerSpeed + seed;
+        float t = Time.unscaledTime * flickerSpeed + seed;   // 2배속(#91) 영향 제외 — 연기 파티클과 통일
         // PerlinNoise는 0~1 반환 → -1~1로 변환
         float noise = Mathf.PerlinNoise(t, seed) * 2f - 1f;
 
