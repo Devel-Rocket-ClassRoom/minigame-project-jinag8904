@@ -64,6 +64,8 @@ public class GameMaster : MonoBehaviour
     private SkillTooltipTrigger p1SkillTrigger;
     private SkillTooltipTrigger p2SkillTrigger;
     private bool isActiveSkillOn;
+    [SerializeField] private GameObject p1SkillArmedHighlight;   // 지연형(귀신) 무장 중 버튼 강조
+    [SerializeField] private GameObject p2SkillArmedHighlight;
 
     // 쌓기(업기) UI
     [SerializeField] private GameObject stackDecisionPanel;
@@ -476,6 +478,16 @@ public class GameMaster : MonoBehaviour
         yield return new WaitForSeconds(aiTableViewDwell);          // 테이블뷰에서 잠시 머무름
     }
 
+    // AI 이동 볼리가 끝났을 때 보드캠 내려 테이블뷰로 복귀 (AIController가 호출)
+    public IEnumerator CoReleaseAICamera()
+    {
+        if (pieceMoveAnimator != null)
+            yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+    }
+
+    // 현재 보드캠(탑뷰)이 떠 있는지
+    public bool IsBoardCamActive => pieceMoveAnimator != null && pieceMoveAnimator.IsBoardCamActive;
+
     private IEnumerator CoHandlePlayerTurn(Player player)
     {
         if (player.activeSkillCooldown > 0) player.activeSkillCooldown--;
@@ -529,7 +541,7 @@ public class GameMaster : MonoBehaviour
                 }
 
                 // 액티브 스킬 버튼 활성화
-                GetActiveSkillButton(player).interactable = (!TutorialManager.isTutorial || TutorialManager.allowSkillDemo) && player.Skill?.CanUseActive(player) == true;
+                RefreshActiveSkillButton(player);
                 RefreshActiveCooldowns();
 
                 // 선택 시작
@@ -584,6 +596,7 @@ public class GameMaster : MonoBehaviour
                     player.yutResults.Remove(chosenOutResult);
                     if (isActiveSkillOn) player.Skill?.OnActiveTurnEnd();
                     isActiveSkillOn = false;
+                    SetSkillArmedVisual(player, false);
                     LogYutResults(player);
 
                     if (player.AllFinished)
@@ -630,12 +643,18 @@ public class GameMaster : MonoBehaviour
                     GameEvents.InvokeJunctionReached(player.playerId);
                 }
 
+                // 귀신 액티브로 이동 중인지 기록 (아래 isActiveSkillOn 리셋 전에) — 도착 칸 잡기에서 물귀신/도깨비 패시브 무효화용
+                bool gwishinActiveMove = isActiveSkillOn && pushPath != null && player.Skill is GwishinSkill;
+
                 // 액티브 스킬 - 이동 효과
                 if (isActiveSkillOn && pushPath != null)
                 {
                     player.Skill.OnActiveMoveEffect(player, piece, pushPath, targetNode, RepositionNode);
+                    player.Skill.OnActiveActivated(player);   // 발동 확정 → 쿨타임 차감
                     player.Skill?.OnActiveTurnEnd();
                     isActiveSkillOn = false;
+                    SetSkillArmedVisual(player, false);
+                    RefreshActiveSkillButton(player);         // 쿨타임 반영 → 즉시 흰색
                 }
 
                 // 잡기 처리
@@ -649,8 +668,10 @@ public class GameMaster : MonoBehaviour
                     // 씨름 판정: 칸 위 적 전체 수 기준으로 1번만
                     int totalEnemyCount = enemyLeaders.Sum(e => 1 + e.stackedPieces.Count);
                     var skilledEnemy = enemyLeaders.FirstOrDefault(e => e.owner.Skill != null);
-                    var outcome = skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount)
-                                  ?? CaptureOutcome.Captured;
+                    var outcome = gwishinActiveMove
+                        ? CaptureOutcome.Captured   // 귀신 액티브: 도깨비 씨름(역잡기) 무시
+                        : (skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount)
+                           ?? CaptureOutcome.Captured);
 
                     if (outcome == CaptureOutcome.Reversed)
                     {
@@ -680,7 +701,9 @@ public class GameMaster : MonoBehaviour
 
                             enemyLeader.owner.OnCaught(enemyLeader);
                             enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
-                            bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+                            bool noBonus = (gwishinActiveMove && enemyLeader.owner.Skill is MulgwishinSkill)
+                                ? false   // 귀신 액티브: 물귀신 윷 결과 삭제 패시브 무효화
+                                : (enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false);
                             if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
 
                             foreach (var caught in capturedPieces)
@@ -807,6 +830,7 @@ public class GameMaster : MonoBehaviour
         p2ActiveSkillButton.interactable = false;
         if (isActiveSkillOn) player.Skill?.OnActiveTurnEnd();
         isActiveSkillOn = false;
+        SetSkillArmedVisual(player, false);
     }
 
     private IEnumerator CoWaitThrowButton(Player player, bool isCaptureBonus = false)   // 윷 던지기 버튼 입력 대기
@@ -920,28 +944,47 @@ public class GameMaster : MonoBehaviour
     {
         if (player.isAI) yield break;   // AI 버튼은 사용 가능 여부 표시용으로만 활성 — 클릭은 무시
         var skill = player.Skill;
-        GetActiveSkillButton(player).interactable = false;
 
         if (skill.HasImmediateEffect)
-            yield return StartCoroutine(skill.CoOnActiveActivated(player, RequestPiecePickCoroutine, RepositionNode));
-        else
+        {
+            if (dragAndDrop.IsPickingSacrifice)          // 희생 선택 중 재클릭 → 취소
+            {
+                if (TutorialManager.isTutorial) yield break;   // 튜토리얼 시연 중엔 취소 불가
+                dragAndDrop.CancelSacrificePick();
+            }
+            else if (skill.CanUseActive(player))         // 쿨타임 등 확인 후 발동
+            {
+                yield return StartCoroutine(skill.CoOnActiveActivated(player, RequestPiecePickCoroutine, RepositionNode));
+                RefreshActiveSkillButton(player);        // 발동(흰색)/취소(빨강) 후 즉시 반영
+            }
+        }
+        else if (isActiveSkillOn)                        // 무장 중 재클릭 → 해제 (차감 없음)
+        {
+            if (TutorialManager.isTutorial) yield break;   // 튜토리얼 시연 중엔 무장 해제 불가
+            isActiveSkillOn = false;
+            skill.OnActiveTurnEnd();
+            SetSkillArmedVisual(player, false);
+        }
+        else if (skill.CanUseActive(player))             // 무장 (쿨타임은 실제 발동 시에만 차감)
         {
             isActiveSkillOn = true;
-            skill.OnActiveActivated(player);
             skill.OnActiveTurnStart();
+            SetSkillArmedVisual(player, true);
         }
     }
 
     private IEnumerator RequestPiecePickCoroutine(List<Piece> candidates, Action<Piece> onPicked)
     {
         dragAndDrop.BeginSacrificePick(candidates);
+        SetSkillArmedVisual(currPlayer, true);   // 선택 중 버튼 강조 (귀신 무장과 동일)
         VFXManager.Instance?.BannerHoldOn(LocalizationManager.Get("BANNER_SACRIFICE_PICK"),
                                           new Color(0.043f, 0.482f, 0.541f));  // 청록 #0B7B8A
         GameEvents.InvokeSacrificePickStart();
-        yield return new WaitUntil(() => dragAndDrop.SacrificeConfirmed);
+        yield return new WaitUntil(() => dragAndDrop.SacrificeConfirmed || dragAndDrop.SacrificeCancelled);
         GameEvents.InvokeSacrificePickEnd();
         VFXManager.Instance?.BannerHoldOff();
-        onPicked(dragAndDrop.SacrificeTarget);
+        SetSkillArmedVisual(currPlayer, false);  // 확정·취소 모두 OFF
+        onPicked(dragAndDrop.SacrificeConfirmed ? dragAndDrop.SacrificeTarget : null);
     }
 
     public Player GetOpponent(Player player) => players[1 - player.playerId];
@@ -949,6 +992,21 @@ public class GameMaster : MonoBehaviour
     public bool IsActiveSkillOn => isActiveSkillOn;
 
     private Button GetActiveSkillButton(Player player) => player.playerId == 0 ? p1ActiveSkillButton : p2ActiveSkillButton;
+
+    // 현재 플레이어 액티브 버튼 상태 갱신 (사용 가능 → interactable=true(빨강) / 불가 → 흰색). 발동 직후 즉시 호출.
+    private void RefreshActiveSkillButton(Player player)
+    {
+        GetActiveSkillButton(player).interactable =
+            (!TutorialManager.isTutorial || TutorialManager.allowSkillDemo)
+            && player.Skill?.CanUseActive(player) == true;
+    }
+
+    // 지연형 액티브 무장 상태를 버튼에 시각 표시 (테두리/글로우 등)
+    private void SetSkillArmedVisual(Player player, bool armed)
+    {
+        var hl = player.playerId == 0 ? p1SkillArmedHighlight : p2SkillArmedHighlight;
+        if (hl != null) hl.SetActive(armed);
+    }
 
     // AI 스킬 버튼: 'AI 차례 + 사용 가능'일 때만 Normal색(빨강), 그 외엔 Disabled색(흰색). 클릭/눌림은 막음(interactable=false).
     public void RefreshAISkillButton()
@@ -1086,7 +1144,7 @@ public class GameMaster : MonoBehaviour
             yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceToPositions(allFinishing, destPositions));
             HandleFinish(piece, stackAll, currPlayer);
 
-            yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+            // 보드캠 유지 — 남은 이동을 모두 끝낸 뒤 AIController가 일괄 복귀
             currPlayer.yutResults.Remove(used);
             GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
 
@@ -1115,10 +1173,8 @@ public class GameMaster : MonoBehaviour
 
         if (prevNode != null) RepositionNode(prevNode);
 
-        bool camActivated = false;
         if (useActiveSkill)
         {
-            camActivated = true;
             yield return StartCoroutine(CoEnterBoardCam()); // 보드캠 진입(블렌드 완료)까지 기다린 뒤 잡기 연출
             RepositionNode(targetNode);
             if (pushPathNodes != null)
@@ -1129,7 +1185,6 @@ public class GameMaster : MonoBehaviour
         }
         else
         {
-            camActivated = true;
             yield return StartCoroutine(CoEnterBoardCam());
             yield return StartCoroutine(pieceMoveAnimator.CoAnimatePieceMove(piece, stackAll, pushPathNodes, targetNode));
             RepositionNode(targetNode);
@@ -1140,13 +1195,18 @@ public class GameMaster : MonoBehaviour
         currPlayer.yutResults.Remove(used);
         GameLogUI.UpdateYutResults(currPlayer.yutResults, currPlayer.name);
 
+        // 귀신 액티브로 이동했는지 — 도착 칸 잡기에서 물귀신/도깨비 패시브 무효화용
+        bool gwishinActiveMove = useActiveSkill && pushPathNodes != null && currPlayer.Skill is GwishinSkill;
+
         // [잡기 처리]
         var enemyLeaders = targetNode.piecesOnNode.Where(p => p.owner != currPlayer && p.stackLeader == null).ToList();
         if (enemyLeaders.Count > 0)
         {
             int totalEnemyCount = enemyLeaders.Sum(e => 1 + e.stackedPieces.Count);
             var skilledEnemy = enemyLeaders.FirstOrDefault(e => e.owner.Skill != null);
-            var outcome = skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount) ?? CaptureOutcome.Captured;
+            var outcome = gwishinActiveMove
+                ? CaptureOutcome.Captured   // 귀신 액티브: 도깨비 씨름(역잡기) 무시
+                : (skilledEnemy?.owner.Skill.OnCaptureAttempt(skilledEnemy, piece, totalEnemyCount) ?? CaptureOutcome.Captured);
 
             if (outcome == CaptureOutcome.Reversed) // 반격당함
             {
@@ -1172,7 +1232,9 @@ public class GameMaster : MonoBehaviour
                     enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
                     GameEvents.InvokeCaptured(enemyLeader.owner.playerId);
 
-                    bool noBonus = enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false;
+                    bool noBonus = (gwishinActiveMove && enemyLeader.owner.Skill is MulgwishinSkill)
+                        ? false   // 귀신 액티브: 물귀신 윷 결과 삭제 패시브 무효화
+                        : (enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, piece) ?? false);
                     if (noBonus) VFXManager.Instance?.PlayMulgwishin(targetNode.transform.position);
 
                     foreach (var caught in capturedPieces)
@@ -1217,8 +1279,7 @@ public class GameMaster : MonoBehaviour
             RepositionNode(targetNode);
         }
 
-        // 잡기·업기 시각화가 끝난 뒤 카메라 릴리즈 (줌인 상태에서 즉시 반영되도록)
-        if (camActivated) yield return StartCoroutine(pieceMoveAnimator.CoReleaseFollowCamera());
+        // 보드캠 유지 — 남은 이동을 모두 끝낸 뒤 AIController가 일괄 복귀
     }
 
     private void SendHome(Piece p, BoardNode fromNode)

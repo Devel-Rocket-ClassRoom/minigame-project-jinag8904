@@ -28,7 +28,7 @@ public class GwishinSkill : CharacterSkill
                 var capturedPieces = new[] { enemyLeader }.Concat(enemyLeader.stackedPieces).ToList();
                 enemyLeader.owner.OnCaught(enemyLeader);
                 enemyLeader.owner.AddWonhan(enemyLeader.stackedPieces.Count);
-                enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, mover);
+                //enemyLeader.owner.Skill?.OnBeingCaptured(enemyLeader, mover);
 
                 foreach (var caught in capturedPieces)
                 {

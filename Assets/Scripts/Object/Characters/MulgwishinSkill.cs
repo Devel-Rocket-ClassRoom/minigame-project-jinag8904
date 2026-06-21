@@ -24,8 +24,6 @@ public class MulgwishinSkill : CharacterSkill
         VFXManager.Instance?.VignetteHoldOn(new Color(0.043f, 0.482f, 0.541f), 0.35f);  // 청록 ON
         try
         {
-            OnActiveActivated(player);
-
             var candidates = player.pieces
                 .Where(p => !p.hasFinished && p.currentNode != null && p.stackLeader == null)
                 .ToList();
@@ -47,7 +45,9 @@ public class MulgwishinSkill : CharacterSkill
                 sacrificed = pool.OrderBy(p => p.nodeHistory.Count).First();
             }
 
-            if (sacrificed == null) yield break;
+            if (sacrificed == null) yield break;   // 취소 시 여기서 종료 → 쿨타임 미차감
+
+            OnActiveActivated(player);              // 희생 확정 후에만 쿨타임 차감
 
             var node = sacrificed.currentNode;
             VFXManager.Instance?.PlayMulgwishinParticle(node.transform.position);

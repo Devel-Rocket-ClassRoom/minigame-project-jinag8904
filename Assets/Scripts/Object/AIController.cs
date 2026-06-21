@@ -75,11 +75,20 @@ public class AIController : MonoBehaviour
 
                 yield return StartCoroutine(gm.ApplyAIMove(piece, dest, pushPath, usedYR, isOut, useActiveSkill));
 
-                if (ai.AllFinished) yield break;
+                if (ai.AllFinished)
+                {
+                    if (gm.IsBoardCamActive)
+                        yield return StartCoroutine(gm.CoReleaseAICamera());
+                    yield break;
+                }
 
                 yield return new WaitForSeconds(0.3f);
                 GameLogUI.UpdateYutResults(ai.yutResults, ai.name);
             }
+
+            // 이번에 던진 윷 결과로 둘 이동을 모두 끝냄 → 보드캠 내려 테이블뷰 복귀
+            if (gm.IsBoardCamActive)
+                yield return StartCoroutine(gm.CoReleaseAICamera());
 
             if (!ai.HasBlackYut || !ShouldUseBlackYut()) break;
 
