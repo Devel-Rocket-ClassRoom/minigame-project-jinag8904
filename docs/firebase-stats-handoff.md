@@ -44,6 +44,11 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
   `root = FirebaseInitializer.Instance.Database.RootReference` → `new FirebaseStatsRepository(uid, root)`. 실패 시 Local 폴백.
 - 내일 Firebase 콘솔: 프로젝트 생성 → RTDB(테스트 모드) → Anonymous 인증 활성화. Unity: `google-services.json` + `FirebaseAuth`/`FirebaseDatabase` 패키지 + `FirebaseConfig`(databaseUrl).
 
+## 검증 (테스트 방법)
+- **오늘 밤 (Firebase 없이, 로컬로 가능)**: Unity Play → AI 대전 1판 끝까지 → PlayerPrefs에 기록 저장 →
+  타이틀의 "전적" 버튼 → 패널에 전체 승/패·승률 + 캐릭터별 표시 확인. 여러 판 반복 → 누적·승률 갱신 확인.
+- **내일 (Firebase 교체 후)**: 같은 시나리오 + Firebase 콘솔에서 `users/{uid}/matches` 트리에 데이터 들어오는지 눈으로 확인.
+
 ## 참고
 - 패널 패턴 원본: `Assets/Scripts/GameSystem/UI/SettingsPanelView.cs`
 - 타이틀 버튼 배선: `Assets/Scripts/GameSystem/Controller/TitleManager.cs:22`
