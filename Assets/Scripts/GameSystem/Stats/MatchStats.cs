@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 
-public class CharacterStat
+public class CharacterStat  // 캐릭터별 전적 데이터
 {
     public string character;
     public int wins;
     public int losses;
 
     public int Total => wins + losses;
-    public float WinRate => Total == 0 ? 0f : (float)wins / Total;
+    public float WinRate => Total == 0 ? 0f : (float)wins / Total;  // 승률
 }
 
 public class MatchStats

@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Cinemachine;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
+
 using Random = UnityEngine.Random;
 
 public class GameMaster : MonoBehaviour
@@ -909,6 +911,15 @@ public class GameMaster : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
         var winner = System.Linq.Enumerable.First(players, p => p.AllFinished);
+
+        // 결과 기록
+        if (isVsAI)
+        {
+            bool won = winner.playerId == 0;
+            var record = new MatchRecord(won, players[0].characterData.localizationKey);
+            StatsService.Repo.RecordMatchAsync(record).Forget();
+        }
+
         gameOverUI.Show(winner.playerId, isVsAI);
     }
 
