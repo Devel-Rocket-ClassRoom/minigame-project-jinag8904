@@ -21,6 +21,18 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 - UX(확정): 전적 버튼 → 로그인 안 됐으면 "로그인하면 전적을 볼 수 있어요" + 로그인 폼 → 성공 시 통계 전환.
 - 익명 폴백은 계정 모델과 안 맞으므로 제거. `LocalStatsRepository`는 개발/테스트용으로만 유지.
 
+## 전역(전체 유저) 캐릭터 승률 (2026-06-23 추가)
+- **목표**: 캐릭터별 줄에 개인 승률 옆에 전체 유저 평균 승률도 표시.
+- **방식**: 전 유저 matches 스캔 ❌. **전역 집계 카운터**를 원자적 증가로 유지 ✅ (확장성/보안 규칙 때문).
+  - RTDB 노드: `stats/characters/{charKey}: { wins, total }` (charKey = localizationKey, 예 CHAR_GWISHIN)
+  - 기록 시(`RecordMatchAsync` 안): `ServerValue.Increment(1)`로 `total` +1(항상), `wins` +1(이겼을 때만). 트랜잭션 불필요·동시성 안전.
+  - 조회 시: `stats/characters` 한 번만 읽음(캐릭터 3개, 가벼움). 전체 승률 = wins/total.
+- **인터페이스**: `IStatsRepository`에 `LoadGlobalStatsAsync()` → `Dictionary<string, CharacterStat>`(CharacterStat 재사용, losses = total - wins).
+  - `LocalStatsRepository`: 전역 개념 없음 → 자기 기록으로 채움(로컬에선 개인=전체, 동작 확인용).
+  - `FirebaseStatsRepository`: 위 카운터 읽기/쓰기 구현.
+- **표시**: `StatsPanelView`가 개인 + 전역 둘 다 로드. `STATS_ROW`에 전체 승률 자리 추가, 예) `{0}승 {1}패 (내 {2:F0}% · 전체 {3:F0}%)`.
+- 주의: 로그인 유저면 누구나 카운터 증가 가능(이론상 조작) — 테스트 모드 범위에선 무방.
+
 ## 완료 — 로컬 단계 (③④⑤, 로컬 검증까지 끝)
 - `Assets/Scripts/GameSystem/Stats/MatchRecord.cs` — 한 판 데이터 (`won`, `character`)
 - `Assets/Scripts/GameSystem/Stats/MatchStats.cs` — 순수 C# 집계 (CharacterStat + MatchStats.From)
@@ -46,6 +58,7 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
    `root = FirebaseInitializer.Instance.Database.RootReference` → `StatsService.Use(new FirebaseStatsRepository(uid, root))`.
 6. **전적 패널 게이팅** — `AuthManager.IsLogedIn` 확인 → 안 됐으면 로그인 안내/폼, 됐으면 통계.
 7. **GameMaster 훅** — 로그인 상태일 때만 `RecordMatchAsync` 호출하도록 조건 추가.
+8. **전역 캐릭터 승률** — `IStatsRepository.LoadGlobalStatsAsync()` 추가, `FirebaseStatsRepository`에서 `stats/characters` 카운터 읽기/쓰기(ServerValue.Increment), `StatsPanelView`가 개인+전역 표시, `STATS_ROW` 포맷 확장. (상세: 위 "전역 캐릭터 승률" 섹션)
 
 ## 검증 (테스트 방법)
 - **로컬 (완료)**: Play → AI 대전 1판 → "전적" 버튼 → 전체 + 캐릭터별 승/패·승률 표시. 여러 판 누적 확인. 언어 전환 확인. ✅
@@ -54,5 +67,7 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 ## 참고
 - 패널 패턴 원본: `Assets/Scripts/GameSystem/UI/SettingsPanelView.cs`
 - 정적 텍스트 현지화: `Assets/Scripts/GameSystem/Localization/LocalizedText.cs` (key 넣으면 자동)
-- RTDB 구조: `users/{uid}/matches/{pushKey}: { won, character }` (character = localizationKey, 예 CHAR_GWISHIN)
+- RTDB 구조:
+  - 개인: `users/{uid}/matches/{pushKey}: { won, character }` (character = localizationKey, 예 CHAR_GWISHIN)
+  - 전역: `stats/characters/{charKey}: { wins, total }` (전체 유저 집계 카운터)
 - 작업 방식(CLAUDE.md): Claude는 변경점·의도만 설명, 사용자가 직접 작성.
