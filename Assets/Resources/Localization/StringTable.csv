@@ -99,3 +99,17 @@ LABEL_DOUBLE_SPEED,2배속,2x Speed
 LABEL_AUTO_THROW,자동 던지기,Auto Throw
 STATS_TOTAL,전체 {0}승 {1}패 (승률 {2:F0}%),Total: {0}W {1}L ({2:F0}%)
 STATS_ROW,{0}승 {1}패 ({2:F0}%),{0}W {1}L ({2:F0}%)
+STATS_GLOBAL,전체 {0:F0}%,Global {0:F0}%
+STATS_LOADING,불러오는 중...,Loading...
+LABEL_LOGIN,로그인,Log in
+LABEL_LOGOUT,로그아웃,Log out
+LOGIN_INFO,전적을 보려면 로그인이 필요합니다.,You need to log in to view your stats.
+LOGIN_NEED_INPUT,이메일과 비밀번호를 입력하세요.,Enter your email and password.
+LOGIN_SIGNUP,회원가입,Sign up
+LOGIN_EMAIL_PH,이메일,Email
+LOGIN_PW_PH,비밀번호,Password
+AUTH_ERR_EMAIL_IN_USE,이미 사용 중인 이메일입니다.,This email is already in use.
+AUTH_ERR_WEAK_PW,비밀번호는 6자 이상이어야 합니다.,Password must be at least 6 characters.
+AUTH_ERR_INVALID_EMAIL,이메일 형식이 올바르지 않습니다.,Invalid email format.
+AUTH_ERR_NETWORK,네트워크 연결을 확인해주세요.,Check your network connection.
+AUTH_ERR_GENERIC,이메일 또는 비밀번호를 확인해주세요.,Check your email or password.

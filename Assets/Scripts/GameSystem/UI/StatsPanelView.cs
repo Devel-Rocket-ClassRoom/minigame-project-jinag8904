@@ -13,10 +13,13 @@ public class StatsPanelView : MonoBehaviour
     {
         public string localizationKey;
         public TextMeshProUGUI text;
+        public TextMeshProUGUI globalText;
     }
 
     public CharacterRow[] rows;
     public Button closeButton;
+
+    public GameObject loadingView;
 
     public bool IsOpen => gameObject.activeSelf;
 
@@ -35,8 +38,12 @@ public class StatsPanelView : MonoBehaviour
 
     private async UniTaskVoid Refresh()
     {
+        if (loadingView != null) loadingView.SetActive(true);
+
         var records = await StatsService.Repo.LoadMatchesAsync();
         var stats = MatchStats.From(records);
+        var global = await GlobalStats.LoadAsync();
+        if (this == null) return;
 
         totalText.text = LocalizationManager.Get("STATS_TOTAL", stats.totalWins, stats.totalLosses, stats.WinRate * 100f);
 
@@ -48,6 +55,14 @@ public class StatsPanelView : MonoBehaviour
             float rate = cs?.WinRate ?? 0f;
 
             row.text.text = LocalizationManager.Get("STATS_ROW", w, l, rate * 100f);
+
+            if (row.globalText != null)
+            {
+                global.TryGetValue(row.localizationKey, out var gs);
+                row.globalText.text = LocalizationManager.Get("STATS_GLOBAL", (gs?.WinRate ?? 0f) * 100f);
+            }
         }
+
+        if (loadingView != null) loadingView.SetActive(false);
     }
 }

@@ -916,8 +916,12 @@ public class GameMaster : MonoBehaviour
         if (isVsAI)
         {
             bool won = winner.playerId == 0;
-            var record = new MatchRecord(won, players[0].characterData.localizationKey);
-            StatsService.Repo.RecordMatchAsync(record).Forget();
+            string charKey = players[0].characterData.localizationKey;
+
+            GlobalStats.RecordAsync(charKey, won).Forget();
+
+            if (AuthManager.Instance != null && AuthManager.Instance.IsLogedIn)
+                StatsService.Repo.RecordMatchAsync(new MatchRecord(won, charKey)).Forget();
         }
 
         gameOverUI.Show(winner.playerId, isVsAI);
