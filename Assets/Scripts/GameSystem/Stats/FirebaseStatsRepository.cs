@@ -11,6 +11,7 @@ public class FirebaseStatsRepository : IStatsRepository
     public FirebaseStatsRepository(string uid, DatabaseReference root)
     {
         _matchesRef = root.Child("users").Child(uid).Child("matches");
+        _matchesRef.KeepSynced(true);   // 백그라운드 동기화 → 캐시 미리 채움 (콜드 읽기 레이스 완화)
     }
 
     public async UniTask RecordMatchAsync(MatchRecord record)

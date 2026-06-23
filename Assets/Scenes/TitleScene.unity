@@ -493,6 +493,7 @@ GameObject:
   m_Component:
   - component: {fileID: 337886611}
   - component: {fileID: 337886612}
+  - component: {fileID: 337886613}
   m_Layer: 0
   m_Name: AuthManager
   m_TagString: Untagged
@@ -527,6 +528,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd182b707dd4a4f41a45a05af62517a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AuthManager
+--- !u!114 &337886613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 337886610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f7faaa2135063f4a8a6e171dc3e25e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatsBootstrap
 --- !u!114 &425075172 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8162674555718919794, guid: ca68b3425841bca4ea42c73371ed8ff2, type: 3}
