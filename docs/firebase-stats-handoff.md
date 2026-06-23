@@ -62,6 +62,12 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 7. **GameMaster 훅** — 로그인 상태일 때만 `RecordMatchAsync` 호출하도록 조건 추가.
 8. **전역 캐릭터 승률** — `IStatsRepository.LoadGlobalStatsAsync()` 추가, `FirebaseStatsRepository`에서 `stats/characters` 카운터 읽기/쓰기(ServerValue.Increment), `StatsPanelView`가 개인+전역 표시(전역은 별도 텍스트 오브젝트, 승률만, 새 키 `STATS_GLOBAL`). (상세: 위 "전역 캐릭터 승률" 섹션)
 
+## 추후/선택
+- **데이터 초기화** (우선순위 낮음) — 내 전적 기록 삭제 기능.
+  - `IStatsRepository.ResetAsync()` 추가. Local: `PlayerPrefs.DeleteKey("match_records")`. Firebase: `users/{uid}/matches` 노드 삭제(`RemoveValueAsync`).
+  - **전역(`stats/characters`)은 건드리지 않음** — 누적 통계라 개인 초기화로 깎지 않음(확정).
+  - UI: 전적 패널에 "기록 초기화" 버튼 + 확인 다이얼로그 → 초기화 후 `Refresh()` 재호출.
+
 ## 검증 (테스트 방법)
 - **로컬 (완료)**: Play → AI 대전 1판 → "전적" 버튼 → 전체 + 캐릭터별 승/패·승률 표시. 여러 판 누적 확인. 언어 전환 확인. ✅
 - **Firebase 교체 후**: 같은 시나리오 + 로그인 후 + Firebase 콘솔 `users/{uid}/matches` 트리에 데이터 들어오는지 확인.
