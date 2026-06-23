@@ -32,7 +32,7 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
   - 노드: `stats/characters/{charKey}: { wins, total }` (charKey = localizationKey, 예 CHAR_GWISHIN)
   - 기록 시: `total` +1(항상), `wins` +1(이겼을 때만)
   - 조회 시: `stats/characters` 한 번 읽음. 전역 승률 = wins/total, losses = total - wins.
-- **비로그인 게임도 전역에 포함**(결정됨). 따라서 전역 집계는 개인 기록과 **분리**(아래 변경점 참고).
+- 전역 집계는 개인 기록과 **분리**된 독립 모듈(`GlobalStats`). **로그인 유저의 게임만 집계**(공개 repo 보안 규칙상 인증 필요 — 아래 보안 섹션). `GlobalStats.RecordAsync`는 비로그인 시 early-return.
 - 표시: 개인/전역 텍스트 오브젝트 분리. 전역은 승률만, 키 `STATS_GLOBAL`(`전체 {0:F0}%` / `Global {0:F0}%`).
 
 ---
@@ -41,8 +41,8 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 구현하면서 인수인계 원안과 달라진 부분:
 
 1. **전역 집계를 `IStatsRepository`에서 분리 → 독립 `GlobalStats` (static)**
-   - 이유: "비로그인 게임도 전역 포함" 결정. 비로그인 시 저장소가 `LocalStatsRepository`라 거기 전역 로직을 넣으면 비로그인 게임이 전역에 안 들어감.
-   - `GlobalStats.RecordAsync(charKey, won)` / `GlobalStats.LoadAsync()`. Firebase 준비됐을 때만 동작(미준비 시 조용히 무시). 로그인 무관.
+   - 이유: 전역은 개인 기록(per-uid)과 성격이 다른 집계 데이터. 저장소 구현(로컬/Firebase)과 무관하게 별도로 다루는 게 깔끔.
+   - `GlobalStats.RecordAsync(charKey, won)` / `GlobalStats.LoadAsync()`. Firebase 준비 + **로그인 시에만** 기록(보안 규칙상 인증 필요, 비로그인 early-return).
    - 원안의 `IStatsRepository.LoadGlobalStatsAsync()`는 **추가하지 않음.**
 
 2. **`ServerValue.Increment` 미지원** → **`RunTransaction`** 으로 카운터 증가
@@ -94,9 +94,28 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 
 ## RTDB 구조
 - 개인: `users/{uid}/matches/{pushKey}: { won, character }` (character = localizationKey)
-- 전역: `stats/characters/{charKey}: { wins, total }` (전체 게임 집계, 로그인 무관)
-- 규칙: 비로그인 쓰기 허용 필요 → **테스트 모드 유지** 중. 운영 전환 시 규칙 재검토.
+- 전역: `stats/characters/{charKey}: { wins, total }` (로그인 유저 게임 집계)
 - 콘솔: https://console.firebase.google.com/project/gwicheoksa/database/gwicheoksa-default-rtdb/data
+
+## 보안 규칙 (테스트 모드 아님 — 공개 repo라 잠금)
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "stats": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
+```
+- `users/{uid}`: 본인만 읽기/쓰기. `stats`: 로그인 유저만. 그 외 경로 기본 거부.
+- 이 규칙 때문에 **비로그인 전역 집계는 불가** → `GlobalStats.RecordAsync`가 비로그인 시 early-return(에러 로그 방지).
 
 ---
 
@@ -112,7 +131,8 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 ## 검증 (완료된 시나리오)
 - 로컬: AI 1판 → 전적 → 전체/캐릭터별 표시, 여러 판 누적, 언어 전환 ✅
 - Firebase: 로그인 → AI 1판 → `users/{uid}/matches` 저장 + 패널 반영 ✅
-- 전역: 비로그인 1판 → `stats/characters` 증가(개인 미기록), 로그인 시 개인+전역 동시 표시 ✅
+- 전역: 로그인 1판 → 개인+전역 동시 기록/표시. 비로그인은 개인·전역 모두 미기록 ✅
+- 보안: 다른 계정의 `users/{uid}` 접근 거부, 비로그인 read/write 거부 ✅
 - 로그인/로그아웃: 타이틀 uid 표시, 로그아웃 동작, 씬 전환 후 상태 유지 ✅
 
 ## 참고

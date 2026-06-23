@@ -17,6 +17,8 @@ public class GlobalStats
 
     public static async UniTask RecordAsync(string charKey, bool won)
     {
+        if (AuthManager.Instance == null || !AuthManager.Instance.IsLogedIn) return;
+
         var node = Node?.Child(charKey);
         if (node == null) return;
 
