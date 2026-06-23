@@ -30,7 +30,9 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
 - **인터페이스**: `IStatsRepository`에 `LoadGlobalStatsAsync()` → `Dictionary<string, CharacterStat>`(CharacterStat 재사용, losses = total - wins).
   - `LocalStatsRepository`: 전역 개념 없음 → 자기 기록으로 채움(로컬에선 개인=전체, 동작 확인용).
   - `FirebaseStatsRepository`: 위 카운터 읽기/쓰기 구현.
-- **표시**: `StatsPanelView`가 개인 + 전역 둘 다 로드. `STATS_ROW`에 전체 승률 자리 추가, 예) `{0}승 {1}패 (내 {2:F0}% · 전체 {3:F0}%)`.
+- **표시**: 개인/전역 텍스트 오브젝트 **분리**(색을 다르게 주려고). `STATS_ROW`는 개인용 그대로 유지.
+  - 전역은 **승률만** 표시. 새 키 `STATS_GLOBAL` = `전체 {0:F0}%` / `Global {0:F0}%`.
+  - `CharacterRow`에 `globalText`(TMP) 필드 추가 → `StatsPanelView`가 개인/전역 각각의 텍스트에 채움. 색은 Unity 인스펙터에서 지정.
 - 주의: 로그인 유저면 누구나 카운터 증가 가능(이론상 조작) — 테스트 모드 범위에선 무방.
 
 ## 완료 — 로컬 단계 (③④⑤, 로컬 검증까지 끝)
@@ -58,7 +60,7 @@ AI 대전 전적/승률 기능. 게임 종료 시 결과 1건 저장 → 통계 
    `root = FirebaseInitializer.Instance.Database.RootReference` → `StatsService.Use(new FirebaseStatsRepository(uid, root))`.
 6. **전적 패널 게이팅** — `AuthManager.IsLogedIn` 확인 → 안 됐으면 로그인 안내/폼, 됐으면 통계.
 7. **GameMaster 훅** — 로그인 상태일 때만 `RecordMatchAsync` 호출하도록 조건 추가.
-8. **전역 캐릭터 승률** — `IStatsRepository.LoadGlobalStatsAsync()` 추가, `FirebaseStatsRepository`에서 `stats/characters` 카운터 읽기/쓰기(ServerValue.Increment), `StatsPanelView`가 개인+전역 표시, `STATS_ROW` 포맷 확장. (상세: 위 "전역 캐릭터 승률" 섹션)
+8. **전역 캐릭터 승률** — `IStatsRepository.LoadGlobalStatsAsync()` 추가, `FirebaseStatsRepository`에서 `stats/characters` 카운터 읽기/쓰기(ServerValue.Increment), `StatsPanelView`가 개인+전역 표시(전역은 별도 텍스트 오브젝트, 승률만, 새 키 `STATS_GLOBAL`). (상세: 위 "전역 캐릭터 승률" 섹션)
 
 ## 검증 (테스트 방법)
 - **로컬 (완료)**: Play → AI 대전 1판 → "전적" 버튼 → 전체 + 캐릭터별 승/패·승률 표시. 여러 판 누적 확인. 언어 전환 확인. ✅
