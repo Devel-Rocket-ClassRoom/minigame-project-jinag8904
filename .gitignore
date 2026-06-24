@@ -82,3 +82,18 @@ crashlytics-build.properties
 # TextMeshPro cache
 /[Aa]ssets/TextMesh*Pro/Examples*
 /[Aa]ssets/TextMesh*Pro/Resources/Fonts & Materials/
+
+# Firebase Unity SDK — 용량(100MB+ 단일 파일)이 GitHub 한도 초과.
+# 커밋하지 않음. 클론 후 .unitypackage(FirebaseAuth/FirebaseDatabase)로 직접 임포트.
+/[Aa]ssets/Firebase/
+/[Aa]ssets/Firebase.meta
+/[Aa]ssets/ExternalDependencyManager/
+/[Aa]ssets/ExternalDependencyManager.meta
+/[Aa]ssets/Plugins/iOS/
+/[Aa]ssets/Plugins/iOS.meta
+/[Aa]ssets/Plugins/tvOS/
+/[Aa]ssets/Plugins/tvOS.meta
+/[Aa]ssets/Editor Default Resources/
+/[Aa]ssets/Editor Default Resources.meta
+/[Aa]ssets/StreamingAssets/
+/[Aa]ssets/StreamingAssets.meta

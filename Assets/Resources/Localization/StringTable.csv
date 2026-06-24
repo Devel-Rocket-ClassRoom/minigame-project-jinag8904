@@ -37,7 +37,7 @@ BTN_END_TURN,넘긴다,End Turn
 BTN_STACK_YES,업힌다,Stack
 BTN_STACK_NO,업히지 않는다,Don't Stack
 BTN_START,시작,Start
-BTN_TUTORIAL,설명을 듣는다,Tutorial
+BTN_TUTORIAL,하는 방법,Tutorial
 BTN_LANGUAGE,English,한국어
 BTN_RANDOM,무작위,Random
 LABEL_PAUSE,일시정지,Paused
@@ -84,6 +84,7 @@ TUTORIAL_END_TITLE,운명 개시,Fate Begins
 TUTORIAL_END_BODY,본 승부를 시작하자,Let the real game begin
 LABEL_HINT_HELP,H - 도움말,H - Hint
 LABEL_SETTINGS,설정,Settings
+LABEL_STATS, 통계, Stats
 LABEL_BGM,배경음악,BGM
 LABEL_SFX,효과음,SFX
 SKILL_GWISHIN_PASSIVE_DESC,적을 잡으면 원한 +3.,+3 grudge per capture.
@@ -96,3 +97,19 @@ LABEL_ACTIVE,액티브,Active
 TURN_LABEL,{0} 차례,{0}'s Turn
 LABEL_DOUBLE_SPEED,2배속,2x Speed
 LABEL_AUTO_THROW,자동 던지기,Auto Throw
+STATS_TOTAL,전체 {0}승 {1}패 (승률 {2:F0}%),Total: {0}W {1}L (Win rate {2:F0}%)
+STATS_ROW,{0}승 {1}패 (승률 {2:F0}%),{0}W {1}L (Win rate {2:F0}%)
+STATS_GLOBAL,전체 승률 {0:F0}%,Global win rate {0:F0}%
+STATS_LOADING,불러오는 중...,Loading...
+LABEL_LOGIN,로그인,Log in
+LABEL_LOGOUT,로그아웃,Log out
+LOGIN_INFO,전적을 보려면 로그인이 필요합니다.,You need to log in to view your stats.
+LOGIN_NEED_INPUT,이메일과 비밀번호를 입력하세요.,Enter your email and password.
+LOGIN_SIGNUP,회원가입,Sign up
+LOGIN_EMAIL_PH,이메일,Email
+LOGIN_PW_PH,비밀번호,Password
+AUTH_ERR_EMAIL_IN_USE,이미 사용 중인 이메일입니다.,This email is already in use.
+AUTH_ERR_WEAK_PW,비밀번호는 6자 이상이어야 합니다.,Password must be at least 6 characters.
+AUTH_ERR_INVALID_EMAIL,이메일 형식이 올바르지 않습니다.,Invalid email format.
+AUTH_ERR_NETWORK,네트워크 연결을 확인해주세요.,Check your network connection.
+AUTH_ERR_GENERIC,이메일 또는 비밀번호를 확인해주세요.,Check your email or password.
