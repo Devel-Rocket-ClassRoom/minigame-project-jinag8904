@@ -53,6 +53,7 @@ public class GameMaster : MonoBehaviour
     // 윷 던지기 버튼
     [SerializeField] private Button throwYutButton;
     private bool throwRequested;
+    private bool awaitingThrowInput;   // 던지기 대기 구간에서만 throwRequested 입력 허용 (업히기 등 다른 단계에서 던지기 버튼 입력 차단)
 
     // 윷 던지기 컨트롤러
     [SerializeField] private YutThrowController yutThrowController;
@@ -166,7 +167,7 @@ public class GameMaster : MonoBehaviour
         endTurnButton.onClick.AddListener(() => endTurnRequested = true);
 
         throwYutButton.gameObject.SetActive(false);
-        throwYutButton.onClick.AddListener(() => throwRequested = true);
+        throwYutButton.onClick.AddListener(() => { if (awaitingThrowInput) throwRequested = true; });
 
         stackDecisionPanel.SetActive(false);
         stackYesButton.onClick.AddListener(() => stackDecision = true);
@@ -871,7 +872,9 @@ public class GameMaster : MonoBehaviour
         else
         {
             throwYutButton.gameObject.SetActive(true);
+            awaitingThrowInput = true;
             yield return new WaitUntil(() => throwRequested);
+            awaitingThrowInput = false;
             throwYutButton.gameObject.SetActive(false);
         }
 
