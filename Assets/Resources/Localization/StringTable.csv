@@ -37,7 +37,7 @@ BTN_END_TURN,넘긴다,End Turn
 BTN_STACK_YES,업힌다,Stack
 BTN_STACK_NO,업히지 않는다,Don't Stack
 BTN_START,시작,Start
-BTN_TUTORIAL,설명을 듣는다,Tutorial
+BTN_TUTORIAL,하는 방법,Tutorial
 BTN_LANGUAGE,English,한국어
 BTN_RANDOM,무작위,Random
 LABEL_PAUSE,일시정지,Paused
